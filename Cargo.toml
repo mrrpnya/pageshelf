@@ -1,0 +1,9 @@
+[package]
+name = "pages"
+description = "Description pending"
+authors = ["SevenOfAces (https://git.smgames.club/SevenOfAces)"]
+version = "0.1.0"
+license = "MIT License"
+edition = "2024"
+
+[dependencies]
