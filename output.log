@@ -36,3 +36,22 @@
 [DEBUG pages::storage::backend_filesystem] Asset exampleDir/test.html is a file
 [DEBUG pages::storage::backend_filesystem] Checking if site a exists: true
 [DEBUG pages::storage::backend_filesystem] Asset exampleDir/index.html is a file
+[INFO actix_server::server] SIGINT received; starting forced shutdown
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[DEBUG actix_server::accept] paused accepting connections on 127.0.0.1:8080
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::accept] accept thread stopped
