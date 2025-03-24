@@ -1,0 +1,38 @@
+[INFO actix_server::builder] starting 16 workers
+[INFO actix_server::server] Actix runtime found; starting in Actix runtime
+[INFO actix_server::server] starting service: "actix-web-service-127.0.0.1:8080", workers: 16, listening on: 127.0.0.1:8080
+[DEBUG pages::storage::backend_filesystem] Checking if site a exists: true
+[DEBUG pages::storage::backend_filesystem] Asset a is a file
+[DEBUG pages::storage::backend_filesystem] Checking if site a exists: true
+[DEBUG pages::storage::backend_filesystem] Asset a is a file
+[INFO actix_server::server] SIGINT received; starting forced shutdown
+[DEBUG actix_server::accept] paused accepting connections on 127.0.0.1:8080
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::worker] shutting down idle worker
+[INFO actix_server::accept] accept thread stopped
+[INFO actix_server::builder] starting 16 workers
+[INFO actix_server::server] Actix runtime found; starting in Actix runtime
+[INFO actix_server::server] starting service: "actix-web-service-127.0.0.1:8080", workers: 16, listening on: 127.0.0.1:8080
+[DEBUG pages::storage::backend_filesystem] Checking if site a exists: true
+[DEBUG pages::storage::backend_filesystem] Asset /index.html is a file
+[DEBUG pages::storage::backend_filesystem] Checking if site a exists: true
+[DEBUG pages::storage::backend_filesystem] Asset exampleDir is a directory
+[DEBUG pages::storage::backend_filesystem] Requested asset is a directory: Inferring index.html
+[DEBUG pages::storage::backend_filesystem] Checking if site a exists: true
+[DEBUG pages::storage::backend_filesystem] Asset exampleDir/test.html is a file
+[DEBUG pages::storage::backend_filesystem] Checking if site a exists: true
+[DEBUG pages::storage::backend_filesystem] Asset exampleDir/index.html is a file
