@@ -1,0 +1,42 @@
+on:
+  push:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: 🦀 Test on ${{ matrix.label }}
+    strategy:
+      matrix:
+        label: ['ubuntu-rust']
+    runs-on: ${{ matrix.label }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        run: |
+          cargo test
+
+  clippy:
+    name: 📎 Clippy
+    runs-on: ubuntu-rust
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run clippy
+        run: |
+          cargo clippy
+
+  formatting:
+    name: 🧹 Formatting
+    runs-on: ubuntu-rust
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check formatting
+        run: |
+          cargo fmt --all --check
