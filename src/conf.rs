@@ -6,6 +6,14 @@ fn default_port() -> u16 {
     8080
 }
 
+fn default_name() -> String {
+    "Pageshelf".to_string()
+}
+
+fn default_description() -> String {
+    "A free and open source Pages server, written in Rust".to_string()
+}
+
 fn default_upstream_url() -> String {
     "https://codeberg.org".to_string()
 }
@@ -16,7 +24,8 @@ fn default_branch() -> String {
 
 fn default_general() -> ServerConfigGeneral {
     ServerConfigGeneral { 
-        name: "Pageshelf".to_string(), 
+        name: default_name(), 
+        description: default_description(),
         home_url: None, 
         port: default_port()
     }
@@ -31,10 +40,13 @@ fn default_security() -> ServerConfigSecurity {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ServerConfigGeneral {
-    name: String,
+    #[serde(default = "default_name")]
+    pub name: String,
+    #[serde(default = "default_description")]
+    pub description: String,
     home_url: Option<String>,
     #[serde(default = "default_port")]
-    port: u16
+    pub port: u16
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -93,7 +105,7 @@ impl ServerConfig {
     pub fn template_server_context(&self) -> TemplateServerContext {
         TemplateServerContext {
             name: self.general.name.to_string(),
-            about: self.description.to_string(),
+            about: self.general.description.to_string(),
             home_url: None,
             icon_url: Some("/favicon.svg".to_string()),
         }

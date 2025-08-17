@@ -79,32 +79,6 @@ impl<T> Iterator for EmptyIterator<T> {
     }
 }
 
-struct EmptyPage;
-
-impl Page for EmptyPage {
-    fn name(&self) -> &str {
-        ""
-    }
-
-    fn channel(&self) -> &str {
-        ""
-    }
-
-    fn owner(&self) -> &str {
-        ""
-    }
-}
-
-impl AssetQueryable for EmptyPage {
-    async fn asset_at(&self, path: &AssetPath) -> Result<impl Asset, AssetError> {
-        Err::<MemoryAsset, AssetError>(AssetError::NotFound)
-    }
-
-    fn assets(&self) -> Result<impl Iterator<Item = impl Asset>, AssetError> {
-        Ok(EmptyIterator::<MemoryAsset>::new())
-    }
-}
-
 impl PageSource for ForgejoProvider {
     async fn page_at(
         &self,
