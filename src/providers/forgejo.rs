@@ -1,12 +1,13 @@
 use std::{marker::PhantomData, str::FromStr};
 
 use crate::{
-    asset::{Asset, AssetError, AssetPath, AssetQueryable},
-    page::{Page, PageError, PageSource, PageSourceConfigurator},
-    storage::forgejo_direct::ForgejoDirectReadStorage,
+    asset::{Asset, AssetError, AssetPath, AssetQueryable}, conf::ServerConfig, page::{Page, PageError, PageSource, PageSourceFactory}
 };
 use forgejo_api::{Auth, Forgejo, structs::RepoSearchQuery};
 use log::{error, warn};
+use url::Url;
+
+use super::assets::forgejo_direct::ForgejoDirectReadStorage;
 
 enum Strategy {
     Direct,
@@ -27,7 +28,7 @@ impl<'a> Page for ForgejoPage<'a> {
         self.storage.repo()
     }
 
-    fn channel(&self) -> &str {
+    fn branch(&self) -> &str {
         self.storage.branch()
     }
 
@@ -53,26 +54,6 @@ impl ForgejoProvider {
             strategy: Strategy::Direct,
             branches,
         }
-    }
-}
-
-struct EmptyIterator<T> {
-    phantom: PhantomData<T>,
-}
-
-impl<T> EmptyIterator<T> {
-    pub fn new() -> Self {
-        Self {
-            phantom: PhantomData,
-        }
-    }
-}
-
-impl<T> Iterator for EmptyIterator<T> {
-    type Item = T;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        None
     }
 }
 
@@ -191,7 +172,7 @@ impl PageSource for ForgejoProvider {
                             .await;
 
                         match branch_result {
-                            Ok(v) => {
+                            Ok(_) => {
                                 pages.push(ForgejoPage {
                                     storage: ForgejoDirectReadStorage::new(
                                         &self.forgejo,
@@ -217,10 +198,61 @@ impl PageSource for ForgejoProvider {
     }
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                   Factory                                  */
+/* -------------------------------------------------------------------------- */
+
+#[derive(Clone)]
+pub struct ForgejoProviderFactory {
+    config: ServerConfig,
+    url: Url
+}
+
+impl ForgejoProviderFactory {
+    // TODO: Set the error type in this result
+    pub fn from_config(config: ServerConfig) -> Result<Self, ()> {
+        let url = match url::Url::from_str(&config.upstream.url) {
+            Ok(v) => v,
+            Err(e) => {
+                error!("Failed to parse Forgejo URL: {}", e);
+                return Err(());
+            }
+        };
+
+        Ok(Self {
+            url,
+            config
+        })
+    }
+
+}
+impl PageSourceFactory for ForgejoProviderFactory {
+    type Source = ForgejoProvider;
+
+    fn build(&self) -> Result<Self::Source, ()> {
+        let fj = match Forgejo::new(
+                Auth::None,
+                self.url.clone(),
+            ) {
+            Ok(v) => v,
+            Err(e) => {
+                error!("Failed to create Forgejo authentication: {}", e);
+                return Err(());
+            }
+        };
+
+        Ok(ForgejoProvider::direct(
+            fj,
+            Some(self.config.upstream.branches.clone()),
+        ))
+    }
+}
+
+/* 
 impl PageSourceConfigurator for ForgejoProvider {
     type Source = ForgejoProvider;
 
-    fn configure(config: &crate::conf::ServerConfig) -> Self::Source {
+    fn from_config(config: &crate::conf::ServerConfig) -> Self::Source {
         ForgejoProvider::direct(
             Forgejo::new(
                 Auth::None,
@@ -231,3 +263,4 @@ impl PageSourceConfigurator for ForgejoProvider {
         )
     }
 }
+*/

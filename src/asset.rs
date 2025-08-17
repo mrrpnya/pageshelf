@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum AssetError {
     NotFound,
@@ -5,6 +7,9 @@ pub enum AssetError {
     ProviderError,
 }
 
+/// A path to an Asset within a Page.
+/// This is its own struct as it allows better validation.
+#[derive(Debug, PartialEq, Eq)]
 pub struct AssetPath {
     // TODO: Needs optimization
     path: String,
@@ -24,17 +29,27 @@ impl AssetPath {
     pub fn path(&self) -> &str {
         &self.path
     }
+
+    pub fn eq_str(&self, s: &str) -> bool {
+        let p = match Self::from_str(s) {
+            Ok(v) => v,
+            Err(_) => {
+                return false 
+            }
+        };
+
+        self == &p
+    }
 }
 
-impl TryFrom<&str> for AssetPath {
-    type Error = AssetError;
+impl FromStr for AssetPath {
+    type Err = AssetError;
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        // TODO: Validation!!!
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
         let mut path = value.to_string();
         path = path.replace("\\", "/");
         if path.starts_with('/') {
-            path = format!("/{}", path);
+            path = path.replacen("/", "", 1);
         }
 
         Ok(Self { path })
@@ -47,6 +62,7 @@ impl<'a> ToString for AssetPath {
     }
 }
 
+/// Represents a file in a page.
 pub trait Asset {
     fn mime_type(&self) -> Option<&str> {
         None
@@ -70,4 +86,20 @@ pub trait AssetQueryable {
 pub trait AssetWritable {
     fn write_asset(&mut self, path: &AssetPath, asset: &impl Asset) -> Result<(), AssetError>;
     fn delete_asset(&mut self, path: &AssetPath) -> Result<(), AssetError>;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                    Tests                                   */
+/* -------------------------------------------------------------------------- */
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn asset_path_leading_slash() {
+        let path_a_1 = AssetPath::from_str("my/file").unwrap();
+        let path_a_2 = AssetPath::from_str("/my/file").unwrap();
+        assert_eq!(path_a_1, path_a_2)
+    }
 }

@@ -20,3 +20,12 @@ config = "0.15"
 toml = "0.9"
 walkdir = "2.5"
 mime_guess = "2"
+
+[dev-dependencies]
+tokio = { version = "1.47", features = ["macros"] }
+
+[profile.release]
+opt-level = 3
+overflow-checks = true
+debug = 0
+lto = true

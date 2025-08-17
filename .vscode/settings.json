@@ -1,6 +1,9 @@
 {
     "nixEnvSelector.nixFile": "${workspaceFolder}/flake.nix",
     "cSpell.words": [
-        "Forgejo"
+        "Actix",
+        "Forgejo",
+        "minijinja",
+        "pageshelf"
     ]
 }

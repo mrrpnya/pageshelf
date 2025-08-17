@@ -11,6 +11,8 @@ A free and open-source Pages server, written in Rust.
 ## Features
 
 - [x] Dynamic hosting of sites
+- [x] Integration Tested
+  - [x] In-Memory Mock
 - [ ] Prometheus endpoint
 - [ ] 100% customizable UI
 - [ ] Auth-locking of sites

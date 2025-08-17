@@ -94,7 +94,7 @@ pub struct ServerConfigUpstream {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-struct ServerConfigSecurity {
+pub struct ServerConfigSecurity {
     pub whitelist: Option<String>,
     pub blacklist: Option<String>,
 }
@@ -117,6 +117,31 @@ impl ServerConfig {
             icon_url: Some("/favicon.svg".to_string()),
             default_branch: self.upstream.default_branch.clone(),
             version: crate_version!(),
+        }
+    }
+}
+
+impl Default for ServerConfig {
+    fn default() -> Self {
+        Self {
+            general: ServerConfigGeneral {
+                name: default_name(),
+                description: default_description(),
+                home_url: None,
+                port: default_port(),
+            },
+            security: ServerConfigSecurity {
+                whitelist: None,
+                blacklist: None,
+            },
+            upstream: ServerConfigUpstream {
+                r#type: ServerConfigUpstreamType::Forgejo,
+                method: ServerConfigUpstreamMethod::Direct,
+                url: "".to_string(),
+                default_branch: default_branch(),
+                branches: Vec::new(),
+                token: None,
+            },
         }
     }
 }

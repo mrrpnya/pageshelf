@@ -1,65 +1,17 @@
-
-use actix_web::{App, HttpServer, Result, middleware::NormalizePath, web};
+use actix_web::{middleware::{NormalizePath, TrailingSlash}, web, App, HttpServer, Result};
 use clap::Command;
 use config::{Config, File};
 use fern::colors::{Color, ColoredLevelConfig};
 use minijinja::Environment;
 use pageshelf::{
-    conf::ServerConfig,
-    page::PageSourceConfigurator,
-    providers::forgejo::ForgejoProvider,
-    routes::{self, RouteSharedData},
-    templates::templates_from_builtin,
+    conf::ServerConfig, page::PageSourceFactory, providers::{ForgejoProvider, ForgejoProviderFactory}, routes::{self, setup_service_config, RouteSharedData}, templates::templates_from_builtin
 };
-
-fn setup_logger() -> Result<(), fern::InitError> {
-    fern::Dispatch::new()
-        .format(|out, message, record| {
-            let colors = ColoredLevelConfig::new()
-                .info(Color::BrightGreen)
-                .error(Color::BrightRed)
-                .warn(Color::BrightYellow);
-            out.finish(format_args!(
-                "[{}] {}",
-                colors.color(record.level()),
-                message
-            ))
-        })
-        .level(log::LevelFilter::Debug)
-        .chain(std::io::stdout())
-        .apply()?;
-    Ok(())
-}
 
 use clap::{arg, crate_authors, crate_description, crate_name, crate_version};
 
-async fn run_server<'a, PS: PageSourceConfigurator + Sync + Send>(
-    port: u16,
-    config: ServerConfig,
-    templates: Environment<'static>,
-) -> std::io::Result<()>
-where
-    <PS as PageSourceConfigurator>::Source: 'static,
-{
-    HttpServer::new(move || {
-        let pages = config.upstream.branches.clone();
-        let config = config.clone();
-        App::new()
-            .wrap(NormalizePath::trim())
-            .app_data(web::Data::new(RouteSharedData {
-                provider: PS::configure(&config),
-                jinja: templates.clone(),
-                config: config,
-            }))
-            //.wrap(middleware::NormalizePath::trim())
-            .configure(|f| {
-                routes::register_to_service_config::<ForgejoProvider>(f);
-            })
-    })
-    .bind(("127.0.0.1", port))?
-    .run()
-    .await
-}
+/* -------------------------------------------------------------------------- */
+/*                                    Main                                    */
+/* -------------------------------------------------------------------------- */
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -94,7 +46,60 @@ async fn main() -> std::io::Result<()> {
 
     let templates = templates_from_builtin();
 
-    let port = config.general.port.clone();
+    let factory = match ForgejoProviderFactory::from_config(config.clone()) {
+        Ok(v) => v,
+        Err(_) => {
+            return Ok(());
+        }
+    };
 
-    run_server::<ForgejoProvider>(port, config, templates).await
+    run_server(factory, config, templates).await
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Major Actions                               */
+/* -------------------------------------------------------------------------- */
+
+fn setup_logger() -> Result<(), fern::InitError> {
+    fern::Dispatch::new()
+        .format(|out, message, record| {
+            let colors = ColoredLevelConfig::new()
+                .info(Color::BrightGreen)
+                .error(Color::BrightRed)
+                .warn(Color::BrightYellow);
+            out.finish(format_args!(
+                "[{}] {}",
+                colors.color(record.level()),
+                message
+            ))
+        })
+        .level(log::LevelFilter::Debug)
+        .chain(std::io::stdout())
+        .apply()?;
+    Ok(())
+}
+
+
+async fn run_server<'a, PS: PageSourceFactory + Sync + Send + 'static>(
+    page_factory: PS,
+    config: ServerConfig,
+    templates: Environment<'static>,
+) -> std::io::Result<()>
+    where <PS as PageSourceFactory>::Source: 'static
+{
+    let port = config.general.port;
+    HttpServer::new(move || {
+        // TODO: See if cloning can be reduced here? It's done every worker.
+        let config = config.clone();
+        let page_factory = page_factory.clone();
+        let templates = templates.clone();
+        App::new()
+            .wrap(NormalizePath::trim())
+            .configure(move |f| {
+                setup_service_config(f, &config, page_factory, Some(templates)); 
+            })
+    })
+    .bind(("0.0.0.0", port))?
+    .run()
+    .await
 }

@@ -1,3 +1,6 @@
+/// Utilities for sourcing pages from Forgejo directly.
+/// This is lazy-loaded.
+
 use forgejo_api::{Forgejo, structs::RepoGetRawFileQuery};
 use log::{error, warn};
 
@@ -66,7 +69,7 @@ impl<'a> AssetQueryable for ForgejoDirectReadStorage<'a> {
             )
             .await
         {
-            Ok(v) => Ok(MemoryAsset::new(&v)),
+            Ok(v) => Ok(MemoryAsset::from_bytes(&v)),
             Err(e) => {
                 error!(
                     "Failed to find (raw) data file {} in Forgejo repository {}/{}:{} - {}",
