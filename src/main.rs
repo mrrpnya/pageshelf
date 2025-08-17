@@ -1,14 +1,12 @@
-use std::str::FromStr;
 
-use actix_web::{middleware::NormalizePath, web, App, HttpServer, Result};
+use actix_web::{App, HttpServer, Result, middleware::NormalizePath, web};
 use clap::Command;
 use config::{Config, File};
 use fern::colors::{Color, ColoredLevelConfig};
-use forgejo_api::{Auth, Forgejo};
 use minijinja::Environment;
 use pageshelf::{
     conf::ServerConfig,
-    page::{PageSource, PageSourceConfigurator},
+    page::PageSourceConfigurator,
     providers::forgejo::ForgejoProvider,
     routes::{self, RouteSharedData},
     templates::templates_from_builtin,

@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use actix_web::{HttpResponse, Responder, get, http::StatusCode, web};
+use actix_web::{HttpResponse, Responder, web};
 use log::{error, info};
 use mime_guess::Mime;
 use minijinja::context;

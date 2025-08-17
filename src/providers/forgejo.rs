@@ -6,7 +6,7 @@ use crate::{
     storage::forgejo_direct::ForgejoDirectReadStorage,
 };
 use forgejo_api::{Auth, Forgejo, structs::RepoSearchQuery};
-use log::{error, info, warn};
+use log::{error, warn};
 
 enum Strategy {
     Direct,

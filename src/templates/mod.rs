@@ -1,9 +1,7 @@
-use std::{io::Read, path::Path};
 
 use log::{error, info};
 use minijinja::Environment;
 use serde::{Deserialize, Serialize};
-use walkdir::WalkDir;
 
 pub const TEMPLATE_404: &str = "404.html";
 pub const TEMPLATE_INDEX: &str = "index.html";

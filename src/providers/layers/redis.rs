@@ -1,3 +1,1 @@
-pub struct RedisLayer {
-    
-}
+pub struct RedisLayer {}

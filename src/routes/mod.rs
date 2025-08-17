@@ -1,6 +1,4 @@
-use actix_web::{
-    middleware::NormalizePath, web::{self, ServiceConfig}, App
-};
+use actix_web::web::{self, ServiceConfig};
 use minijinja::Environment;
 
 use crate::{conf::ServerConfig, page::PageSource};
