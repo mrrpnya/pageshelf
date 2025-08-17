@@ -3,7 +3,7 @@ use minijinja::context;
 
 use crate::{
     routes::RouteSharedData,
-    templates::{TEMPLATE_INDEX, template_server_context},
+    templates::TEMPLATE_INDEX,
 };
 
 #[get("/")]
@@ -14,8 +14,14 @@ async fn get_index<'a>(data: web::Data<RouteSharedData<'a>>) -> impl Responder {
             .get_template(TEMPLATE_INDEX)
             .unwrap()
             .render(context! {
-                server => template_server_context()
+                server => data.config.template_server_context()
             })
             .unwrap(),
     )
+}
+
+#[get("/favicon.svg")]
+async fn get_favicon_svg() -> impl Responder {
+    HttpResponse::Ok().content_type("image/svg+xml")
+        .body(include_str!("../../branding/pageshelf_logo.svg"))
 }

@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::templates::TemplateServerContext;
+
 fn default_port() -> u16 {
     8080
 }
@@ -85,4 +87,15 @@ pub struct ServerConfig {
     #[serde(default = "default_security")]
     pub security: ServerConfigSecurity,
     pub upstream: ServerConfigUpstream
+}
+
+impl ServerConfig {
+    pub fn template_server_context(&self) -> TemplateServerContext {
+        TemplateServerContext {
+            name: self.general.name.to_string(),
+            about: self.description.to_string(),
+            home_url: None,
+            icon_url: Some("/favicon.svg".to_string()),
+        }
+    }
 }

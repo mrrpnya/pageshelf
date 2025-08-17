@@ -1,14 +1,16 @@
 # Optional
 [general]
 name = "SMGames Pages" # or whatever else
-home_url = "https://git.smgames.club"
+description = "Page system for SMGames"
+home_url = "https://git.smgames.club/assets/img/favicon.png"
 port = 8080
 
 # Optional
 [ui]
-# Optional
+# Optional: Specifies a directory that contains asset files
+# These files can use Jinga templates
 # Built in files will take priority
-#template_overrides = "./templates"
+#overrides = "./templates"
 
 [upstream]
 # Optional: Defaults to Forgejo

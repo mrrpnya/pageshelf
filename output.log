@@ -2086,3 +2086,1736 @@ default_branch = ""
 [[92mINFO[0m] starting 24 workers
 [[92mINFO[0m] Actix runtime found; starting in Actix runtime
 [[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] force shutdown worker, closing 1 connections
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[92mINFO[0m] shutting down idle worker
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] force shutdown worker, closing 1 connections
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[92mINFO[0m] shutting down idle worker
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] force shutdown worker, closing 1 connections
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] force shutdown worker, closing 1 connections
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] Accessing page a/b (No specified branch)...
+[[37mDEBUG[0m] starting new connection: https://git.smgames.club/
+[[37mDEBUG[0m] resolve; host=git.smgames.club
+[[37mDEBUG[0m] connecting to 172.67.143.90:443
+[[37mDEBUG[0m] connected to 172.67.143.90:443
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[91mERROR[0m] Failed to find Forgejo repository at a/b - 404 Not Found: GetUserByName
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] Accessing page a/b (No specified branch)...
+[[37mDEBUG[0m] starting new connection: https://git.smgames.club/
+[[37mDEBUG[0m] resolve; host=git.smgames.club
+[[37mDEBUG[0m] connecting to 172.67.143.90:443
+[[37mDEBUG[0m] connected to 172.67.143.90:443
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[91mERROR[0m] Failed to find Forgejo repository at a/b - 404 Not Found: GetUserByName
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] Accessing page a/b (No specified branch)...
+[[37mDEBUG[0m] starting new connection: https://git.smgames.club/
+[[37mDEBUG[0m] resolve; host=git.smgames.club
+[[37mDEBUG[0m] connecting to 104.21.95.62:443
+[[37mDEBUG[0m] connected to 104.21.95.62:443
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[91mERROR[0m] Failed to find Forgejo repository at a/b - 404 Not Found: GetUserByName
+[[92mINFO[0m] Accessing page a/b (No specified branch)...
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[91mERROR[0m] Failed to find Forgejo repository at a/b - 404 Not Found: GetUserByName
+[[92mINFO[0m] Accessing page a/b (No specified branch)...
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[91mERROR[0m] Failed to find Forgejo repository at a/b - 404 Not Found: GetUserByName
+[[92mINFO[0m] Accessing page a/b (No specified branch)...
+[[37mDEBUG[0m] starting new connection: https://git.smgames.club/
+[[37mDEBUG[0m] resolve; host=git.smgames.club
+[[37mDEBUG[0m] connecting to 104.21.95.62:443
+[[37mDEBUG[0m] connected to 104.21.95.62:443
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[91mERROR[0m] Failed to find Forgejo repository at a/b - 404 Not Found: GetUserByName
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] Accessing page a/b (No specified branch)...
+[[37mDEBUG[0m] starting new connection: https://git.smgames.club/
+[[37mDEBUG[0m] resolve; host=git.smgames.club
+[[37mDEBUG[0m] connecting to 172.67.143.90:443
+[[37mDEBUG[0m] connected to 172.67.143.90:443
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[91mERROR[0m] Failed to find Forgejo repository at a/b - 404 Not Found: GetUserByName
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] Accessing page a/b (No specified branch)...
+[[37mDEBUG[0m] starting new connection: https://git.smgames.club/
+[[37mDEBUG[0m] resolve; host=git.smgames.club
+[[37mDEBUG[0m] connecting to 104.21.95.62:443
+[[37mDEBUG[0m] connected to 104.21.95.62:443
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[91mERROR[0m] Failed to find Forgejo repository at a/b - 404 Not Found: GetUserByName
+[[92mINFO[0m] Accessing page a/b (No specified branch)...
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[91mERROR[0m] Failed to find Forgejo repository at a/b - 404 Not Found: GetUserByName

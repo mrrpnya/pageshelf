@@ -7,7 +7,7 @@ use crate::{
     PageSource,
     asset::{Asset, AssetPath, AssetQueryable},
     routes::RouteSharedData,
-    templates::{TEMPLATE_404, TemplateErrorContext, TemplatePageContext, template_server_context},
+    templates::{TEMPLATE_404, TemplateErrorContext, TemplatePageContext},
 };
 
 async fn get_page_master<'a>(
@@ -29,7 +29,7 @@ async fn get_page_master<'a>(
             return HttpResponse::with_body(
                 StatusCode::NOT_FOUND,
                 tp.render(context! {
-                    server => template_server_context(),
+                    server => data.config.template_server_context(),
                     page => TemplatePageContext {
                         owner: repo.clone(),
                         repo: owner.clone()

@@ -1,5 +1,12 @@
 {% block body %}
-<div>
-    <img src="" alt="logo"/>
+<div class="color-recessed w-full m-0 padded-md bottom-line">
+    <div class="w-full inline">
+        <a href="/" style="border-bottom: none;">
+            <img class="inline" src="{{ server.icon_url }}" width="32" height="32" style="vertical-align:middle;"/>
+            <h2 class="font-monospace inline" style="vertical-align:middle;">
+                {{ server.name }}
+            </h2>
+        </a>
+    </div>
 </div>
 {% endblock %}

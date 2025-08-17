@@ -35,12 +35,3 @@ pub fn templates_from_builtin<'a>() -> Environment<'a> {
 
     env
 }
-
-pub fn template_server_context() -> TemplateServerContext {
-    TemplateServerContext {
-        name: "Pageshelf".to_string(),
-        about: "An open source Pages server".to_string(),
-        home_url: None,
-        icon_url: Some("https://git.smgames.club/assets/img/favicon.svg".to_string()),
-    }
-}

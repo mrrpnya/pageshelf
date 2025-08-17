@@ -45,7 +45,7 @@ async fn main() -> std::io::Result<()> {
         .author(crate_authors!(","))
         .about(crate_description!())
         .arg(arg!(-c --config <FILE> "Path to a config file").required(false))
-        .arg(arg!(-l --log-level "Sets the logging level").required(false))
+        .arg(arg!(-l --log_level "Sets the logging level").required(false))
         .get_matches();
 
     let _ = setup_logger();
@@ -89,6 +89,7 @@ async fn main() -> std::io::Result<()> {
             .service(routes::pages::get_page_or)
             .service(routes::pages::get_page_orf)
             .service(routes::server::get_index)
+            .service(routes::server::get_favicon_svg)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

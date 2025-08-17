@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 212 212"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="Forgejo_logo.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs4">
+    <inkscape:path-effect
+       effect="powerclip"
+       message=""
+       id="path-effect16"
+       is_visible="true"
+       lpeversion="1"
+       inverse="true"
+       flatten="false"
+       hide_clip="false" />
+    <linearGradient
+       id="swatch15"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#ff00ff;stop-opacity:1;"
+         offset="0"
+         id="stop15" />
+    </linearGradient>
+    <inkscape:path-effect
+       effect="powerclip"
+       message=""
+       id="path-effect8"
+       is_visible="true"
+       lpeversion="1"
+       inverse="true"
+       flatten="false"
+       hide_clip="false" />
+    <filter
+       id="mask-powermask-path-effect15_inverse"
+       inkscape:label="filtermask-powermask-path-effect15"
+       style="color-interpolation-filters:sRGB"
+       height="100"
+       width="100"
+       x="-50"
+       y="-50">
+      <feColorMatrix
+         id="mask-powermask-path-effect15_primitive1"
+         values="1"
+         type="saturate"
+         result="fbSourceGraphic" />
+      <feColorMatrix
+         id="mask-powermask-path-effect15_primitive2"
+         values="-1 0 0 0 1 0 -1 0 0 1 0 0 -1 0 1 0 0 0 1 0 "
+         in="fbSourceGraphic" />
+    </filter>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath16">
+      <rect
+         style="display:none;fill:#ff00ff;fill-opacity:1;stroke:#00b5d4;stroke-width:0;stroke-dasharray:none;stroke-opacity:1"
+         id="rect16"
+         width="33.978592"
+         height="67.59655"
+         x="123.55406"
+         y="75.217361"
+         clip-path="none"
+         d="m 123.55406,75.217361 h 33.97859 v 67.596549 h -33.97859 z" />
+      <path
+         id="lpe_path-effect16"
+         style="display:block;fill:#ff00ff;fill-opacity:1;stroke:#00b5d4;stroke-width:0;stroke-dasharray:none;stroke-opacity:1"
+         class="powerclip"
+         d="m 72.99078,4.8229847 h 80.1912 V 142.01418 h -80.1912 z m 50.56328,70.3943763 v 67.596549 h 33.97859 V 75.217361 Z" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     id="namedview4"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="4"
+     inkscape:cx="130.875"
+     inkscape:cy="103.375"
+     inkscape:window-width="1920"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4" />
+  <metadata
+     id="metadata1">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="https://codeberg.org/forgejo/meta/src/branch/readme/branding#logo">
+        <dc:title>Forgejo logo</dc:title>
+        <cc:creator
+           rdf:resource="https://caesarschinas.com/">
+          <cc:attributionName>Caesar Schinas</cc:attributionName>
+        </cc:creator>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by-sa/4.0/" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <style
+     type="text/css"
+     id="style1">
+    circle {
+      fill: none;
+      stroke: #000;
+      stroke-width: 15;
+    }
+    path {
+      fill: none;
+      stroke: #000;
+      stroke-width: 25;
+    }
+    .orange {
+      stroke:#ff6600;
+    }
+    .red {
+      stroke:#d40000;
+    }
+  </style>
+  <rect
+     style="fill:#00b5d4;fill-opacity:1;stroke:#00b5d4;stroke-width:0.573568;stroke-dasharray:none;stroke-opacity:1"
+     id="rect6"
+     width="47.5714"
+     height="24.429176"
+     x="84.412033"
+     y="81.996109" />
+  <rect
+     style="fill:#00b5d4;fill-opacity:1;stroke:#00b5d4;stroke-width:0.123281;stroke-dasharray:none;stroke-opacity:1"
+     id="rect5"
+     width="24.881168"
+     height="41.151299"
+     x="52.064804"
+     y="39.378052"
+     ry="0" />
+  <rect
+     style="fill:#00b5d4;fill-opacity:1;stroke:#00b5d4;stroke-width:0.134745;stroke-dasharray:none;stroke-opacity:1"
+     id="rect4"
+     width="24.869705"
+     height="49.183174"
+     x="52.070538"
+     y="115.64114"
+     ry="0" />
+  <g
+     transform="translate(6,6)"
+     id="g4" />
+  <path
+     d="M 137.73444,137.01418 V 59.710948 A 42.674039,39.440424 0 0 0 95.060394,20.270524 H 77.99078"
+     class="orange"
+     id="path1"
+     style="stroke:#00b5d4;stroke-opacity:1"
+     transform="translate(6,6)"
+     clip-path="url(#clipPath16)"
+     inkscape:path-effect="#path-effect16"
+     inkscape:original-d="M 137.73444,137.01418 V 59.710948 A 42.674039,39.440424 0 0 0 95.060394,20.270524 H 77.99078" />
+  <circle
+     cx="58"
+     cy="88"
+     r="18"
+     class="red"
+     id="circle3"
+     style="stroke:#00d9ff;stroke-opacity:1;fill:none;fill-opacity:1"
+     transform="translate(6,6)" />
+  <circle
+     cx="58"
+     cy="20"
+     r="18"
+     class="orange"
+     id="circle2"
+     style="stroke:#00d9ff;stroke-opacity:1"
+     transform="translate(6,6)" />
+  <circle
+     cx="58"
+     cy="180"
+     r="18"
+     class="red"
+     id="circle4"
+     style="stroke:#00d9ff;stroke-opacity:1"
+     transform="translate(6,6)" />
+  <circle
+     cx="58"
+     cy="180"
+     r="18"
+     class="red"
+     id="circle8"
+     style="stroke:#00d9ff;stroke-opacity:1"
+     transform="translate(6,6)" />
+  <circle
+     cx="144.75"
+     cy="94"
+     r="18"
+     class="red"
+     id="circle9"
+     style="fill:none;fill-opacity:0;stroke:#00d9ff;stroke-opacity:1" />
+  <ellipse
+     style="fill:#ff0000;fill-opacity:0;stroke:#00b5d4;stroke-width:0;stroke-dasharray:none;stroke-opacity:1"
+     id="path15"
+     cx="144.4375"
+     cy="94.3125"
+     rx="10.1875"
+     ry="12.0625" />
+</svg>
