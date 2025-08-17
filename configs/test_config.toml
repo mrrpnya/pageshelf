@@ -1,0 +1,33 @@
+# Optional
+[general]
+name = "SMGames Pages" # or whatever else
+home_url = "https://git.smgames.club"
+port = 8080
+
+# Optional
+[ui]
+# Optional
+# Built in files will take priority
+#template_overrides = "./templates"
+
+[upstream]
+# Optional: Defaults to Forgejo
+type = "forgejo"
+# Optional: Determines how it should get data from the upstream
+# Leave blank for automatic
+method = "direct"
+# Optional: Identifies where to find the repositories for the pages
+# Defaults to codeberg.org
+url = "https://git.smgames.club"
+# Optional: Specifies what branch should be the default when accessing a page
+# Leave blank for "page"
+default_branch = ""
+# Optional: Specifies what branches are allowed to be shown
+# Leave blank for "page"
+branches = []
+#token = "my-auth-token"
+
+[security]
+#whitelist = { owner = "*", repo = "*" }
+#blacklist = { owner = "*", repo = "*" }
+#disallow-files = "*"

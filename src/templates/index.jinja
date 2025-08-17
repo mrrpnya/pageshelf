@@ -1,0 +1,16 @@
+<style type="text/css">
+    {% include "styles.css" %}
+</style>
+
+{% block body %}
+    <header>
+        {% include "header.html" %}
+    </header>
+    <div class="container align-center text-center" styles="padding-top: 15px">
+        <h1>{{ server.name }}</p1>
+        <h3>{{ server.about }}</p1>
+    </div>
+    <footer>
+        {% include "footer.html" %}
+    </footer>
+{% endblock %}

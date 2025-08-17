@@ -1,0 +1,44 @@
+body {
+    background-color: #171e26;
+}
+
+a, p, h1, h2, h3, h4, h5, h6 {
+    color: white
+}
+
+h1 {
+    font-size: xx-large;
+}
+
+h2 {
+    font-size: x-large;
+}
+
+h3 {
+    font-size: large;
+}
+
+small {
+    font-size: small;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.align-center {
+    margin: auto;
+}
+
+.color-panel-1 {
+    background-color: #242d38;
+}
+
+.color-recessed {
+    background-color: #10161d;
+}
+
+.container {
+    padding: 10px;
+    border-radius: 10px;
+}
