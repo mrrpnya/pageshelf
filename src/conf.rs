@@ -116,7 +116,7 @@ impl ServerConfig {
             home_url: None,
             icon_url: Some("/favicon.svg".to_string()),
             default_branch: self.upstream.default_branch.clone(),
-            version: crate_version!()
+            version: crate_version!(),
         }
     }
 }

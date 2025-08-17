@@ -1,12 +1,12 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, str::FromStr};
 
 use crate::{
     asset::{Asset, AssetError, AssetPath, AssetQueryable},
-    page::{Page, PageError, PageSource},
+    page::{Page, PageError, PageSource, PageSourceConfigurator},
     storage::forgejo_direct::ForgejoDirectReadStorage,
 };
-use forgejo_api::{Forgejo, structs::RepoSearchQuery};
-use log::{error, warn};
+use forgejo_api::{Auth, Forgejo, structs::RepoSearchQuery};
+use log::{error, info, warn};
 
 enum Strategy {
     Direct,
@@ -86,11 +86,14 @@ impl PageSource for ForgejoProvider {
         match &self.branches {
             Some(v) => {
                 if !v.iter().any(|f| f == channel) {
-                    warn!("Failed to access a Forgejo page: The branch {} is not in the list of accepted branches", channel);
+                    warn!(
+                        "Failed to access a Forgejo page: The branch {} is not in the list of accepted branches",
+                        channel
+                    );
                     warn!("Accepted branches are [{}]", v.join(", "));
-                    return Err(PageError::NotFound)
+                    return Err(PageError::NotFound);
                 }
-            },
+            }
             None => {}
         }
 
@@ -211,5 +214,20 @@ impl PageSource for ForgejoProvider {
         }
 
         Ok(pages.into_iter())
+    }
+}
+
+impl PageSourceConfigurator for ForgejoProvider {
+    type Source = ForgejoProvider;
+
+    fn configure(config: &crate::conf::ServerConfig) -> Self::Source {
+        ForgejoProvider::direct(
+            Forgejo::new(
+                Auth::None,
+                url::Url::from_str(&config.upstream.url).unwrap(),
+            )
+            .unwrap(),
+            Some(config.upstream.branches.clone()),
+        )
     }
 }

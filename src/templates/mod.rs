@@ -15,7 +15,7 @@ pub struct TemplateServerContext {
     pub home_url: Option<String>,
     pub icon_url: Option<String>,
     pub default_branch: String,
-    pub version: &'static str
+    pub version: &'static str,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -34,7 +34,7 @@ fn checked_add_template<'a>(env: &mut Environment<'a>, entry: &'a str, data: &'a
     match env.add_template(entry, data) {
         Ok(_) => {
             info!("Added template {}", entry)
-        },
+        }
         Err(e) => {
             error!("Error adding template for \"{}\": {}", entry, e)
         }

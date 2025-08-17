@@ -1,10 +1,11 @@
 use actix_web::{HttpResponse, Responder, get, http::StatusCode, web};
 use minijinja::context;
 
-use crate::{routes::RouteSharedData, templates::TEMPLATE_INDEX};
+use crate::{page::PageSource, routes::RouteSharedData, templates::TEMPLATE_INDEX};
 
-#[get("/")]
-async fn get_index<'a>(data: web::Data<RouteSharedData<'a>>) -> impl Responder {
+pub async fn get_index<'a, PS: PageSource>(
+    data: web::Data<RouteSharedData<'a, PS>>,
+) -> impl Responder {
     HttpResponse::with_body(
         StatusCode::OK,
         data.jinja

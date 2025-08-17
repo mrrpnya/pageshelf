@@ -12,13 +12,13 @@ use crate::{
     templates::{TEMPLATE_404, TemplateErrorContext, TemplatePageContext},
 };
 
-async fn get_page_master<'a>(
-    data: web::Data<RouteSharedData<'a>>,
+pub async fn get_page_master<'a, PS: PageSource>(
+    data: web::Data<RouteSharedData<'a, PS>>,
     owner: String,
     repo: String,
     channel: Option<&str>,
     file: String,
-) -> impl Responder + use<> {
+) -> impl Responder + use<PS> {
     match channel {
         Some(v) => info!("Accessing page {}/{} (Branch \"{}\")...", owner, repo, v),
         None => info!("Accessing page {}/{} (No specified branch)...", owner, repo),
@@ -26,14 +26,10 @@ async fn get_page_master<'a>(
 
     let branch = match channel {
         Some(v) => v,
-        None => &data.config.upstream.default_branch
+        None => &data.config.upstream.default_branch,
     };
 
-    let page = match data
-        .provider
-        .page_at(&owner, &repo, &branch)
-        .await
-    {
+    let page = match data.provider.page_at(&owner, &repo, &branch).await {
         Ok(v) => v,
         Err(e) => {
             let tp = data.jinja.get_template(TEMPLATE_404).unwrap();
@@ -75,9 +71,7 @@ async fn get_page_master<'a>(
                 "Error getting asset {} from {}/{}: {:?}",
                 file, owner, repo, e
             );
-            return HttpResponse::NotFound().body(
-                format!("Error getting asset: {:?}", e),
-            );
+            return HttpResponse::NotFound().body(format!("Error getting asset: {:?}", e));
         }
     };
 
@@ -87,23 +81,25 @@ async fn get_page_master<'a>(
     );
 
     let guesses = mime_guess::from_path(file);
-    HttpResponse::Ok().content_type(guesses.first_or(Mime::from_str("application/octet-stream").unwrap())).body(asset.body())
+    HttpResponse::Ok()
+        .content_type(guesses.first_or(Mime::from_str("application/octet-stream").unwrap()))
+        .body(asset.body())
 }
 
-#[get("/{owner}/{repo}/{file:.*}")]
-async fn get_page_orf<'a>(
+//#[get("/{owner}/{repo}/{file:.*}")]
+pub async fn get_page_orf<'a, PS: PageSource>(
     path: web::Path<(String, String, String)>,
-    data: web::Data<RouteSharedData<'a>>,
+    data: web::Data<RouteSharedData<'a, PS>>,
 ) -> impl Responder {
     let (owner, repo, file) = path.into_inner();
 
     get_page_master(data, owner, repo, None, file).await
 }
 
-#[get("/{owner}/{repo}:{branch}/{file:.*}")]
-async fn get_page_orbf<'a>(
+//#[get("/{owner}/{repo}:{branch}/{file:.*}")]
+pub async fn get_page_orbf<'a, PS: PageSource>(
     path: web::Path<(String, String, String, String)>,
-    data: web::Data<RouteSharedData<'a>>,
+    data: web::Data<RouteSharedData<'a, PS>>,
 ) -> impl Responder {
     let (owner, repo, branch, file) = path.into_inner();
 
@@ -112,20 +108,20 @@ async fn get_page_orbf<'a>(
     get_page_master(data, owner, repo, Some(&branch), file).await
 }
 
-#[get("/{owner}/{repo}")]
-async fn get_page_or<'a>(
+//#[get("/{owner}/{repo}")]
+pub async fn get_page_or<'a, PS: PageSource>(
     path: web::Path<(String, String)>,
-    data: web::Data<RouteSharedData<'a>>,
+    data: web::Data<RouteSharedData<'a, PS>>,
 ) -> impl Responder {
     let (owner, repo) = path.into_inner();
 
     get_page_master(data, owner, repo, None, "index.html".to_string()).await
 }
 
-#[get("/{owner}/{repo}:{branch}")]
-async fn get_page_orb<'a>(
+//#[get("/{owner}/{repo}:{branch}")]
+pub async fn get_page_orb<'a, PS: PageSource>(
     path: web::Path<(String, String, String)>,
-    data: web::Data<RouteSharedData<'a>>,
+    data: web::Data<RouteSharedData<'a, PS>>,
 ) -> impl Responder {
     let (owner, repo, branch) = path.into_inner();
 

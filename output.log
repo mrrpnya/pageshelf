@@ -9514,3 +9514,321 @@ default_branch = ""
 [[92mINFO[0m] Accessing page mrrp/pages (Branch "main")...
 [[93mWARN[0m] Failed to access a Forgejo page: The branch main is not in the list of accepted branches
 [[93mWARN[0m] Accepted branches are [pages]
+[[92mINFO[0m] Accessing page mrrp/test (No specified branch)...
+[[37mDEBUG[0m] starting new connection: https://git.smgames.club/
+[[37mDEBUG[0m] resolve; host=git.smgames.club
+[[37mDEBUG[0m] connecting to 104.21.95.62:443
+[[37mDEBUG[0m] connected to 104.21.95.62:443
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieving asset _nuxt/builds/latest.json from page mrrp/test (No specified branch)...
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieved asset mrrp/test/_nuxt/builds/latest.json - Sending in response
+[[92mINFO[0m] Accessing page mrrp/test (No specified branch)...
+[[37mDEBUG[0m] starting new connection: https://git.smgames.club/
+[[37mDEBUG[0m] resolve; host=git.smgames.club
+[[37mDEBUG[0m] connecting to 104.21.95.62:443
+[[37mDEBUG[0m] connected to 104.21.95.62:443
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieving asset _nuxt/builds/latest.json from page mrrp/test (No specified branch)...
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieved asset mrrp/test/_nuxt/builds/latest.json - Sending in response
+[[92mINFO[0m] Added template 404.html
+[[92mINFO[0m] Added template index.html
+[[92mINFO[0m] Added template footer.html
+[[92mINFO[0m] Added template styles.css
+[[92mINFO[0m] Added template header.html
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] Added template 404.html
+[[92mINFO[0m] Added template index.html
+[[92mINFO[0m] Added template footer.html
+[[92mINFO[0m] Added template styles.css
+[[92mINFO[0m] Added template header.html
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] Added template 404.html
+[[92mINFO[0m] Added template index.html
+[[92mINFO[0m] Added template footer.html
+[[92mINFO[0m] Added template styles.css
+[[92mINFO[0m] Added template header.html
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] Added template 404.html
+[[92mINFO[0m] Added template index.html
+[[92mINFO[0m] Added template footer.html
+[[92mINFO[0m] Added template styles.css
+[[92mINFO[0m] Added template header.html
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] Accessing page mrrp/pages (No specified branch)...
+[[37mDEBUG[0m] starting new connection: https://git.smgames.club/
+[[37mDEBUG[0m] resolve; host=git.smgames.club
+[[37mDEBUG[0m] connecting to 104.21.95.62:443
+[[37mDEBUG[0m] connected to 104.21.95.62:443
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieving asset index.html from page mrrp/pages (No specified branch)...
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieved asset mrrp/pages/index.html - Sending in response
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] Added template 404.html
+[[92mINFO[0m] Added template index.html
+[[92mINFO[0m] Added template footer.html
+[[92mINFO[0m] Added template styles.css
+[[92mINFO[0m] Added template header.html
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] Accessing page a/b (No specified branch)...
+[[37mDEBUG[0m] starting new connection: https://git.smgames.club/
+[[37mDEBUG[0m] resolve; host=git.smgames.club
+[[37mDEBUG[0m] connecting to 172.67.143.90:443
+[[37mDEBUG[0m] connected to 172.67.143.90:443
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[91mERROR[0m] Failed to find Forgejo repository at a/b - 404 Not Found: GetUserByName
+[[92mINFO[0m] Accessing page mrrp/pages (No specified branch)...
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieving asset index.html from page mrrp/pages (No specified branch)...
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieved asset mrrp/pages/index.html - Sending in response
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] Added template 404.html
+[[92mINFO[0m] Added template index.html
+[[92mINFO[0m] Added template footer.html
+[[92mINFO[0m] Added template styles.css
+[[92mINFO[0m] Added template header.html
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] Configuring Forgejo provider...
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] Added template 404.html
+[[92mINFO[0m] Added template index.html
+[[92mINFO[0m] Added template footer.html
+[[92mINFO[0m] Added template styles.css
+[[92mINFO[0m] Added template header.html
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] SIGINT received; starting forced shutdown
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[37mDEBUG[0m] paused accepting connections on 127.0.0.1:8080
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] accept thread stopped
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] shutting down idle worker
+[[92mINFO[0m] Added template 404.html
+[[92mINFO[0m] Added template index.html
+[[92mINFO[0m] Added template footer.html
+[[92mINFO[0m] Added template styles.css
+[[92mINFO[0m] Added template header.html
+[[92mINFO[0m] starting 24 workers
+[[92mINFO[0m] Actix runtime found; starting in Actix runtime
+[[92mINFO[0m] starting service: "actix-web-service-127.0.0.1:8080", workers: 24, listening on: 127.0.0.1:8080
+[[92mINFO[0m] Accessing page mrrp/pages (No specified branch)...
+[[37mDEBUG[0m] starting new connection: https://git.smgames.club/
+[[37mDEBUG[0m] resolve; host=git.smgames.club
+[[37mDEBUG[0m] connecting to 104.21.95.62:443
+[[37mDEBUG[0m] connected to 104.21.95.62:443
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieving asset index.html from page mrrp/pages (No specified branch)...
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieved asset mrrp/pages/index.html - Sending in response
+[[92mINFO[0m] Accessing page mrrp/pages (No specified branch)...
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieving asset index.html from page mrrp/pages (No specified branch)...
+[[37mDEBUG[0m] reuse idle connection for ("https", git.smgames.club)
+[[37mDEBUG[0m] pooling idle connection for ("https", git.smgames.club)
+[[92mINFO[0m] Retrieved asset mrrp/pages/index.html - Sending in response

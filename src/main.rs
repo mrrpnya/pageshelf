@@ -1,13 +1,15 @@
 use std::str::FromStr;
 
-use actix_web::{middleware, web, App, HttpServer, Result};
+use actix_web::{middleware::NormalizePath, web, App, HttpServer, Result};
 use clap::Command;
 use config::{Config, File};
 use fern::colors::{Color, ColoredLevelConfig};
 use forgejo_api::{Auth, Forgejo};
+use minijinja::Environment;
 use pageshelf::{
     conf::ServerConfig,
-    providers::{ProviderType, forgejo::ForgejoProvider},
+    page::{PageSource, PageSourceConfigurator},
+    providers::forgejo::ForgejoProvider,
     routes::{self, RouteSharedData},
     templates::templates_from_builtin,
 };
@@ -33,11 +35,33 @@ fn setup_logger() -> Result<(), fern::InitError> {
 }
 
 use clap::{arg, crate_authors, crate_description, crate_name, crate_version};
-use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-struct ServerJinjaContext {
-    name: String,
+async fn run_server<'a, PS: PageSourceConfigurator + Sync + Send>(
+    port: u16,
+    config: ServerConfig,
+    templates: Environment<'static>,
+) -> std::io::Result<()>
+where
+    <PS as PageSourceConfigurator>::Source: 'static,
+{
+    HttpServer::new(move || {
+        let pages = config.upstream.branches.clone();
+        let config = config.clone();
+        App::new()
+            .wrap(NormalizePath::trim())
+            .app_data(web::Data::new(RouteSharedData {
+                provider: PS::configure(&config),
+                jinja: templates.clone(),
+                config: config,
+            }))
+            //.wrap(middleware::NormalizePath::trim())
+            .configure(|f| {
+                routes::register_to_service_config::<ForgejoProvider>(f);
+            })
+    })
+    .bind(("127.0.0.1", port))?
+    .run()
+    .await
 }
 
 #[actix_web::main]
@@ -75,31 +99,5 @@ async fn main() -> std::io::Result<()> {
 
     let port = config.general.port.clone();
 
-    HttpServer::new(move || {
-        let pages = config.upstream.branches.clone();
-
-        let forgejo = Forgejo::new(
-            Auth::None,
-            url::Url::from_str(&config.upstream.url).unwrap(),
-        )
-        .unwrap();
-
-        App::new()
-            .app_data(web::Data::new(RouteSharedData {
-                provider: ProviderType::Forgejo(ForgejoProvider::direct(forgejo, Some(pages))),
-                jinja: templates.clone(),
-                config: config.clone(),
-            }))
-            //.wrap(middleware::NormalizePath::trim())
-            
-            .service(routes::pages::get_page_orb)
-            .service(routes::pages::get_page_or)
-            .service(routes::pages::get_page_orbf)
-            .service(routes::pages::get_page_orf)
-            .service(routes::server::get_index)
-            .service(routes::server::get_favicon_svg)
-    })
-    .bind(("127.0.0.1", port))?
-    .run()
-    .await
+    run_server::<ForgejoProvider>(port, config, templates).await
 }

@@ -1,4 +1,4 @@
-use crate::asset::AssetQueryable;
+use crate::{asset::AssetQueryable, conf::ServerConfig};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum PageError {
@@ -16,4 +16,10 @@ pub trait PageSource {
     async fn page_at(&self, owner: &str, name: &str, channel: &str)
     -> Result<impl Page, PageError>;
     async fn pages(&self) -> Result<impl Iterator<Item = impl Page>, PageError>;
+}
+
+pub trait PageSourceConfigurator {
+    type Source: PageSource;
+
+    fn configure(config: &ServerConfig) -> Self::Source;
 }
