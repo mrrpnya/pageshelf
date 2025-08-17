@@ -23,10 +23,10 @@ method = "direct"
 url = "https://git.smgames.club"
 # Optional: Specifies what branch should be the default when accessing a page
 # Leave blank for "page"
-default_branch = ""
+default_branch = "pages"
 # Optional: Specifies what branches are allowed to be shown
-# Leave blank for "page"
-branches = []
+# If not specified, any branch will be accepted
+branches = ["pages"]
 #token = "my-auth-token"
 
 [security]

@@ -1,3 +1,4 @@
+use clap::crate_version;
 use serde::{Deserialize, Serialize};
 
 use crate::templates::TemplateServerContext;
@@ -22,19 +23,23 @@ fn default_branch() -> String {
     "pages".to_string()
 }
 
+fn default_branches_allowed() -> Vec<String> {
+    vec!["pages".to_string()]
+}
+
 fn default_general() -> ServerConfigGeneral {
-    ServerConfigGeneral { 
-        name: default_name(), 
+    ServerConfigGeneral {
+        name: default_name(),
         description: default_description(),
-        home_url: None, 
-        port: default_port()
+        home_url: None,
+        port: default_port(),
     }
 }
 
 fn default_security() -> ServerConfigSecurity {
     ServerConfigSecurity {
         whitelist: None,
-        blacklist: None
+        blacklist: None,
     }
 }
 
@@ -46,13 +51,13 @@ pub struct ServerConfigGeneral {
     pub description: String,
     home_url: Option<String>,
     #[serde(default = "default_port")]
-    pub port: u16
+    pub port: u16,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ServerConfigUpstreamType {
     #[serde(rename = "forgejo")]
-    Forgejo
+    Forgejo,
 }
 
 impl Default for ServerConfigUpstreamType {
@@ -64,7 +69,7 @@ impl Default for ServerConfigUpstreamType {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ServerConfigUpstreamMethod {
     #[serde(rename = "direct")]
-    Direct
+    Direct,
 }
 
 impl Default for ServerConfigUpstreamMethod {
@@ -83,13 +88,15 @@ pub struct ServerConfigUpstream {
     pub url: String,
     #[serde(default = "default_branch")]
     pub default_branch: String,
-    pub token: Option<String>
+    #[serde(default = "default_branches_allowed")]
+    pub branches: Vec<String>,
+    pub token: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct ServerConfigSecurity {
     pub whitelist: Option<String>,
-    pub blacklist: Option<String>
+    pub blacklist: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -98,7 +105,7 @@ pub struct ServerConfig {
     pub general: ServerConfigGeneral,
     #[serde(default = "default_security")]
     pub security: ServerConfigSecurity,
-    pub upstream: ServerConfigUpstream
+    pub upstream: ServerConfigUpstream,
 }
 
 impl ServerConfig {
@@ -108,6 +115,8 @@ impl ServerConfig {
             about: self.general.description.to_string(),
             home_url: None,
             icon_url: Some("/favicon.svg".to_string()),
+            default_branch: self.upstream.default_branch.clone(),
+            version: crate_version!()
         }
     }
 }

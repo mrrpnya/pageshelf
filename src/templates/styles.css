@@ -5,7 +5,9 @@ body, html {
 }
 
 a, p, h1, h2, h3, h4, h5, h6 {
-    color: white
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 400;
 }
 
 a {
@@ -53,17 +55,42 @@ small {
     width: 100%;
 }
 
+.bold {
+    font-weight: bold;
+}
+
+.bolder {
+    font-weight: bolder;
+}
+
+.italic {
+    font-style: italic;
+}
+
 .container {
     padding: 10px;
     border-radius: 10px;
+}
+
+.box-shadow {
+    box-shadow: 6px 6px rgba(0, 0, 0, 0.2);
 }
 
 .font-monospace {
     font-family: 'Courier New', Courier, monospace;
 }
 
+
+.top-line {
+    border-top: 1px solid turquoise;
+}
+
 .bottom-line {
     border-bottom: 1px solid turquoise;
+}
+
+.padded-sm {
+    padding: 5px;
 }
 
 .padded-md {
@@ -72,4 +99,24 @@ small {
 
 .inline {
     display: inline;
+}
+
+.block {
+    display: block;
+}
+
+.table {
+    display: table;
+}
+
+.flex {
+    display: flex;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.float-left {
+    float: left;
 }

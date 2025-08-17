@@ -1,3 +1,12 @@
-<div>
-
+{% block body %}
+<div class="color-recessed w-full m-0 padded-sm" style="position: fixed; bottom: 0;">
+    <div class="w-full inline">
+        <a href="/" style="border-bottom: none;">
+            <p class="inline">
+                <span class="bolder font-monospace">Powered by Pageshelf</span>
+                v{{ server.version }}
+            </p>
+        </a>
+    </div>
 </div>
+{% endblock %}

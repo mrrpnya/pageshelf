@@ -1,15 +1,12 @@
 use std::marker::PhantomData;
 
 use crate::{
-    Page, PageError, PageSource,
     asset::{Asset, AssetError, AssetPath, AssetQueryable},
-    storage::{forgejo_direct::ForgejoDirectReadStorage, memory::MemoryAsset},
+    page::{Page, PageError, PageSource},
+    storage::forgejo_direct::ForgejoDirectReadStorage,
 };
-use forgejo_api::{
-    Forgejo,
-    structs::RepoSearchQuery,
-};
-use log::error;
+use forgejo_api::{Forgejo, structs::RepoSearchQuery};
+use log::{error, warn};
 
 enum Strategy {
     Direct,
@@ -86,6 +83,17 @@ impl PageSource for ForgejoProvider {
         name: &str,
         channel: &str,
     ) -> Result<impl Page, PageError> {
+        match &self.branches {
+            Some(v) => {
+                if !v.iter().any(|f| f == channel) {
+                    warn!("Failed to access a Forgejo page: The branch {} is not in the list of accepted branches", channel);
+                    warn!("Accepted branches are [{}]", v.join(", "));
+                    return Err(PageError::NotFound)
+                }
+            },
+            None => {}
+        }
+
         match self.forgejo.repo_get(owner, name).await {
             Ok(v) => {
                 // Verify that channel exists

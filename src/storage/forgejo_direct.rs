@@ -1,4 +1,3 @@
-
 use forgejo_api::{Forgejo, structs::RepoGetRawFileQuery};
 use log::{error, warn};
 

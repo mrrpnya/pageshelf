@@ -1,11 +1,13 @@
+use std::str::FromStr;
 
 use actix_web::{HttpResponse, Responder, get, http::StatusCode, web};
 use log::{error, info};
+use mime_guess::Mime;
 use minijinja::context;
 
 use crate::{
-    PageSource,
     asset::{Asset, AssetPath, AssetQueryable},
+    page::PageSource,
     routes::RouteSharedData,
     templates::{TEMPLATE_404, TemplateErrorContext, TemplatePageContext},
 };
@@ -22,12 +24,20 @@ async fn get_page_master<'a>(
         None => info!("Accessing page {}/{} (No specified branch)...", owner, repo),
     }
 
-    let page = match data.provider.page_at(&owner, &repo, &data.config.upstream.default_branch).await {
+    let branch = match channel {
+        Some(v) => v,
+        None => &data.config.upstream.default_branch
+    };
+
+    let page = match data
+        .provider
+        .page_at(&owner, &repo, &branch)
+        .await
+    {
         Ok(v) => v,
         Err(e) => {
             let tp = data.jinja.get_template(TEMPLATE_404).unwrap();
-            return HttpResponse::with_body(
-                StatusCode::NOT_FOUND,
+            return HttpResponse::NotFound().body(
                 tp.render(context! {
                     server => data.config.template_server_context(),
                     page => TemplatePageContext {
@@ -65,8 +75,7 @@ async fn get_page_master<'a>(
                 "Error getting asset {} from {}/{}: {:?}",
                 file, owner, repo, e
             );
-            return HttpResponse::with_body(
-                StatusCode::NOT_FOUND,
+            return HttpResponse::NotFound().body(
                 format!("Error getting asset: {:?}", e),
             );
         }
@@ -77,10 +86,11 @@ async fn get_page_master<'a>(
         owner, repo, file
     );
 
-    HttpResponse::with_body(StatusCode::OK, asset.body())
+    let guesses = mime_guess::from_path(file);
+    HttpResponse::Ok().content_type(guesses.first_or(Mime::from_str("application/octet-stream").unwrap())).body(asset.body())
 }
 
-#[get("/{owner}/{repo}/{file}")]
+#[get("/{owner}/{repo}/{file:.*}")]
 async fn get_page_orf<'a>(
     path: web::Path<(String, String, String)>,
     data: web::Data<RouteSharedData<'a>>,
@@ -90,7 +100,7 @@ async fn get_page_orf<'a>(
     get_page_master(data, owner, repo, None, file).await
 }
 
-#[get("/{owner}/{repo}:{branch}/{file}")]
+#[get("/{owner}/{repo}:{branch}/{file:.*}")]
 async fn get_page_orbf<'a>(
     path: web::Path<(String, String, String, String)>,
     data: web::Data<RouteSharedData<'a>>,
@@ -110,4 +120,16 @@ async fn get_page_or<'a>(
     let (owner, repo) = path.into_inner();
 
     get_page_master(data, owner, repo, None, "index.html".to_string()).await
+}
+
+#[get("/{owner}/{repo}:{branch}")]
+async fn get_page_orb<'a>(
+    path: web::Path<(String, String, String)>,
+    data: web::Data<RouteSharedData<'a>>,
+) -> impl Responder {
+    let (owner, repo, branch) = path.into_inner();
+
+    let branch = branch.clone();
+
+    get_page_master(data, owner, repo, Some(&branch), "index.html".to_string()).await
 }

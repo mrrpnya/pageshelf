@@ -16,7 +16,9 @@ impl MemoryAsset {
 
 impl Asset for MemoryAsset {
     fn body(&self) -> String {
-        String::from_utf8(self.contents.clone()).unwrap()
+        unsafe {
+            String::from_utf8_unchecked(self.contents.clone())
+        }
     }
 
     fn bytes(&self) -> impl Iterator<Item = u8> {

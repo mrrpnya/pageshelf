@@ -1,13 +1,15 @@
 use std::str::FromStr;
 
-use actix_web::{App, HttpServer, Result, web};
+use actix_web::{middleware, web, App, HttpServer, Result};
 use clap::Command;
 use config::{Config, File};
 use fern::colors::{Color, ColoredLevelConfig};
 use forgejo_api::{Auth, Forgejo};
-use log::info;
 use pageshelf::{
-    conf::ServerConfig, providers::forgejo::ForgejoProvider, routes::{self, RouteSharedData}, templates::templates_from_builtin
+    conf::ServerConfig,
+    providers::{ProviderType, forgejo::ForgejoProvider},
+    routes::{self, RouteSharedData},
+    templates::templates_from_builtin,
 };
 
 fn setup_logger() -> Result<(), fern::InitError> {
@@ -31,7 +33,7 @@ fn setup_logger() -> Result<(), fern::InitError> {
 }
 
 use clap::{arg, crate_authors, crate_description, crate_name, crate_version};
-use serde::{ser::SerializeStruct, Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 struct ServerJinjaContext {
@@ -45,7 +47,7 @@ async fn main() -> std::io::Result<()> {
         .author(crate_authors!(","))
         .about(crate_description!())
         .arg(arg!(-c --config <FILE> "Path to a config file").required(false))
-        .arg(arg!(-l --log_level "Sets the logging level").required(false))
+        //.arg(arg!(-l --log_level "Sets the logging level").required(false))
         .get_matches();
 
     let _ = setup_logger();
@@ -53,23 +55,28 @@ async fn main() -> std::io::Result<()> {
     let mut settings_builder = Config::builder()
         // Add in settings from the environment (with a prefix of APP)
         // Eg.. `APP_DEBUG=1 ./target/app` would set the `debug` key
-        .add_source(config::Environment::with_prefix("PAGE"));
+        .add_source(config::Environment::with_prefix("page").separator("_"));
 
     match cmd.get_one::<String>("config") {
-        Some(v) => {settings_builder = settings_builder.add_source(File::with_name(v));},
+        Some(v) => {
+            settings_builder = settings_builder.add_source(File::with_name(v));
+        }
         None => {}
     }
-    
-    let settings = settings_builder.build()
-        .unwrap();
+
+    let settings = settings_builder.build().unwrap();
 
     let config = match settings.try_deserialize::<ServerConfig>() {
         Ok(v) => v,
         Err(e) => panic!("Failed to deserialize server configuration: {}", e),
     };
 
+    let templates = templates_from_builtin();
+
+    let port = config.general.port.clone();
+
     HttpServer::new(move || {
-        let pages = vec!["pages".to_string()];
+        let pages = config.upstream.branches.clone();
 
         let forgejo = Forgejo::new(
             Auth::None,
@@ -79,19 +86,20 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .app_data(web::Data::new(RouteSharedData {
-                provider: routes::UpstreamProviderType::Forgejo(ForgejoProvider::direct(
-                    forgejo,
-                    Some(pages),
-                )),
-                jinja: templates_from_builtin(),
-                config: config.clone()
+                provider: ProviderType::Forgejo(ForgejoProvider::direct(forgejo, Some(pages))),
+                jinja: templates.clone(),
+                config: config.clone(),
             }))
+            //.wrap(middleware::NormalizePath::trim())
+            
+            .service(routes::pages::get_page_orb)
             .service(routes::pages::get_page_or)
+            .service(routes::pages::get_page_orbf)
             .service(routes::pages::get_page_orf)
             .service(routes::server::get_index)
             .service(routes::server::get_favicon_svg)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("127.0.0.1", port))?
     .run()
     .await
 }

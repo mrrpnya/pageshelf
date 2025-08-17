@@ -1,10 +1,7 @@
 use actix_web::{HttpResponse, Responder, get, http::StatusCode, web};
 use minijinja::context;
 
-use crate::{
-    routes::RouteSharedData,
-    templates::TEMPLATE_INDEX,
-};
+use crate::{routes::RouteSharedData, templates::TEMPLATE_INDEX};
 
 #[get("/")]
 async fn get_index<'a>(data: web::Data<RouteSharedData<'a>>) -> impl Responder {
@@ -22,6 +19,7 @@ async fn get_index<'a>(data: web::Data<RouteSharedData<'a>>) -> impl Responder {
 
 #[get("/favicon.svg")]
 async fn get_favicon_svg() -> impl Responder {
-    HttpResponse::Ok().content_type("image/svg+xml")
+    HttpResponse::Ok()
+        .content_type("image/svg+xml")
         .body(include_str!("../../branding/pageshelf_logo.svg"))
 }

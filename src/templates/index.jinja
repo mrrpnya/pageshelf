@@ -10,8 +10,25 @@
         {% include "header.html" %}
     </header>
     <div class="container align-center text-center" style="padding-top: 32px;">
-        <h1 class="font-monospace">{{ server.name }}</p1>
+        <h1 class="font-monospace bold">{{ server.name }}</p1>
         <h3>{{ server.about }}</p1>
+    </div>
+    <div class="w-full justify-center flex">
+            <div class="container color-panel-1 box-shadow float-left inline text-center" style="width: 300px; margin: 30px; height: 250px">
+            <h3 class="font-monospace italic bold">How to Start</h3>
+            <p>Simply create a <span class="font-monospace bold">{{ server.default_branch }}</span> branch on your repository - It's that easy!</p>
+            <p>If enabled, you're also able to host through other branches as well.</p>
+        </div>
+        <div class="container color-panel-1 box-shadow float-left text-center" style="width: 300px; margin: 30px; height: 250px">
+            <h3 class="font-monospace italic bold">Made in Rust</h3>
+            <p>Pageshelf, which runs {{ server.name }}, is implemented in Rust.
+            <p>This enables speed without compromising on security.</p>
+        </div>
+        <div class="container color-panel-1 box-shadow float-left inline text-center" style="width: 300px; margin: 30px; height: 250px">
+            <h3 class="font-monospace italic bold">Open Source and Customizable</h3>
+            <p>Pageshelf, which runs {{ server.name }}, under the terms of the MIT License and built with free libraries.</p>
+            <p>You are also able to customize various parts of Pageshelf.</p>
+        </div>
     </div>
     <footer>
         {% include "footer.html" %}
