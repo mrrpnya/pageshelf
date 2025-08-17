@@ -33,6 +33,3 @@ branches = ["pages"]
 #whitelist = { owner = "*", repo = "*" }
 #blacklist = { owner = "*", repo = "*" }
 #disallow-files = "*"
-
-[redis]
-enable = false
