@@ -1,5 +1,4 @@
 /// Utilities for handling [MiniJinja](https://docs.rs/minijinja/latest/minijinja/) templates.
-
 use log::{error, info};
 use minijinja::Environment;
 use serde::{Deserialize, Serialize};

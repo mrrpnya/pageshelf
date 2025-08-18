@@ -1,7 +1,10 @@
 use actix_web::web::{self, ServiceConfig};
 use minijinja::Environment;
 
-use crate::{conf::ServerConfig, page::{PageSource, PageSourceFactory}};
+use crate::{
+    conf::ServerConfig,
+    page::{PageSource, PageSourceFactory},
+};
 
 pub mod pages;
 pub mod server;
@@ -52,7 +55,7 @@ pub fn setup_service_config<'a, PS: PageSourceFactory + Sync + Send + 'static>(
         provider: page_factory.build().unwrap(),
         jinja: match templates {
             Some(v) => v.clone(),
-            None => crate::templates::templates_from_builtin()
+            None => crate::templates::templates_from_builtin(),
         },
         config,
     }));

@@ -5,5 +5,10 @@
         "Forgejo",
         "minijinja",
         "pageshelf"
+    ],
+    "rust-analyzer.checkOnSave": true,
+    "rust-analyzer.check.extraArgs": [
+        "--target-dir",
+        "${workspaceFolder}/target/check"
     ]
 }

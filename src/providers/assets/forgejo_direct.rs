@@ -1,10 +1,11 @@
+use std::path::Path;
+
 /// Utilities for sourcing pages from Forgejo directly.
 /// This is lazy-loaded.
-
 use forgejo_api::{Forgejo, structs::RepoGetRawFileQuery};
-use log::{error, warn};
+use log::{error, info, warn};
 
-use crate::asset::{Asset, AssetError, AssetPath, AssetQueryable};
+use crate::asset::{Asset, AssetError, AssetQueryable};
 
 use super::memory::MemoryAsset;
 
@@ -55,14 +56,15 @@ impl<'a> ForgejoDirectReadStorage<'a> {
 }
 
 impl<'a> AssetQueryable for ForgejoDirectReadStorage<'a> {
-    async fn asset_at(&self, path: &AssetPath) -> Result<impl Asset, AssetError> {
-        let p = path.to_string();
+    async fn asset_at(&self, path: &Path) -> Result<impl Asset, AssetError> {
+        let p = path.to_string_lossy();
+        info!("Fetching Forgejo raw data at {}", p);
         match self
             .forgejo
             .repo_get_raw_file(
                 self.owner.as_str(),
                 self.repo.as_str(),
-                p.as_str(),
+                &p,
                 RepoGetRawFileQuery {
                     r#ref: Some(self.branch.clone()),
                 },
@@ -73,7 +75,7 @@ impl<'a> AssetQueryable for ForgejoDirectReadStorage<'a> {
             Err(e) => {
                 error!(
                     "Failed to find (raw) data file {} in Forgejo repository {}/{}:{} - {}",
-                    path.to_string(),
+                    path.to_string_lossy(),
                     self.owner,
                     self.repo,
                     self.branch,

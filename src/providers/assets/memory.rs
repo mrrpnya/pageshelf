@@ -1,9 +1,13 @@
 /// In-memory implementation of an
 /// It will simply show pages that are stored in memory inside it.
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
-use std::collections::HashMap;
+use log::info;
 
-use crate::asset::{Asset, AssetError, AssetPath, AssetQueryable, AssetWritable};
+use crate::asset::{Asset, AssetError, AssetQueryable, AssetWritable};
 
 #[derive(Clone)]
 pub struct MemoryAsset {
@@ -20,6 +24,12 @@ impl MemoryAsset {
     pub fn from_str(data: &str) -> Self {
         Self {
             contents: data.as_bytes().to_vec(),
+        }
+    }
+
+    pub fn empty() -> Self {
+        Self {
+            contents: Vec::new(),
         }
     }
 }
@@ -55,20 +65,22 @@ impl<'a, A: Asset> Asset for AssetRef<'a, A> {
 
 #[derive(Clone)]
 pub struct MemoryCache {
-    data: HashMap<String, MemoryAsset>,
+    data: HashMap<PathBuf, MemoryAsset>,
 }
 
 impl MemoryCache {
     pub fn new() -> Self {
         Self {
-            data: HashMap::new()
+            data: HashMap::new(),
         }
     }
 }
 
 impl AssetQueryable for MemoryCache {
-    async fn asset_at(&self, path: &AssetPath) -> Result<impl Asset, AssetError> {
-        match self.data.get(path.path()) {
+    async fn asset_at(&self, path: &Path) -> Result<impl Asset, AssetError> {
+        let buf = std::path::absolute(Path::new("/").join(path.to_path_buf())).unwrap();
+        info!("Getting MemoryAsset {:?}...", buf);
+        match self.data.get(&buf) {
             Some(v) => Ok(AssetRef::new(v)),
             None => Err(AssetError::NotFound),
         }
@@ -80,16 +92,17 @@ impl AssetQueryable for MemoryCache {
 }
 
 impl AssetWritable for MemoryCache {
-    fn delete_asset(&mut self, path: &AssetPath) -> Result<(), AssetError> {
-        match self.data.remove(path.path()) {
+    fn delete_asset(&mut self, path: &Path) -> Result<(), AssetError> {
+        let buf = std::path::absolute(path.to_path_buf()).unwrap();
+        match self.data.remove(&buf) {
             Some(_) => Ok(()),
             None => Err(AssetError::NotFound),
         }
     }
 
-    fn write_asset(&mut self, path: &AssetPath, asset: &impl Asset) -> Result<(), AssetError> {
+    fn write_asset(&mut self, path: &Path, asset: &impl Asset) -> Result<(), AssetError> {
         self.data.insert(
-            path.to_string(),
+            std::path::absolute(path.to_path_buf()).unwrap(),
             MemoryAsset {
                 contents: asset.bytes().collect(),
             },
@@ -101,8 +114,6 @@ impl AssetWritable for MemoryCache {
 
 #[cfg(test)]
 mod tests {
-    use actix_web::body::MessageBody;
-
     use crate::asset::Asset;
 
     use super::MemoryAsset;

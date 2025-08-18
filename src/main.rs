@@ -1,10 +1,17 @@
-use actix_web::{middleware::{NormalizePath, TrailingSlash}, web, App, HttpServer, Result};
+use actix_web::{
+    App, HttpServer, Result,
+    middleware::NormalizePath,
+};
 use clap::Command;
 use config::{Config, File};
 use fern::colors::{Color, ColoredLevelConfig};
 use minijinja::Environment;
 use pageshelf::{
-    conf::ServerConfig, page::PageSourceFactory, providers::{ForgejoProvider, ForgejoProviderFactory}, routes::{self, setup_service_config, RouteSharedData}, templates::templates_from_builtin
+    conf::ServerConfig,
+    page::PageSourceFactory,
+    providers::ForgejoProviderFactory,
+    routes::setup_service_config,
+    templates::templates_from_builtin,
 };
 
 use clap::{arg, crate_authors, crate_description, crate_name, crate_version};
@@ -79,13 +86,13 @@ fn setup_logger() -> Result<(), fern::InitError> {
     Ok(())
 }
 
-
 async fn run_server<'a, PS: PageSourceFactory + Sync + Send + 'static>(
     page_factory: PS,
     config: ServerConfig,
     templates: Environment<'static>,
 ) -> std::io::Result<()>
-    where <PS as PageSourceFactory>::Source: 'static
+where
+    <PS as PageSourceFactory>::Source: 'static,
 {
     let port = config.general.port;
     HttpServer::new(move || {
@@ -93,11 +100,9 @@ async fn run_server<'a, PS: PageSourceFactory + Sync + Send + 'static>(
         let config = config.clone();
         let page_factory = page_factory.clone();
         let templates = templates.clone();
-        App::new()
-            .wrap(NormalizePath::trim())
-            .configure(move |f| {
-                setup_service_config(f, &config, page_factory, Some(templates)); 
-            })
+        App::new().wrap(NormalizePath::trim()).configure(move |f| {
+            setup_service_config(f, &config, page_factory, Some(templates));
+        })
     })
     .bind(("0.0.0.0", port))?
     .run()

@@ -24,7 +24,7 @@ pub fn setup_service_config<'a, PS: PageSourceFactory + Sync + Send + 'static>(
         provider: page_factory.build().unwrap(),
         jinja: match templates {
             Some(ref v) => v.clone(),
-            None => templates_from_builtin()
+            None => templates_from_builtin(),
         },
         config,
     }));

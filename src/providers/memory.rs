@@ -1,7 +1,7 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path};
 
 use crate::{
-    asset::{AssetPath, AssetQueryable, AssetWritable},
+    asset::{Asset, AssetError, AssetQueryable, AssetWritable},
     page::{Page, PageError, PageSource, PageSourceFactory},
     providers::assets::memory::{MemoryAsset, MemoryCache},
 };
@@ -32,16 +32,11 @@ impl<'a> Page for MemoryPage<'a> {
 }
 
 impl<'a> AssetQueryable for MemoryPage<'a> {
-    async fn asset_at(
-        &self,
-        path: &crate::asset::AssetPath,
-    ) -> Result<impl crate::asset::Asset, crate::asset::AssetError> {
+    async fn asset_at(&self, path: &Path) -> Result<impl Asset, AssetError> {
         self.data.asset_at(path).await
     }
 
-    fn assets(
-        &self,
-    ) -> Result<impl Iterator<Item = impl crate::asset::Asset>, crate::asset::AssetError> {
+    fn assets(&self) -> Result<impl Iterator<Item = impl Asset>, AssetError> {
         self.data.assets()
     }
 }
@@ -89,19 +84,26 @@ impl PageSource for MemoryPageProvider {
 
 #[derive(Clone)]
 pub struct MemoryPageProviderFactory {
-    provider: MemoryPageProvider
+    provider: MemoryPageProvider,
 }
 
 impl MemoryPageProviderFactory {
     pub fn new() -> Self {
         Self {
             provider: MemoryPageProvider {
-                pages: HashMap::new()
-            }
+                pages: HashMap::new(),
+            },
         }
     }
 
-    pub fn with_asset(mut self, owner: &str, name: &str, branch: &str, path: &AssetPath, asset: MemoryAsset) -> Self {
+    pub fn with_asset(
+        mut self,
+        owner: &str,
+        name: &str,
+        branch: &str,
+        path: &Path,
+        asset: MemoryAsset,
+    ) -> Self {
         let id = (owner.to_string(), name.to_string(), branch.to_string());
         let page = match self.provider.pages.get_mut(&id) {
             Some(v) => v,
@@ -113,12 +115,16 @@ impl MemoryPageProviderFactory {
         };
 
         match page.write_asset(path, &asset) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
-                log::error!("Error writing asset ({}) to Memory Provider: {:?}", path.to_string(), e);
+                log::error!(
+                    "Error writing asset ({}) to Memory Provider: {:?}",
+                    path.to_string_lossy(),
+                    e
+                );
             }
         }
-        
+
         self
     }
 }
@@ -153,7 +159,7 @@ pub mod testing {
 
     const OWNER_1: &str = "owner_1";
     const OWNER_2: &str = "owner_2";
-    
+
     const NAME_1: &str = "name_1";
     const NAME_2: &str = "name_2";
 
@@ -164,8 +170,8 @@ pub mod testing {
     const DATA_2: &str = "data_2";
 
     pub fn create_example_provider_factory() -> MemoryPageProviderFactory {
-        let asset_path_1 = AssetPath::from_str("asset_1").unwrap();
-        let asset_path_2 = AssetPath::from_str("asset_2").unwrap();
+        let asset_path_1 = Path::new("/asset_1");
+        let asset_path_2 = Path::new("/asset_2");
 
         let asset_1 = MemoryAsset::from_str(DATA_1);
         let asset_2 = MemoryAsset::from_str(DATA_2);
@@ -175,14 +181,13 @@ pub mod testing {
             .with_asset(OWNER_2, NAME_2, BRANCH_2, &asset_path_2, asset_2)
     }
 
-
     pub fn create_example_provider() -> MemoryPageProvider {
         create_example_provider_factory().build().unwrap()
     }
 
     pub async fn test_example_source(p: &MemoryPageProvider) {
-        let asset_path_1 = AssetPath::from_str("/asset_1").unwrap();
-        let asset_path_2 = AssetPath::from_str("/asset_2").unwrap();
+        let asset_path_1 = Path::new("/asset_1");
+        let asset_path_2 = Path::new("/asset_2");
 
         assert_eq!(p.pages().await.unwrap().count(), 2);
 
@@ -204,7 +209,7 @@ pub mod testing {
         assert!(p.page_at(OWNER_2, NAME_1, BRANCH_2).await.is_err());
         assert!(p.page_at(OWNER_1, NAME_2, BRANCH_1).await.is_err());
         assert!(p.page_at(OWNER_1, NAME_2, BRANCH_2).await.is_err());
-        if BRANCH_1 != BRANCH_2  {
+        if BRANCH_1 != BRANCH_2 {
             assert!(p.page_at(OWNER_1, NAME_1, BRANCH_2).await.is_err());
             assert!(p.page_at(OWNER_2, NAME_1, BRANCH_2).await.is_err());
             assert!(p.page_at(OWNER_2, NAME_2, BRANCH_1).await.is_err());

@@ -1,10 +1,9 @@
+use crate::asset::AssetQueryable;
+use log::error;
 /// Deals with the utilities for loading pages.
 /// Generally, to access something a page, you go through these steps:
 /// PageSource -> Page -> Asset -> [your data]
-
 use std::fmt::Display;
-use crate::asset::AssetQueryable;
-use log::error;
 
 /* -------------------------------- Utilities ------------------------------- */
 
@@ -21,7 +20,7 @@ impl Display for PageError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::NotFound => f.write_str("Not found"),
-            Self::ProviderError => f.write_str("Provider error")
+            Self::ProviderError => f.write_str("Provider error"),
         }
     }
 }
@@ -50,18 +49,18 @@ pub trait Page: AssetQueryable {
 #[derive(Debug, PartialEq, Eq)]
 pub enum StringMatchingType {
     /// If it just matches the pattern with simple comparison
-    Simple
+    Simple,
 }
 
 impl StringMatchingType {
     /// Checks if a string matches a pattern.
-    /// 
+    ///
     /// Arguments:
     /// - `pattern`: What pattern to check for a match using
     /// - `s`: The string to see if a match is present
     pub fn matches(&self, pattern: &str, s: &str) -> bool {
         match self {
-            Self::Simple => pattern == s
+            Self::Simple => pattern == s,
         }
     }
 }
@@ -77,15 +76,12 @@ impl Default for StringMatchingType {
 #[derive(Debug)]
 struct MatchingQueryField<T> {
     matcher: StringMatchingType,
-    data: T
+    data: T,
 }
 
 impl<T> MatchingQueryField<T> {
     pub fn new(data: T, matcher: StringMatchingType) -> Self {
-        Self {
-            matcher,
-            data
-        }
+        Self { matcher, data }
     }
 
     pub fn data(&self) -> &T {
@@ -98,13 +94,12 @@ impl<T> MatchingQueryField<T> {
 pub struct PageSourceQuery<'a> {
     // TODO: Consider using dynamic parameters for finer control
     // Using no dynamic stuff, only references right now to prevent allocations
-
     /// If anyone, who should own the page?
     owner: Option<MatchingQueryField<&'a [&'a str]>>,
     /// If any, what should the page be named?
     name: Option<MatchingQueryField<&'a [&'a str]>>,
     /// If any, what branch should the page be?
-    branch: Option<MatchingQueryField<&'a [&'a str]>>
+    branch: Option<MatchingQueryField<&'a [&'a str]>>,
 }
 
 /* -------------------------------- Sourcing -------------------------------- */
@@ -115,7 +110,7 @@ impl<'a> PageSourceQuery<'a> {
         Self {
             owner: None,
             name: None,
-            branch: None
+            branch: None,
         }
     }
 
@@ -144,21 +139,21 @@ impl<'a> PageSourceQuery<'a> {
     pub fn check_owner(&self, owner: &str) -> bool {
         match &self.owner {
             Some(v) => v.data.iter().any(|f| *f == owner),
-            None => true
+            None => true,
         }
     }
 
     pub fn check_name(&self, name: &str) -> bool {
         match &self.name {
             Some(v) => v.data.iter().any(|f| *f == name),
-            None => true
+            None => true,
         }
     }
 
     pub fn check_branch(&self, branch: &str) -> bool {
         match &self.branch {
             Some(v) => v.data.iter().any(|f| *f == branch),
-            None => true
+            None => true,
         }
     }
 }
@@ -175,8 +170,12 @@ pub trait PageSource {
     // (They function the same at least)
 
     /// Tries to get a Page at the specified location.
-    fn page_at(&self, owner: &str, name: &str, branch: &str)
-        -> impl Future<Output = Result<impl Page, PageError>>;
+    fn page_at(
+        &self,
+        owner: &str,
+        name: &str,
+        branch: &str,
+    ) -> impl Future<Output = Result<impl Page, PageError>>;
     /// Iterates all pages available to this source.
     fn pages(&self) -> impl Future<Output = Result<impl Iterator<Item = impl Page>, PageError>>;
 
@@ -188,7 +187,10 @@ pub trait PageSource {
     /* ------------------------- Automatic Abstractions ------------------------- */
 
     /// Find all Pages that meet conditions set by the query
-    async fn search_pages<'a>(&self, query: &PageSourceQuery<'a>) -> Result<impl Iterator<Item = impl Page>, PageError> {
+    async fn search_pages<'a>(
+        &self,
+        query: &PageSourceQuery<'a>,
+    ) -> Result<impl Iterator<Item = impl Page>, PageError> {
         match self.pages().await {
             Ok(v) => {
                 Ok(v.filter(|page| {
@@ -198,7 +200,7 @@ pub trait PageSource {
                         Some(v) => {
                             let owner = page.owner();
                             return v.data().iter().any(|f| f == &owner);
-                        },
+                        }
                         None => {}
                     }
                     // Name check
@@ -206,7 +208,7 @@ pub trait PageSource {
                         Some(v) => {
                             let name = page.name();
                             return v.data().iter().any(|f| f == &name);
-                        },
+                        }
                         None => {}
                     }
                     // Name check
@@ -214,13 +216,13 @@ pub trait PageSource {
                         Some(v) => {
                             let branch = page.name();
                             return v.data().iter().any(|f| f == &branch);
-                        },
+                        }
                         None => {}
                     }
 
                     true
                 }))
-            },
+            }
             Err(e) => {
                 error!("Error searching for page (query: {:?}): {}", query, e);
                 Err(PageError::ProviderError)
@@ -228,13 +230,17 @@ pub trait PageSource {
         }
     }
 
-    async fn branches_used<'a>(&self, query: &PageSourceQuery<'a>) -> Result<impl Iterator<Item = String>, PageError> {
+    async fn branches_used<'a>(
+        &self,
+        query: &PageSourceQuery<'a>,
+    ) -> Result<impl Iterator<Item = String>, PageError> {
         match self.search_pages(query).await {
-            Ok(pages) => {
-                Ok(pages.map(|f| f.branch().to_string()))
-            },
+            Ok(pages) => Ok(pages.map(|f| f.branch().to_string())),
             Err(e) => {
-                error!("Error when finding what branches were being used (query: {:?}): {}", query, e);
+                error!(
+                    "Error when finding what branches were being used (query: {:?}): {}",
+                    query, e
+                );
                 Err(e)
             }
         }
@@ -248,10 +254,13 @@ pub trait PageSource {
 pub trait PageSourceFactory: Clone {
     type Source: PageSource;
 
-    fn layer<'a, L: PageSourceLayer<Self::Source>>(&'a self, layer: &'a L) -> PageSourceFactoryLayer<'a, Self, L> {
+    fn layer<'a, L: PageSourceLayer<Self::Source>>(
+        &'a self,
+        layer: &'a L,
+    ) -> PageSourceFactoryLayer<'a, Self, L> {
         PageSourceFactoryLayer {
             parent: self,
-            layer
+            layer,
         }
     }
 
@@ -269,10 +278,12 @@ pub trait PageSourceLayer<PS: PageSource>: Clone {
 #[derive(Clone)]
 pub struct PageSourceFactoryLayer<'a, F: PageSourceFactory, L: PageSourceLayer<F::Source>> {
     parent: &'a F,
-    layer: &'a L
+    layer: &'a L,
 }
 
-impl<'a, F: PageSourceFactory, L: PageSourceLayer<F::Source>> PageSourceFactory for PageSourceFactoryLayer<'a, F, L> {
+impl<'a, F: PageSourceFactory, L: PageSourceLayer<F::Source>> PageSourceFactory
+    for PageSourceFactoryLayer<'a, F, L>
+{
     type Source = L::Source;
 
     fn build(&self) -> Result<Self::Source, ()> {

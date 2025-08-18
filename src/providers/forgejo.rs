@@ -1,7 +1,9 @@
-use std::{marker::PhantomData, str::FromStr};
+use std::{path::Path, str::FromStr};
 
 use crate::{
-    asset::{Asset, AssetError, AssetPath, AssetQueryable}, conf::ServerConfig, page::{Page, PageError, PageSource, PageSourceFactory}
+    asset::{Asset, AssetError, AssetQueryable},
+    conf::ServerConfig,
+    page::{Page, PageError, PageSource, PageSourceFactory},
 };
 use forgejo_api::{Auth, Forgejo, structs::RepoSearchQuery};
 use log::{error, warn};
@@ -38,7 +40,7 @@ impl<'a> Page for ForgejoPage<'a> {
 }
 
 impl<'a> AssetQueryable for ForgejoPage<'a> {
-    async fn asset_at(&self, path: &AssetPath) -> Result<impl Asset, AssetError> {
+    async fn asset_at(&self, path: &Path) -> Result<impl Asset, AssetError> {
         self.storage.asset_at(path).await
     }
 
@@ -205,7 +207,7 @@ impl PageSource for ForgejoProvider {
 #[derive(Clone)]
 pub struct ForgejoProviderFactory {
     config: ServerConfig,
-    url: Url
+    url: Url,
 }
 
 impl ForgejoProviderFactory {
@@ -219,21 +221,14 @@ impl ForgejoProviderFactory {
             }
         };
 
-        Ok(Self {
-            url,
-            config
-        })
+        Ok(Self { url, config })
     }
-
 }
 impl PageSourceFactory for ForgejoProviderFactory {
     type Source = ForgejoProvider;
 
     fn build(&self) -> Result<Self::Source, ()> {
-        let fj = match Forgejo::new(
-                Auth::None,
-                self.url.clone(),
-            ) {
+        let fj = match Forgejo::new(Auth::None, self.url.clone()) {
             Ok(v) => v,
             Err(e) => {
                 error!("Failed to create Forgejo authentication: {}", e);
@@ -248,7 +243,7 @@ impl PageSourceFactory for ForgejoProviderFactory {
     }
 }
 
-/* 
+/*
 impl PageSourceConfigurator for ForgejoProvider {
     type Source = ForgejoProvider;
 
