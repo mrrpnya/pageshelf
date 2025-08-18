@@ -1,16 +1,11 @@
 use std::{path::Path, str::FromStr};
 
-use actix_web::{
-    App, http::header::ContentType, middleware::NormalizePath, test,
-};
+use actix_web::{App, http::header::ContentType, middleware::NormalizePath, test};
 use pageshelf::{
     asset::AssetQueryable,
     conf::ServerConfig,
     page::{PageSource, PageSourceFactory},
-    providers::{
-        assets::memory::MemoryAsset,
-        testing::create_example_provider_factory,
-    },
+    providers::{assets::memory::MemoryAsset, testing::create_example_provider_factory},
     routes::setup_service_config,
 };
 

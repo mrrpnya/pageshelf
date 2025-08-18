@@ -1,17 +1,11 @@
-use actix_web::{
-    App, HttpServer, Result,
-    middleware::NormalizePath,
-};
+use actix_web::{App, HttpServer, Result, middleware::NormalizePath};
 use clap::Command;
 use config::{Config, File};
 use fern::colors::{Color, ColoredLevelConfig};
 use minijinja::Environment;
 use pageshelf::{
-    conf::ServerConfig,
-    page::PageSourceFactory,
-    providers::ForgejoProviderFactory,
-    routes::setup_service_config,
-    templates::templates_from_builtin,
+    conf::ServerConfig, page::PageSourceFactory, providers::ForgejoProviderFactory,
+    routes::setup_service_config, templates::templates_from_builtin,
 };
 
 use clap::{arg, crate_authors, crate_description, crate_name, crate_version};

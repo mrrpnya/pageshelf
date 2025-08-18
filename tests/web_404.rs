@@ -9,7 +9,6 @@ use pageshelf::{
     routes::setup_service_config,
 };
 
-
 #[tokio::test]
 async fn page_server_404() {
     let _ = env_logger::builder()

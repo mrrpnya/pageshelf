@@ -97,7 +97,9 @@ async fn get_page<'a, PS: PageSource>(
                 None => file.join(Path::new("./404.html")),
             },
         };*/
-        return get_page_raw(data, owner, repo, channel, Path::new("/404.html"), 404).await.0;
+        return get_page_raw(data, owner, repo, channel, Path::new("/404.html"), 404)
+            .await
+            .0;
     }
     primary.0
 }
@@ -111,7 +113,6 @@ pub async fn get_page_raw<'a, PS: PageSource>(
     file: &Path,
     ok_code: u16,
 ) -> (impl Responder + use<PS>, u16) {
-
     /* ---------------------------- Input Processing ---------------------------- */
 
     let branch = match channel {
