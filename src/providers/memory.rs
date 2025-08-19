@@ -142,8 +142,6 @@ impl PageSourceFactory for MemoryPageProviderFactory {
 /* -------------------------------------------------------------------------- */
 
 pub mod testing {
-    use std::str::FromStr;
-
     use crate::asset::Asset;
 
     use super::*;

@@ -4,6 +4,11 @@
 </style>
 {% block head %}
     <link rel="icon" href="{{ server.icon_url }}">
+    <title>{{ server.name }}</title>
+    <meta content="{{ server.name }}" property="og:title" />
+    <meta content="{{ server.about }}" property="og:description" />
+    <meta content="{{ server.icon_url }}" property="og:image" />
+    <meta content="#40e0d0" data-react-helmet="true" name="theme-color" />
 {% endblock %}
 {% block body %}
     <header>

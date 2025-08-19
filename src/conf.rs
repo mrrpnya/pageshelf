@@ -1,5 +1,6 @@
 use clap::crate_version;
 use serde::{Deserialize, Serialize};
+use url::Url;
 
 use crate::templates::TemplateServerContext;
 
@@ -27,15 +28,6 @@ fn default_branches_allowed() -> Vec<String> {
     vec!["pages".to_string()]
 }
 
-fn default_general() -> ServerConfigGeneral {
-    ServerConfigGeneral {
-        name: default_name(),
-        description: default_description(),
-        home_url: None,
-        port: default_port(),
-    }
-}
-
 fn default_security() -> ServerConfigSecurity {
     ServerConfigSecurity {
         whitelist: None,
@@ -43,15 +35,8 @@ fn default_security() -> ServerConfigSecurity {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ServerConfigGeneral {
-    #[serde(default = "default_name")]
-    pub name: String,
-    #[serde(default = "default_description")]
-    pub description: String,
-    home_url: Option<String>,
-    #[serde(default = "default_port")]
-    pub port: u16,
+fn default_user() -> String {
+    "admin".to_string()
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -101,8 +86,19 @@ pub struct ServerConfigSecurity {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ServerConfig {
-    #[serde(default = "default_general")]
-    pub general: ServerConfigGeneral,
+    // General
+    #[serde(default = "default_name")]
+    pub name: String,
+    #[serde(default = "default_description")]
+    pub description: String,
+    #[serde(default = "default_port")]
+    pub port: u16,
+    pub url: Option<Url>,
+    pub pages_urls: Option<Vec<Url>>,
+    #[serde(default = "default_user")]
+    pub default_user: String,
+
+    // Specialized
     #[serde(default = "default_security")]
     pub security: ServerConfigSecurity,
     pub upstream: ServerConfigUpstream,
@@ -111,8 +107,8 @@ pub struct ServerConfig {
 impl ServerConfig {
     pub fn template_server_context(&self) -> TemplateServerContext {
         TemplateServerContext {
-            name: self.general.name.to_string(),
-            about: self.general.description.to_string(),
+            name: self.name.to_string(),
+            about: self.description.to_string(),
             home_url: None,
             icon_url: Some("/favicon.svg".to_string()),
             default_branch: self.upstream.default_branch.clone(),
@@ -124,12 +120,15 @@ impl ServerConfig {
 impl Default for ServerConfig {
     fn default() -> Self {
         Self {
-            general: ServerConfigGeneral {
-                name: default_name(),
-                description: default_description(),
-                home_url: None,
-                port: default_port(),
-            },
+            // General
+            name: default_name(),
+            description: default_description(),
+            url: None,
+            pages_urls: None,
+            port: default_port(),
+            default_user: default_user(),
+
+            // Specialized
             security: ServerConfigSecurity {
                 whitelist: None,
                 blacklist: None,

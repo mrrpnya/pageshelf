@@ -74,7 +74,7 @@ fn setup_logger() -> Result<(), fern::InitError> {
                 message
             ))
         })
-        .level(log::LevelFilter::Debug)
+        .level(log::LevelFilter::Info)
         .chain(std::io::stdout())
         .apply()?;
     Ok(())
@@ -88,7 +88,7 @@ async fn run_server<'a, PS: PageSourceFactory + Sync + Send + 'static>(
 where
     <PS as PageSourceFactory>::Source: 'static,
 {
-    let port = config.general.port;
+    let port = config.port;
     HttpServer::new(move || {
         // TODO: See if cloning can be reduced here? It's done every worker.
         let config = config.clone();

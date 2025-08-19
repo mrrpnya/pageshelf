@@ -1,8 +1,8 @@
-# Optional
-[general]
 name = "SMGames Pages" # or whatever else
 description = "Page system for SMGames"
-home_url = "https://git.smgames.club/assets/img/favicon.png"
+urls = "https://pages.smgames.club"
+pages_urls = ["https://pages.smgames.club"]
+default_user = "admin"
 port = 8080
 
 # Optional

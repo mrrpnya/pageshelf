@@ -1,9 +1,9 @@
-use crate::asset::AssetQueryable;
+use crate::asset::{Asset, AssetQueryable};
 use log::error;
 /// Deals with the utilities for loading pages.
 /// Generally, to access something a page, you go through these steps:
 /// PageSource -> Page -> Asset -> [your data]
-use std::fmt::Display;
+use std::{fmt::Display, path::Path};
 
 /* -------------------------------- Utilities ------------------------------- */
 
@@ -244,6 +244,36 @@ pub trait PageSource {
                 Err(e)
             }
         }
+    }
+
+    async fn find_by_domains(
+        &self,
+        domains: &[&str]
+    ) -> Result<impl Page, PageError> {
+        let pages = self.pages().await;
+        if let Err(e) = pages {
+            return Err(e)
+        }
+        let pages = pages.unwrap();
+        for page in pages {
+            let mut applies = false;
+            {
+                // TODO: Magic string, fix.
+                let asset = page.asset_at(Path::new(".domain")).await;
+
+                if let Ok(asset) = asset {
+                    if asset.body().split("\n").any(|a| domains.iter().any(|d| d == &a)) {
+                        applies = true
+                    }
+                }
+            }
+            if applies {
+                return Ok(page);
+            }
+        }
+
+
+        Err(PageError::NotFound)
     }
 }
 

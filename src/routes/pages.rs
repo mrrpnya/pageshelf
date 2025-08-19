@@ -1,10 +1,11 @@
 /// Default Actix routes for querying pages.
 use std::{path::Path, str::FromStr, time::SystemTime};
 
-use actix_web::{HttpResponse, Responder, http::StatusCode, web};
+use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse, Responder};
 use log::{error, info};
 use mime_guess::Mime;
 use minijinja::context;
+use url::Url;
 
 use crate::{
     asset::{Asset, AssetQueryable},
@@ -13,67 +14,140 @@ use crate::{
     templates::{TEMPLATE_404, TemplateErrorContext, TemplatePageContext},
 };
 
+use super::try_get_page_from_analysis;
+
 /* -------------------------------------------------------------------------- */
 /*                               Exposed Queries                              */
 /* -------------------------------------------------------------------------- */
 
 // TODO: Consider renaming these?
 
+pub fn is_base_url<'a, PS: PageSource>(
+    data: &web::Data<RouteSharedData<'a, PS>>,
+    req: &HttpRequest
+) -> bool {
+    match req.headers().get("Host") {
+        Some(v) => {
+            match &data.config.url {
+                Some(base_url) => {
+                    base_url.host_str().unwrap() == v
+                },
+                None => match &data.config.pages_urls {
+                    Some(pages_urls) => {
+                        match v.to_str() {
+                            Ok(v) => !pages_urls.iter().any(|f| {
+                                let s = f.host_str().unwrap();
+                                log::debug!("Checking if {} ends in {}...", v, s);
+                                v[0..v.find("/").unwrap_or(v.len())].ends_with(s)
+                            }),
+                            Err(_) => true
+                        }
+                    }
+                    None => true
+                }
+            }
+        }
+        None => true
+    }
+}
+
 /// Page query route (Owner-Repo-File)
 pub async fn get_page_orf<'a, PS: PageSource>(
     path: web::Path<(String, String, String)>,
     data: web::Data<RouteSharedData<'a, PS>>,
-) -> impl Responder {
+    req: HttpRequest
+) -> HttpResponse {
     let (owner, repo, file) = path.into_inner();
-    get_page(&data, &owner, &repo, None, Path::new(&file)).await
+    if is_base_url(&data, &req) {
+        get_page(&data, Some(&owner), Some(&repo), None, Path::new(&file)).await
+    } else {
+        if let Some(page) = try_get_page_from_analysis(&data, &req).await {
+            return page;
+        }
+
+        HttpResponse::NotFound()
+            .body("Failed to get page")
+    }
 }
 
 /// Page query route (Owner-Repo-Branch-File)
 pub async fn get_page_orbf<'a, PS: PageSource>(
     path: web::Path<(String, String, String, String)>,
     data: web::Data<RouteSharedData<'a, PS>>,
+    req: HttpRequest
 ) -> impl Responder {
     let (owner, repo, branch, file) = path.into_inner();
 
-    let branch = branch.clone();
+    if is_base_url(&data, &req) {
+        get_page(&data, Some(&owner), Some(&repo), Some(&branch), Path::new(&file)).await
+    } else {
+        if let Some(page) = try_get_page_from_analysis(&data, &req).await {
+            return page;
+        }
 
-    get_page(&data, &owner, &repo, Some(&branch), Path::new(&file)).await
+        HttpResponse::NotFound()
+            .body("Failed to get page")
+    }
 }
 
 /// Page query route (Owner-Repo)
 pub async fn get_page_or<'a, PS: PageSource>(
     path: web::Path<(String, String)>,
     data: web::Data<RouteSharedData<'a, PS>>,
+    req: HttpRequest
 ) -> impl Responder {
     let (owner, repo) = path.into_inner();
 
     let p = std::path::absolute(Path::new("/")).unwrap();
-    get_page(&data, &owner, &repo, None, &p).await
+
+    if is_base_url(&data, &req) {
+        get_page(&data, Some(&owner), Some(&repo), None, &p).await
+    } else {
+        if let Some(page) = try_get_page_from_analysis(&data, &req).await {
+            return page;
+        }
+
+        HttpResponse::NotFound()
+            .body("Failed to get page")
+    }
 }
 
 /// Page query route (Owner-Repo-Branch)
 pub async fn get_page_orb<'a, PS: PageSource>(
     path: web::Path<(String, String, String)>,
     data: web::Data<RouteSharedData<'a, PS>>,
+    req: HttpRequest
 ) -> impl Responder {
     let (owner, repo, branch) = path.into_inner();
 
-    let branch = branch.clone();
     let p = std::path::absolute(Path::new("/")).unwrap();
-    get_page(&data, &owner, &repo, Some(&branch), &p).await
+    if is_base_url(&data, &req) {
+        get_page(&data, Some(&owner), Some(&repo), Some(&branch), &p).await
+    } else {
+        if let Some(page) = try_get_page_from_analysis(&data, &req).await {
+            return page;
+        }
+
+        HttpResponse::NotFound()
+            .body("Failed to get page")
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 /*                                Data Querying                               */
 /* -------------------------------------------------------------------------- */
 
-async fn get_page<'a, PS: PageSource>(
+pub async fn get_page<'a, PS: PageSource>(
     data: &web::Data<RouteSharedData<'a, PS>>,
-    owner: &str,
-    repo: &str,
+    owner: Option<&str>,
+    repo: Option<&str>,
     channel: Option<&str>,
     file: &Path,
-) -> impl Responder + use<PS> {
+) -> HttpResponse {
+
+    let owner = owner.unwrap_or(data.config.default_user.as_str());
+    let repo = repo.unwrap_or("pages");
+
     match channel {
         Some(v) => info!("Accessing page {}/{} (Branch \"{}\")...", owner, repo, v),
         None => info!("Accessing page {}/{} (No specified branch)...", owner, repo),
@@ -112,7 +186,7 @@ pub async fn get_page_raw<'a, PS: PageSource>(
     channel: Option<&str>,
     file: &Path,
     ok_code: u16,
-) -> (impl Responder + use<PS>, u16) {
+) -> (HttpResponse, u16) {
     /* ---------------------------- Input Processing ---------------------------- */
 
     let branch = match channel {

@@ -1,9 +1,13 @@
-use actix_web::web::{self, ServiceConfig};
+use std::{path::Path, str::FromStr};
+
+use actix_web::{web::{self, ServiceConfig}, HttpRequest, HttpResponse, Responder};
 use minijinja::Environment;
+use pages::get_page;
+use url::Url;
 
 use crate::{
     conf::ServerConfig,
-    page::{PageSource, PageSourceFactory},
+    page::{PageSource, PageSourceFactory}, util::{analyze_url, UrlAnalysis},
 };
 
 pub mod pages;
@@ -15,6 +19,41 @@ pub struct RouteSharedData<'a, PS: PageSource> {
     pub provider: PS,
     pub config: ServerConfig,
     pub jinja: Environment<'a>,
+}
+
+async fn try_get_page_from_analysis<'a, PS: PageSource>(
+    data: &web::Data<RouteSharedData<'a, PS>>,
+    req: &HttpRequest,
+) -> Option<HttpResponse> {
+    let mut analysis: Option<UrlAnalysis> = None;
+    if let Some(urls) = &data.config.pages_urls {
+        if let Some(host) = req.headers().get("Host") {
+            for url in urls {
+                if let Ok(host) = host.to_str() {
+                    let host_http = format!("http://{}", host);
+                    if let Ok(host_url) = Url::from_str(host_http.as_str()) {
+                        if let Some(a) = analyze_url(&host_url, &url) {
+                            analysis = Some(a);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if let Some(analysis) = analysis {
+        return Some(get_page(
+            &data,
+            analysis.owner.as_deref(),
+            analysis.repo.as_deref(),
+            analysis.branch.as_deref(),
+            Path::new(&analysis.asset),
+        )
+        .await);
+    }
+
+    None
 }
 
 /* -------------------------------------------------------------------------- */

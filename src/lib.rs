@@ -11,6 +11,7 @@ pub mod page;
 pub mod providers;
 pub mod routes;
 pub mod templates;
+pub mod util;
 
 pub fn setup_service_config<'a, PS: PageSourceFactory + Sync + Send + 'static>(
     web_config: &'a mut ServiceConfig,
