@@ -5,10 +5,16 @@
 {% block head %}
     <link rel="icon" href="{{ server.icon_url }}">
     <title>{{ server.name }}</title>
-    <meta content="{{ server.name }}" property="og:title" />
-    <meta content="{{ server.about }}" property="og:description" />
-    <meta content="{{ server.icon_url }}" property="og:image" />
+    <meta name="description" content="{{ server.about }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ server.name }}">
+    <meta property="og:description" content="{{ server.about }}">
+    <meta property="og:image" content="{{ server.icon_url }}">
     <meta content="#40e0d0" data-react-helmet="true" name="theme-color" />
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ server.name }}">
+    <meta name="twitter:image" content="{{ server.icon_url }}">
+    <meta name="twitter:description" content="">
 {% endblock %}
 {% block body %}
     <header>
