@@ -246,13 +246,10 @@ pub trait PageSource {
         }
     }
 
-    async fn find_by_domains(
-        &self,
-        domains: &[&str]
-    ) -> Result<impl Page, PageError> {
+    async fn find_by_domains(&self, domains: &[&str]) -> Result<impl Page, PageError> {
         let pages = self.pages().await;
         if let Err(e) = pages {
-            return Err(e)
+            return Err(e);
         }
         let pages = pages.unwrap();
         for page in pages {
@@ -262,7 +259,11 @@ pub trait PageSource {
                 let asset = page.asset_at(Path::new(".domain")).await;
 
                 if let Ok(asset) = asset {
-                    if asset.body().split("\n").any(|a| domains.iter().any(|d| d == &a)) {
+                    if asset
+                        .body()
+                        .split("\n")
+                        .any(|a| domains.iter().any(|d| d == &a))
+                    {
                         applies = true
                     }
                 }
@@ -271,7 +272,6 @@ pub trait PageSource {
                 return Ok(page);
             }
         }
-
 
         Err(PageError::NotFound)
     }

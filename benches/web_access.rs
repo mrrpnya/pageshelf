@@ -8,16 +8,18 @@ use actix_web::{
 };
 use criterion::{Criterion, async_executor::AsyncStdExecutor, criterion_group, criterion_main};
 use pageshelf::{
-    conf::ServerConfig, page::PageSource, providers::{assets::memory::MemoryAsset, testing::create_example_provider_factory},
+    conf::ServerConfig,
+    page::PageSource,
+    providers::{assets::memory::MemoryAsset, testing::create_example_provider_factory},
     routes::setup_service_config,
 };
 use url::Url;
 
 fn bench_access_index(c: &mut Criterion) {
-   // let _ = env_logger::builder()
-   //     .is_test(true)
-   //     .filter_level(log::LevelFilter::Debug)
-   //     .try_init();
+    // let _ = env_logger::builder()
+    //     .is_test(true)
+    //     .filter_level(log::LevelFilter::Debug)
+    //     .try_init();
 
     let factory = create_example_provider_factory();
 
@@ -43,10 +45,10 @@ fn bench_access_index(c: &mut Criterion) {
 }
 
 fn bench_access_page_index(c: &mut Criterion) {
-  //  let _ = env_logger::builder()
-  //      .is_test(true)
-  //      .filter_level(log::LevelFilter::Debug)
-  //      .try_init();
+    //  let _ = env_logger::builder()
+    //      .is_test(true)
+    //      .filter_level(log::LevelFilter::Debug)
+    //      .try_init();
 
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");

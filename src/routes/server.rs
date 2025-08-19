@@ -6,9 +6,13 @@ use url::Url;
 
 use crate::{
     page::PageSource,
-    routes::{pages::{get_page, is_base_url}, try_get_page_from_analysis, RouteSharedData},
-    templates::{TemplateErrorContext, TemplatePageContext, TEMPLATE_404, TEMPLATE_INDEX},
-    util::{analyze_url, UrlAnalysis},
+    routes::{
+        RouteSharedData,
+        pages::{get_page, is_base_url},
+        try_get_page_from_analysis,
+    },
+    templates::{TEMPLATE_404, TEMPLATE_INDEX, TemplateErrorContext, TemplatePageContext},
+    util::{UrlAnalysis, analyze_url},
 };
 
 pub async fn get_index<'a, PS: PageSource>(
@@ -33,19 +37,19 @@ pub async fn get_index<'a, PS: PageSource>(
 
     let tp = data.jinja.get_template(TEMPLATE_404).unwrap();
     return HttpResponse::NotFound().body(
-                    tp.render(context! {
-                        server => data.config.template_server_context(),
-                        page => TemplatePageContext {
-                            owner: "".to_string(),
-                            repo: "".to_string()
-                        },
-                        error => TemplateErrorContext {
-                            code: 404,
-                            message: "Malformed query".to_string()
-                        }
-                    })
-                    .unwrap(),
-                )
+        tp.render(context! {
+            server => data.config.template_server_context(),
+            page => TemplatePageContext {
+                owner: "".to_string(),
+                repo: "".to_string()
+            },
+            error => TemplateErrorContext {
+                code: 404,
+                message: "Malformed query".to_string()
+            }
+        })
+        .unwrap(),
+    );
 }
 
 #[get("/favicon.svg")]

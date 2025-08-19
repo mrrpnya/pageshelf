@@ -1,13 +1,17 @@
 use std::{path::Path, str::FromStr};
 
-use actix_web::{web::{self, ServiceConfig}, HttpRequest, HttpResponse, Responder};
+use actix_web::{
+    HttpRequest, HttpResponse, Responder,
+    web::{self, ServiceConfig},
+};
 use minijinja::Environment;
 use pages::get_page;
 use url::Url;
 
 use crate::{
     conf::ServerConfig,
-    page::{PageSource, PageSourceFactory}, util::{analyze_url, UrlAnalysis},
+    page::{PageSource, PageSourceFactory},
+    util::{UrlAnalysis, analyze_url},
 };
 
 pub mod pages;
@@ -43,14 +47,16 @@ async fn try_get_page_from_analysis<'a, PS: PageSource>(
     }
 
     if let Some(analysis) = analysis {
-        return Some(get_page(
-            &data,
-            analysis.owner.as_deref(),
-            analysis.repo.as_deref(),
-            analysis.branch.as_deref(),
-            Path::new(&analysis.asset),
-        )
-        .await);
+        return Some(
+            get_page(
+                &data,
+                analysis.owner.as_deref(),
+                analysis.repo.as_deref(),
+                analysis.branch.as_deref(),
+                Path::new(&analysis.asset),
+            )
+            .await,
+        );
     }
 
     None

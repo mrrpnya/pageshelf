@@ -13,9 +13,9 @@ use url::{Host, Url};
 #[tokio::test]
 async fn page_subdomain_default_user() {
     let _ = env_logger::builder()
-            .is_test(true)
-            .filter_level(log::LevelFilter::Debug)
-            .try_init();
+        .is_test(true)
+        .filter_level(log::LevelFilter::Debug)
+        .try_init();
 
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
@@ -53,7 +53,7 @@ async fn page_subdomain_default_user() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 404);
 
-        /* ---------------------------- Long path testing --------------------------- */
+    /* ---------------------------- Long path testing --------------------------- */
 
     let req = test::TestRequest::get()
         .uri("/")
@@ -77,9 +77,9 @@ async fn page_subdomain_default_user() {
 #[tokio::test]
 async fn page_subdomain_specific() {
     let _ = env_logger::builder()
-            .is_test(true)
-            .filter_level(log::LevelFilter::Debug)
-            .try_init();
+        .is_test(true)
+        .filter_level(log::LevelFilter::Debug)
+        .try_init();
 
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
@@ -91,7 +91,13 @@ async fn page_subdomain_specific() {
     let factory = create_example_provider_factory()
         .with_asset("owner_1", "pages", "pages", &path, asset_1.clone())
         .with_asset("owner_2", "other_thing", "pages", &path, asset_2.clone())
-        .with_asset("owner_2", "other_thing", "pages", &path_long, asset_2.clone());
+        .with_asset(
+            "owner_2",
+            "other_thing",
+            "pages",
+            &path_long,
+            asset_2.clone(),
+        );
 
     let app = test::init_service(App::new().configure(move |f| {
         setup_service_config(f, &config, factory, None);
@@ -120,7 +126,7 @@ async fn page_subdomain_specific() {
     let body = test::read_body(resp).await;
     assert_eq!(body, asset_2.body());
 
-        // Owner 2 has no default page, should fail
+    // Owner 2 has no default page, should fail
     let req = test::TestRequest::get()
         .uri("/")
         .insert_header(("Host", "pages.owner_2.example.domain"))
@@ -133,7 +139,10 @@ async fn page_subdomain_specific() {
 
     let req = test::TestRequest::get()
         .uri("/")
-        .insert_header(("Host", "other_thing.owner_2.example.domain/my/long/path/index.html"))
+        .insert_header((
+            "Host",
+            "other_thing.owner_2.example.domain/my/long/path/index.html",
+        ))
         .insert_header(ContentType::plaintext())
         .to_request();
     let resp = test::call_service(&app, req).await;
@@ -143,7 +152,10 @@ async fn page_subdomain_specific() {
 
     let req = test::TestRequest::get()
         .uri("/")
-        .insert_header(("Host", "pages.owner_1.example.domain/my/long/path/index.html"))
+        .insert_header((
+            "Host",
+            "pages.owner_1.example.domain/my/long/path/index.html",
+        ))
         .insert_header(ContentType::plaintext())
         .to_request();
     let resp = test::call_service(&app, req).await;
@@ -153,9 +165,9 @@ async fn page_subdomain_specific() {
 #[tokio::test]
 async fn page_base_priority() {
     let _ = env_logger::builder()
-            .is_test(true)
-            .filter_level(log::LevelFilter::Debug)
-            .try_init();
+        .is_test(true)
+        .filter_level(log::LevelFilter::Debug)
+        .try_init();
 
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
@@ -195,5 +207,4 @@ async fn page_base_priority() {
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
     assert_eq!(body, asset.body());
-
 }

@@ -26,7 +26,10 @@ pub fn analyze_url(url: &Url, pages_url: &Url) -> Option<UrlAnalysis> {
     if host != base_host {
         // --- Subdomain-based form ---
         // Example: unstable.page.person.example.domain
-        let prefix = host.strip_suffix(base_host)?.strip_suffix('.').unwrap_or(host);
+        let prefix = host
+            .strip_suffix(base_host)?
+            .strip_suffix('.')
+            .unwrap_or(host);
         let mut parts = prefix.rsplitn(3, '.'); // reverse split, up to 3 parts
 
         if let Some(o) = parts.next() {
@@ -76,7 +79,6 @@ pub fn analyze_url(url: &Url, pages_url: &Url) -> Option<UrlAnalysis> {
         asset,
     })
 }
-
 
 #[cfg(test)]
 mod tests {
