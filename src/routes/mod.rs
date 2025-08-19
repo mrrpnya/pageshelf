@@ -36,7 +36,8 @@ async fn try_get_page_from_analysis<'a, PS: PageSource>(
                 if let Ok(host) = host.to_str() {
                     let host_http = format!("http://{}", host);
                     if let Ok(host_url) = Url::from_str(host_http.as_str()) {
-                        if let Some(a) = analyze_url(&host_url, &url) {
+                        let uri = req.uri().to_string();
+                        if let Some(a) = analyze_url(&host_url.join(&uri).unwrap(), &url) {
                             analysis = Some(a);
                             break;
                         }

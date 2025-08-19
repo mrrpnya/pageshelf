@@ -17,16 +17,19 @@ async fn page_subdomain_default_user() {
         .filter_level(log::LevelFilter::Debug)
         .try_init();
 
-    let path = Path::new("/index.html");
+    let path_index = Path::new("/index.html");
+    let path_other = Path::new("/other.html");
     let path_long = Path::new("/my/long/path/index.html");
-    let asset = MemoryAsset::from_str("meow");
+    let asset_index = MemoryAsset::from_str("meow");
+    let asset_other = MemoryAsset::from_str("mrrp");
 
     let mut config = ServerConfig::default();
     config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
     let factory = create_example_provider_factory()
-        .with_asset("owner_1", "pages", "pages", &path, asset.clone())
-        .with_asset("owner_2", "other_thing", "pages", &path, asset.clone())
-        .with_asset("owner_1", "pages", "pages", &path_long, asset.clone());
+        .with_asset("owner_1", "pages", "pages", &path_index, asset_index.clone())
+        .with_asset("owner_1", "pages", "pages", &path_other, asset_other.clone())
+        .with_asset("owner_2", "other_thing", "pages", &path_index, asset_index.clone())
+        .with_asset("owner_1", "pages", "pages", &path_long, asset_index.clone());
 
     let app = test::init_service(App::new().configure(move |f| {
         setup_service_config(f, &config, factory, None);
@@ -42,7 +45,7 @@ async fn page_subdomain_default_user() {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset.body());
+    assert_eq!(body, asset_index.body());
 
     let req = test::TestRequest::get()
         .uri("/index.html")
@@ -52,7 +55,17 @@ async fn page_subdomain_default_user() {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset.body());
+    assert_eq!(body, asset_index.body());
+
+    let req = test::TestRequest::get()
+        .uri("/other.html")
+        .insert_header(("Host", "owner_1.example.domain"))
+        .insert_header(ContentType::plaintext())
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success());
+    let body = test::read_body(resp).await;
+    assert_eq!(body, asset_other.body());
 
     // Owner 2 has no default page, should fail
     let req = test::TestRequest::get()
@@ -73,7 +86,7 @@ async fn page_subdomain_default_user() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 200);
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset.body());
+    assert_eq!(body, asset_index.body());
 
     let req = test::TestRequest::get()
         .uri("/my/long/path/index.html")
