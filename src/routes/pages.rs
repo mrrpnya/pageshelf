@@ -155,7 +155,7 @@ pub async fn get_page<'a, PS: PageSource>(
             get_page_raw(data, owner, repo, channel, &buf, 200).await
         }
         true => {
-            let file = file.join("./index.html");
+            let file = file.join("index.html");
             get_page_raw(data, owner, repo, channel, &file, 200).await
         }
     };

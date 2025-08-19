@@ -44,6 +44,16 @@ async fn page_subdomain_default_user() {
     let body = test::read_body(resp).await;
     assert_eq!(body, asset.body());
 
+    let req = test::TestRequest::get()
+        .uri("/index.html")
+        .insert_header(("Host", "owner_1.example.domain"))
+        .insert_header(ContentType::plaintext())
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success());
+    let body = test::read_body(resp).await;
+    assert_eq!(body, asset.body());
+
     // Owner 2 has no default page, should fail
     let req = test::TestRequest::get()
         .uri("/")
@@ -56,8 +66,8 @@ async fn page_subdomain_default_user() {
     /* ---------------------------- Long path testing --------------------------- */
 
     let req = test::TestRequest::get()
-        .uri("/")
-        .insert_header(("Host", "owner_1.example.domain/my/long/path/index.html"))
+        .uri("/my/long/path/index.html")
+        .insert_header(("Host", "owner_1.example.domain"))
         .insert_header(ContentType::plaintext())
         .to_request();
     let resp = test::call_service(&app, req).await;
@@ -66,8 +76,8 @@ async fn page_subdomain_default_user() {
     assert_eq!(body, asset.body());
 
     let req = test::TestRequest::get()
-        .uri("/")
-        .insert_header(("Host", "owner_2.example.domain/my/long/path/index.html"))
+        .uri("/my/long/path/index.html")
+        .insert_header(("Host", "owner_2.example.domain"))
         .insert_header(ContentType::plaintext())
         .to_request();
     let resp = test::call_service(&app, req).await;

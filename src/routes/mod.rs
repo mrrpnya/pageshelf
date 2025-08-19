@@ -84,7 +84,7 @@ fn register_routes_to_config<'a, PS: PageSource + 'static>(
             "/{owner}/{repo}/{file:.*}",
             web::get().to(pages::get_page_orf::<PS>),
         )
-        .route("/", web::get().to(server::get_index::<PS>))
+        .route("/{tail:.*}", web::get().to(server::get_index::<PS>))
         .service(server::get_favicon_svg)
 }
 
