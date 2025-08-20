@@ -11,7 +11,7 @@ pub trait Asset {
     fn mime_type(&self) -> Option<&str> {
         None
     }
-    fn body(&self) -> String;
+    fn body(&self) -> &str;
     fn hash_sha256(&self) -> [u8; 32] {
         // TODO: Calculate SHA256 from .bytes()
         [0; 32]

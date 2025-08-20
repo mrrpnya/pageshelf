@@ -88,7 +88,16 @@ async fn page_access_index() {
         create_example_provider_factory().with_asset("owner_1", "name_1", "pages", &path, asset);
 
     let provider = factory.build().unwrap();
-    assert!(provider.page_at("owner_1", "name_1", "pages").await.is_ok());
+    assert!(
+        provider
+            .page_at(
+                "owner_1".to_string(),
+                "name_1".to_string(),
+                "pages".to_string()
+            )
+            .await
+            .is_ok()
+    );
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
         setup_service_config(f, &config, factory, None);
@@ -159,16 +168,33 @@ async fn page_access_branch() {
         .with_asset("owner_1", "name_1", "second", &path, asset_2);
 
     let provider = factory.build().unwrap();
-    assert!(provider.page_at("owner_1", "name_1", "pages").await.is_ok());
     assert!(
         provider
-            .page_at("owner_1", "name_1", "second")
+            .page_at(
+                "owner_1".to_string(),
+                "name_1".to_string(),
+                "pages".to_string()
+            )
             .await
             .is_ok()
     );
     assert!(
         provider
-            .page_at("owner_1", "name_1", "second")
+            .page_at(
+                "owner_1".to_string(),
+                "name_1".to_string(),
+                "second".to_string()
+            )
+            .await
+            .is_ok()
+    );
+    assert!(
+        provider
+            .page_at(
+                "owner_1".to_string(),
+                "name_1".to_string(),
+                "second".to_string()
+            )
             .await
             .unwrap()
             .asset_at(&path)

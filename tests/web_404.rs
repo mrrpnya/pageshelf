@@ -52,10 +52,10 @@ async fn page_custom_404() {
         .with_asset("owner_1", "name_1", "with_404", &path_1, asset_1.clone());
 
     let provider = factory.build().unwrap();
-    assert!(provider.page_at("owner_1", "name_1", "pages").await.is_ok());
+    assert!(provider.page_at("owner_1".to_string(), "name_1".to_string(), "pages".to_string()).await.is_ok());
     assert!(
         provider
-            .page_at("owner_1", "name_1", "with_404")
+            .page_at("owner_1".to_string(), "name_1".to_string(), "with_404".to_string())
             .await
             .unwrap()
             .asset_at(&path_1)

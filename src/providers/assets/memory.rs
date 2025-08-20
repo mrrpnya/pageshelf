@@ -37,8 +37,8 @@ impl MemoryAsset {
 }
 
 impl Asset for MemoryAsset {
-    fn body(&self) -> String {
-        unsafe { self.contents.clone() }
+    fn body(&self) -> &str {
+        unsafe { &self.contents }
     }
 }
 
@@ -53,7 +53,7 @@ impl<'a, A: Asset> AssetRef<'a, A> {
 }
 
 impl<'a, A: Asset> Asset for AssetRef<'a, A> {
-    fn body(&self) -> String {
+    fn body(&self) -> &str {
         self.asset.body()
     }
 }
@@ -99,7 +99,7 @@ impl AssetWritable for MemoryCache {
         self.data.insert(
             std::path::absolute(path.to_path_buf()).unwrap(),
             MemoryAsset {
-                contents: asset.body(),
+                contents: asset.body().to_string(),
             },
         );
 

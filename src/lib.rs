@@ -12,8 +12,9 @@ pub mod providers;
 pub mod routes;
 pub mod templates;
 pub mod util;
+pub mod resolver;
 
-pub fn setup_service_config<'a, PS: PageSourceFactory + Sync + Send + 'static>(
+/*pub fn setup_service_config<'a, PS: PageSourceFactory + Sync + Send + 'static>(
     web_config: &'a mut ServiceConfig,
     server_config: &'a ServerConfig,
     page_factory: PS,
@@ -35,4 +36,4 @@ pub fn setup_service_config<'a, PS: PageSourceFactory + Sync + Send + 'static>(
     });
 
     web_config
-}
+} */

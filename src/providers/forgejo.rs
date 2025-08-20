@@ -62,13 +62,13 @@ impl ForgejoProvider {
 impl PageSource for ForgejoProvider {
     async fn page_at(
         &self,
-        owner: &str,
-        name: &str,
-        channel: &str,
+        owner: String,
+        name: String,
+        channel: String,
     ) -> Result<impl Page, PageError> {
         match &self.branches {
             Some(v) => {
-                if !v.iter().any(|f| f == channel) {
+                if !v.iter().any(|f| f == &channel) {
                     warn!(
                         "Failed to access a Forgejo page: The branch {} is not in the list of accepted branches",
                         channel
@@ -80,10 +80,10 @@ impl PageSource for ForgejoProvider {
             None => {}
         }
 
-        match self.forgejo.repo_get(owner, name).await {
+        match self.forgejo.repo_get(&owner, &name).await {
             Ok(v) => {
                 // Verify that channel exists
-                match self.forgejo.repo_get_branch(owner, name, channel).await {
+                match self.forgejo.repo_get_branch(&owner, &name, &channel).await {
                     Ok(_) => v,
                     Err(e) => {
                         error!(

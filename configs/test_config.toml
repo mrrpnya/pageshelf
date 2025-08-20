@@ -1,10 +1,10 @@
 name = "SMGames Pages" # or whatever else
 description = "Page system for SMGames"
-#urls = "http://pages.smgames.club"
-#pages_urls = ["http://localhost"]
+urls = "http://pages.smgames.club"
+pages_urls = ["http://smgames.club/"]
 default_user = "admin"
 port = 8080
-
+allow_domains = true
 # Optional
 [ui]
 # Optional: Specifies a directory that contains asset files
@@ -35,4 +35,5 @@ branches = ["pages"]
 #disallow-files = "*"
 
 [redis]
-enabled = false
+enabled = true
+ttl = 480

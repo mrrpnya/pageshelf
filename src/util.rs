@@ -8,7 +8,7 @@ pub struct UrlAnalysis {
     pub asset: String,
 }
 
-pub fn analyze_url(url: &Url, pages_url: Option<&Url>) -> Option<UrlAnalysis> {
+pub fn analyze_url(url: &Url, base_domain: Option<&str>) -> Option<UrlAnalysis> {
     // Assume pages_url is example.domain;
     // (If none is returned, assume it's not valid)
     // (url "other.domain") -> None
@@ -30,7 +30,7 @@ pub fn analyze_url(url: &Url, pages_url: Option<&Url>) -> Option<UrlAnalysis> {
     // (url "unstable.page.person.example.domain") -> Some (owner person, repo page, branch unstable, asset /)
     // (url "unstable.page.person.example.domain/my_asset") -> Some (owner person, repo page, branch unstable, asset my_asset)
 
-    let host = match pages_url {
+    let host = match base_domain {
         Some(_) => url.host_str().unwrap(),
         None => "no.host",
     };
@@ -41,8 +41,8 @@ pub fn analyze_url(url: &Url, pages_url: Option<&Url>) -> Option<UrlAnalysis> {
 
     let host = &host[h_start..host.len()];
 
-    let base_host = match pages_url {
-        Some(v) => v.host_str().unwrap(),
+    let base_host = match base_domain {
+        Some(v) => v,
         None => "no.host",
     };
 
@@ -123,7 +123,7 @@ mod tests {
 
     #[test]
     fn test_analyze_url_all_subdirectory() {
-        let domain = Url::from_str("http://example.domain").unwrap();
+        let domain = "example.domain";
 
         let params: Vec<(&str, Option<UrlAnalysis>)> = vec![
             ("other.domain", None),
@@ -176,7 +176,7 @@ mod tests {
 
     #[test]
     fn test_analyze_url_basic_subdirectory() {
-        let domain = Url::from_str("http://example.domain").unwrap();
+        let domain = "example.domain";
 
         let params: Vec<(&str, Option<UrlAnalysis>)> = vec![
             ("other.domain", None),
@@ -229,7 +229,7 @@ mod tests {
 
     #[test]
     fn test_analyze_url_subdomain() {
-        let domain = Url::from_str("http://example.domain").unwrap();
+        let domain = "example.domain";
 
         let params: Vec<(&str, Option<UrlAnalysis>)> = vec![
             ("person.other.domain", None),

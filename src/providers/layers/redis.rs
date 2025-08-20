@@ -8,12 +8,13 @@ use redis::{AsyncCommands, Client, RedisError};
 use crate::{
     asset::{Asset, AssetError, AssetQueryable},
     conf::ServerConfig,
-    page::{Page, PageSource, PageSourceLayer},
+    page::{Page, PageError, PageSource, PageSourceLayer},
 };
 
 #[derive(Clone)]
 pub struct RedisLayer {
     client: Arc<redis::Client>,
+    ttl: i64,
 }
 
 impl RedisLayer {
@@ -22,6 +23,7 @@ impl RedisLayer {
         match redis::Client::open(address) {
             Ok(v) => Ok(Self {
                 client: Arc::new(v),
+                ttl: config.redis.ttl,
             }),
             Err(e) => {
                 error!("Failed to set up Redis integration: {}", e);
@@ -38,6 +40,7 @@ impl<PS: PageSource> PageSourceLayer<PS> for RedisLayer {
         Self::Source {
             upstream: page_source,
             client: self.client.clone(),
+            ttl: self.ttl,
         }
     }
 }
@@ -45,6 +48,7 @@ impl<PS: PageSource> PageSourceLayer<PS> for RedisLayer {
 pub struct RedisCachePage<P: Page> {
     upstream: P,
     client: Arc<Client>,
+    ttl: i64,
 }
 
 impl<P: Page> Page for RedisCachePage<P> {
@@ -67,13 +71,110 @@ pub enum RedisCacheAsset<A: Asset> {
 }
 
 impl<A: Asset> Asset for RedisCacheAsset<A> {
-    fn body(&self) -> String {
+    fn body(&self) -> &str {
         match self {
-            Self::Hold(data) => data.clone(),
+            Self::Hold(data) => &data,
             Self::Load(asset) => asset.body(),
         }
     }
 }
+
+
+pub enum RedisCacheAssetEither<A: Asset, B: Asset> {
+    A(A),
+    B(B),
+}
+
+impl<A: Asset, B: Asset> Asset for RedisCacheAssetEither<A, B> {
+    fn body(&self) -> &str {
+        match self {
+            Self::A(data) => data.body(),
+            Self::B(data) => data.body(),
+        }
+    }
+}
+
+pub enum RedisCacheAssetIterEither<A: Asset, B: Asset, AI: Iterator<Item = A>, BI: Iterator<Item = B>> {
+    A(AI),
+    B(BI),
+}
+
+impl<A: Asset, B: Asset, AI: Iterator<Item = A>, BI: Iterator<Item = B>> Iterator for RedisCacheAssetIterEither<A, B, AI, BI> {
+    type Item = RedisCacheAssetEither<A, B>;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            Self::A(data) => {
+                if let Some(d) = data.next() {
+                    return Some(RedisCacheAssetEither::<A, B>::A(d));
+                }
+                None
+            },
+            Self::B(data) => {
+                if let Some(d) = data.next() {
+                    return Some(RedisCacheAssetEither::<A, B>::B(d));
+                }
+                None
+            },
+        }
+    }
+}
+
+pub enum RedisCachePageMerge<PA: Page, PB: Page> {
+    A(PA),
+    B(PB)
+}
+
+impl<PA: Page, PB: Page> Page for RedisCachePageMerge<PA, PB> {
+    fn name(&self) -> &str {
+        match self {
+            Self::A(v) => v.name(),
+            Self::B(v) => v.name()
+        }
+    }
+
+    fn branch(&self) -> &str {
+        match self {
+            Self::A(v) => v.branch(),
+            Self::B(v) => v.branch()
+        }
+    }
+
+    fn owner(&self) -> &str {
+        match self {
+            Self::A(v) => v.owner(),
+            Self::B(v) => v.owner()
+        }
+    }
+}
+
+impl<PA: Page, PB: Page> AssetQueryable for RedisCachePageMerge<PA, PB> {
+    async fn asset_at(&self, path: &std::path::Path) -> Result<impl Asset, AssetError> {
+        match self {
+            Self::A(v) => match v.asset_at(path).await {
+                Ok(v) => Ok(RedisCacheAssetEither::A(v)),
+                Err(e) => Err(e)
+            },
+            Self::B(v) => match v.asset_at(path).await {
+                Ok(v) => Ok(RedisCacheAssetEither::B(v)),
+                Err(e) => Err(e)
+            }
+        }
+    }
+
+    fn assets(&self) -> Result<impl Iterator<Item = impl Asset>, AssetError> {
+        match self {
+            Self::A(v) => match v.assets() {
+                Ok(v) => Ok(RedisCacheAssetIterEither::A(v)),
+                Err(e) => Err(e)
+            },
+            Self::B(v) => match v.assets() {
+                Ok(v) => Ok(RedisCacheAssetIterEither::B(v)),
+                Err(e) => Err(e)
+            }
+        }
+    }
+}
+
 
 impl<P: Page> AssetQueryable for RedisCachePage<P> {
     async fn asset_at(
@@ -105,7 +206,9 @@ impl<P: Page> AssetQueryable for RedisCachePage<P> {
                 info!("Cache miss (loading from upstream): {}", e);
                 match self.upstream.asset_at(&path).await {
                     Ok(v) => {
-                        conn.set::<String, String, String>(key, v.body()).await;
+                        conn.set::<String, &str, String>(key.clone(), v.body())
+                            .await;
+                        conn.expire::<String, String>(key, self.ttl);
                         Ok(RedisCacheAsset::Load(v))
                     }
                     Err(e) => Err(e),
@@ -124,20 +227,22 @@ impl<P: Page> AssetQueryable for RedisCachePage<P> {
 pub struct RedisCacheSource<PS: PageSource> {
     upstream: PS,
     client: Arc<Client>,
+    ttl: i64,
 }
 
 impl<PS: PageSource> PageSource for RedisCacheSource<PS> {
     async fn page_at(
         &self,
-        owner: &str,
-        name: &str,
-        branch: &str,
-    ) -> Result<impl crate::page::Page, crate::page::PageError> {
+        owner: String,
+        name: String,
+        branch: String,
+    ) -> Result<impl Page, crate::page::PageError> {
         debug!("Wrapping page in a Redis abstraction...");
         match self.upstream.page_at(owner, name, branch).await {
             Ok(v) => Ok(RedisCachePage {
                 upstream: v,
                 client: self.client.clone(),
+                ttl: self.ttl,
             }),
             Err(e) => Err(e),
         }
@@ -147,5 +252,54 @@ impl<PS: PageSource> PageSource for RedisCacheSource<PS> {
         &self,
     ) -> Result<impl Iterator<Item = impl crate::page::Page>, crate::page::PageError> {
         self.upstream.pages().await
+    }
+
+    async fn find_by_domains(&self, domains: &[&str]) -> Result<impl Page, crate::page::PageError> {
+        debug!("Connecting to Redis to cache search...");
+        let mut conn = match self.client.get_multiplexed_async_connection().await {
+            Ok(v) => v,
+            Err(e) => {
+                error!("Failed to create multiplexed async Redis connection: {}", e);
+                return Err(PageError::ProviderError);
+            }
+        };
+        for domain in domains {
+            let key_o = format!("DOMAIN_RESOLVE_OWNER_{}", domain);
+            let key_r = format!("DOMAIN_RESOLVE_NAME_{}", domain);
+            if let Ok(o) = conn.get::<String, String>(key_o).await {
+                if let Ok(r) = conn.get::<String, String>(key_r).await {
+                    if let Ok(upstream) = self.page_at(o, r, self.default_branch().to_string()).await {
+                        info!("Cache hit! Found by cached domain.");
+                        return Ok(RedisCachePage {
+                            upstream: RedisCachePageMerge::A(upstream),
+                            client: self.client.clone(),
+                            ttl: self.ttl
+                        });
+                    }
+                }
+            }
+        }
+        info!("Cache miss! Finding by domain...");
+        
+        let find = self.upstream.find_by_domains(domains).await;
+        match find {
+            Ok(page) => {
+                for domain in domains {
+                    let key_o = format!("DOMAIN_RESOLVE_OWNER_{}", domain);
+                    let key_r = format!("DOMAIN_RESOLVE_NAME_{}", domain);
+                    conn.set::<String, String, String>(key_o, page.owner().to_string()).await;
+                    conn.set::<String, String, String>(key_r, page.name().to_string()).await;
+                }
+
+                return Ok(RedisCachePage {
+                    upstream: RedisCachePageMerge::B(page),
+                    client: self.client.clone(),
+                    ttl: self.ttl
+                });
+            },
+            Err(e) => {
+                Err(e)
+            }
+        }
     }
 }

@@ -13,6 +13,7 @@ use url::Url;
 #[tokio::test]
 async fn page_domain_custom() {
     let mut config = ServerConfig::default();
+    config.allow_domains = true;
     config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
     exec_domain_custom(&config).await;
     config.url = Some(Url::from_str("https://root.domain").unwrap());
@@ -29,7 +30,7 @@ async fn exec_domain_custom(config: &ServerConfig) {
     let path_index = Path::new("/index.html");
     let path_other = Path::new("/other.html");
     let path_long = Path::new("/my/long/path/index.html");
-    let asset_domains = MemoryAsset::from_str("example_custom.domain");
+    let asset_domains = MemoryAsset::from_str("example_custom.domain\nwww.example_custom.domain");
     let asset_index = MemoryAsset::from_str("meow");
     let asset_other = MemoryAsset::from_str("meow");
 

@@ -29,6 +29,19 @@ impl Display for PageError {
 /*                               Page Accessing                               */
 /* -------------------------------------------------------------------------- */
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PageLocation {
+    pub owner: String,
+    pub name: String,
+    pub branch: String
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PageAssetLocation {
+    pub page: PageLocation,
+    pub asset: String
+}
+
 /// A Page represents a site to be hosted.
 pub trait Page: AssetQueryable {
     fn name(&self) -> &str;
@@ -37,6 +50,13 @@ pub trait Page: AssetQueryable {
     /// and they can be individually addressed.
     fn branch(&self) -> &str;
     fn owner(&self) -> &str;
+    fn location(&self) -> PageLocation {
+        PageLocation { 
+            owner: self.owner().to_string(), 
+            name: self.name().to_string(), 
+            branch: self.branch().to_string() 
+        }
+    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -172,9 +192,9 @@ pub trait PageSource {
     /// Tries to get a Page at the specified location.
     fn page_at(
         &self,
-        owner: &str,
-        name: &str,
-        branch: &str,
+        owner: String,
+        name: String,
+        branch: String,
     ) -> impl Future<Output = Result<impl Page, PageError>>;
     /// Iterates all pages available to this source.
     fn pages(&self) -> impl Future<Output = Result<impl Iterator<Item = impl Page>, PageError>>;

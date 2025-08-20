@@ -44,6 +44,7 @@ fn default_redis() -> ServerConfigRedis {
         enabled: default_redis_enabled(),
         address: default_redis_address(),
         port: default_redis_port(),
+        ttl: default_redis_ttl()
     }
 }
 
@@ -57,6 +58,14 @@ fn default_redis_address() -> String {
 
 fn default_redis_port() -> u16 {
     6379
+}
+
+fn default_redis_ttl() -> i64 {
+    1200
+}
+
+fn default_domains_allowed() -> bool {
+    false
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -112,6 +121,8 @@ pub struct ServerConfigRedis {
     pub address: String,
     #[serde(default = "default_redis_port")]
     pub port: u16,
+    #[serde(default = "default_redis_ttl")]
+    pub ttl: i64
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -127,6 +138,8 @@ pub struct ServerConfig {
     pub pages_urls: Option<Vec<Url>>,
     #[serde(default = "default_user")]
     pub default_user: String,
+    #[serde(default = "default_domains_allowed")]
+    pub allow_domains: bool,
 
     // Specialized
     #[serde(default = "default_security")]
@@ -159,6 +172,7 @@ impl Default for ServerConfig {
             pages_urls: None,
             port: default_port(),
             default_user: default_user(),
+            allow_domains: default_domains_allowed(),
 
             // Specialized
             security: ServerConfigSecurity {

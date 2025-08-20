@@ -6,13 +6,13 @@ use actix_web::{
 };
 use log::debug;
 use minijinja::Environment;
-use pages::{get_page, is_base_url};
+use pages::get_page;
 use url::Url;
 
 use crate::{
     conf::ServerConfig,
     page::{PageSource, PageSourceFactory},
-    util::{UrlAnalysis, analyze_url},
+    resolver::{UrlResolution, UrlResolver}
 };
 
 pub mod pages;
@@ -24,69 +24,33 @@ pub struct RouteSharedData<'a, PS: PageSource> {
     pub provider: PS,
     pub config: ServerConfig,
     pub jinja: Environment<'a>,
+    pub resolver: UrlResolver,
 }
 
 async fn try_get_page_from_analysis<'a, PS: PageSource>(
     data: &web::Data<RouteSharedData<'a, PS>>,
     req: &HttpRequest,
 ) -> Option<HttpResponse> {
-    let mut analysis: Option<UrlAnalysis> = None;
+    let resolution = data.resolver.resolve_http_request(&req);
 
-    let uri = req.uri().to_string();
-    if let Some(host) = req.headers().get("Host") {
-        if let Ok(host) = host.to_str() {
-            if is_base_url(&data, &req) {
-                let host_http = format!("http://{}", host);
-                if let Some(url) = &data.config.url {
-                    if let Ok(host_url) = Url::from_str(host_http.as_str()) {
-                        analysis = analyze_url(&host_url.join(&uri).unwrap(), Some(&url))
-                    }
-                } else {
-                    if let Ok(host_url) = Url::from_str(host_http.as_str()) {
-                        analysis = analyze_url(&host_url.join(&uri).unwrap(), None)
-                    }
-                }
-            } else if let Some(urls) = &data.config.pages_urls {
-                for url in urls {
-                    let host_http = format!("http://{}", host);
-                    if let Ok(host_url) = Url::from_str(host_http.as_str()) {
-                        let uri = req.uri().to_string();
-                        if let Some(a) = analyze_url(&host_url.join(&uri).unwrap(), Some(&url)) {
-                            analysis = Some(a);
-                            break;
-                        }
-                    }
-                }
-            } else {
-                debug!("Falling back to URI paths...");
-                let host_http = format!("http://{}", "host");
-                if let Ok(host_url) = Url::from_str(host_http.as_str()) {
-                    analysis = analyze_url(&host_url.join(&uri).unwrap(), None)
-                }
-            }
-        }
-    } else {
-        debug!("No hostname detected; Analyzing URI...");
-        let host_http = format!("http://{}", "host");
-        if let Ok(host_url) = Url::from_str(host_http.as_str()) {
-            analysis = analyze_url(&host_url.join(&uri).unwrap(), None)
+    match resolution {
+        UrlResolution::Page(loc) => {
+            return Some(
+                get_page(
+                    &data,
+                    Some(loc.page.owner.as_str()),
+                    Some(loc.page.name.as_str()),
+                    Some(loc.page.branch.as_str()),
+                    Path::new(&loc.asset),
+                )
+                .await,
+            );
+        },
+        _ => {
+            Some(HttpResponse::NotFound().finish())
         }
     }
 
-    if let Some(analysis) = analysis {
-        return Some(
-            get_page(
-                &data,
-                analysis.owner.as_deref(),
-                analysis.repo.as_deref(),
-                analysis.branch.as_deref(),
-                Path::new(&analysis.asset),
-            )
-            .await,
-        );
-    }
-
-    None
 }
 
 /* -------------------------------------------------------------------------- */
@@ -130,6 +94,13 @@ pub fn setup_service_config<'a, PS: PageSourceFactory + Sync + Send + 'static>(
             None => crate::templates::templates_from_builtin(),
         },
         config,
+        resolver: UrlResolver::new(
+            server_config.url.clone(),
+            server_config.pages_urls.clone(),
+            "pages".to_string(),
+            "pages".to_string(),
+            server_config.allow_domains
+        ),
     }));
     //.wrap(middleware::NormalizePath::trim())
     web_config.configure(|f| {

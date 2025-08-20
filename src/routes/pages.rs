@@ -13,175 +13,9 @@ use crate::{
     templates::{TEMPLATE_404, TemplateErrorContext, TemplatePageContext},
 };
 
-use super::try_get_page_from_analysis;
-
 /* -------------------------------------------------------------------------- */
 /*                               Exposed Queries                              */
 /* -------------------------------------------------------------------------- */
-
-// TODO: Consider renaming these?
-
-pub fn is_base_url<'a, PS: PageSource>(
-    data: &web::Data<RouteSharedData<'a, PS>>,
-    req: &HttpRequest,
-) -> bool {
-    match req.headers().get("Host") {
-        Some(url) => match &data.config.url {
-            Some(base_url) => {
-                debug!("Checking if host {:?} is base url", url);
-                let url = url.to_str().unwrap();
-                let d_start = match url.starts_with("www.") {
-                    true => url.find('.').unwrap(),
-                    false => 0,
-                };
-                let url = &url[d_start..url.len()];
-                base_url.host_str().unwrap() == url
-            }
-            None => {
-                debug!("No host found");
-                return false;
-            } /*match &data.config.pages_urls {
-                  Some(pages_urls) => match v.to_str() {
-                      Ok(v) => !pages_urls.iter().any(|f| {
-                          let s = f.host_str().unwrap();
-                          log::debug!("Checking if {} ends in {}...", v, s);
-                          v[0..v.find("/").unwrap_or(v.len())].ends_with(s)
-                      }),
-                      Err(_) => true,
-                  },
-                  None => true,
-              },*/
-        },
-        None => true,
-    }
-}
-
-pub fn is_page_url<'a, PS: PageSource>(
-    data: &web::Data<RouteSharedData<'a, PS>>,
-    req: &HttpRequest,
-) -> bool {
-    log::debug!("page url check...");
-    match req.headers().get("Host") {
-        Some(host) => {
-            log::debug!("has host...");
-            match &data.config.pages_urls {
-                Some(page_urls) => {
-                    let host = host.to_str().unwrap();
-                    let d_start = match host.starts_with("www.") {
-                        true => host.find('.').unwrap(),
-                        false => 0,
-                    };
-                    let host = &host[d_start..host.len()];
-                    for page_url in page_urls {
-                        let s = page_url.domain().unwrap();
-                        log::debug!("Checking if {} is a page url...", s);
-                        if is_in_url(&s, host) && s != host {
-                            return true;
-                        }
-                    }
-                }
-                None => {
-                    return false;
-                }
-            }
-        }
-        None => {
-            return false;
-        }
-    }
-
-    false
-}
-
-fn is_in_url(url_base: &str, url: &str) -> bool {
-    log::debug!("Checking if {} ends in {}...", url, url_base);
-    url.ends_with(url_base)
-}
-
-/// Page query route (Owner-Repo-File)
-pub async fn get_page_orf<'a, PS: PageSource>(
-    path: web::Path<(String, String, String)>,
-    data: web::Data<RouteSharedData<'a, PS>>,
-    req: HttpRequest,
-) -> HttpResponse {
-    let (owner, repo, file) = path.into_inner();
-    if is_base_url(&data, &req) {
-        get_page(&data, Some(&owner), Some(&repo), None, Path::new(&file)).await
-    } else {
-        if let Some(page) = try_get_page_from_analysis(&data, &req).await {
-            return page;
-        }
-
-        HttpResponse::NotFound().body("Failed to get page")
-    }
-}
-
-/// Page query route (Owner-Repo-Branch-File)
-pub async fn get_page_orbf<'a, PS: PageSource>(
-    path: web::Path<(String, String, String, String)>,
-    data: web::Data<RouteSharedData<'a, PS>>,
-    req: HttpRequest,
-) -> impl Responder {
-    let (owner, repo, branch, file) = path.into_inner();
-
-    if is_base_url(&data, &req) {
-        get_page(
-            &data,
-            Some(&owner),
-            Some(&repo),
-            Some(&branch),
-            Path::new(&file),
-        )
-        .await
-    } else {
-        if let Some(page) = try_get_page_from_analysis(&data, &req).await {
-            return page;
-        }
-
-        HttpResponse::NotFound().body("Failed to get page")
-    }
-}
-
-/// Page query route (Owner-Repo)
-pub async fn get_page_or<'a, PS: PageSource>(
-    path: web::Path<(String, String)>,
-    data: web::Data<RouteSharedData<'a, PS>>,
-    req: HttpRequest,
-) -> impl Responder {
-    let (owner, repo) = path.into_inner();
-
-    let p = std::path::absolute(Path::new("/")).unwrap();
-
-    if is_base_url(&data, &req) {
-        get_page(&data, Some(&owner), Some(&repo), None, &p).await
-    } else {
-        if let Some(page) = try_get_page_from_analysis(&data, &req).await {
-            return page;
-        }
-
-        HttpResponse::NotFound().body("Failed to get page")
-    }
-}
-
-/// Page query route (Owner-Repo-Branch)
-pub async fn get_page_orb<'a, PS: PageSource>(
-    path: web::Path<(String, String, String)>,
-    data: web::Data<RouteSharedData<'a, PS>>,
-    req: HttpRequest,
-) -> impl Responder {
-    let (owner, repo, branch) = path.into_inner();
-
-    let p = std::path::absolute(Path::new("/")).unwrap();
-    if is_base_url(&data, &req) {
-        get_page(&data, Some(&owner), Some(&repo), Some(&branch), &p).await
-    } else {
-        if let Some(page) = try_get_page_from_analysis(&data, &req).await {
-            return page;
-        }
-
-        HttpResponse::NotFound().body("Failed to get page")
-    }
-}
 
 /* -------------------------------------------------------------------------- */
 /*                                Data Querying                               */
@@ -219,7 +53,7 @@ pub async fn get_page<'a, PS: PageSource>(
 
         if secondary.1 == 404 {
             debug!("404'd, trying to see if there's a custom 404 here...");
-            return get_page_raw(data, owner, repo, channel, Path::new("/404.html"), 404)
+            return get_page_raw(data, owner, repo, channel, Path::new("./404.html"), 404)
                 .await
                 .0;
         }
@@ -246,7 +80,7 @@ pub async fn get_page_raw<'a, PS: PageSource>(
 
     /* ------------------------------- Page Query ------------------------------- */
 
-    let page = match data.provider.page_at(&owner, &repo, &branch).await {
+    let page = match data.provider.page_at(owner.to_string(), repo.to_string(), branch.to_string()).await {
         Ok(v) => v,
         Err(e) => {
             let tp = data.jinja.get_template(TEMPLATE_404).unwrap();
@@ -316,7 +150,7 @@ pub async fn get_page_raw<'a, PS: PageSource>(
     (
         HttpResponse::build(StatusCode::from_u16(ok_code).unwrap())
             .content_type(guesses.first_or(Mime::from_str("application/octet-stream").unwrap()))
-            .body(asset.body()),
+            .body(asset.body().to_string()),
         ok_code,
     )
 }
