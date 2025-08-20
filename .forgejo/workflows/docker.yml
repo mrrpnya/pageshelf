@@ -1,0 +1,24 @@
+on:
+  push:
+    branches:
+      - "stable"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: 🐋 Build and publish to Docker
+    runs-on: ubuntu-rust
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to OCI Registry
+        uses: https://git.smgames.club/mrrp/PublishImage@main
+        with:
+          registry-url: 'git.smgames.club'
+          registry-token: ${{ secrets.DOCKER_TOKEN }}
+          architectures: 'amd64,arm64'
+          tags: 'stable'
+          name: 'auto'
+          dockerfile: './Dockerfile'
+          owner: 'mrrp'
