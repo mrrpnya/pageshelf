@@ -12,6 +12,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Docker
+        uses: https://github.com/docker/setup-docker-action@v4
+
       - name: Deploy to OCI Registry
         uses: https://git.smgames.club/mrrp/PublishImage@main
         with:
