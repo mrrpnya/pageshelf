@@ -1,7 +1,7 @@
 /// Default Actix routes for querying pages.
 use std::{path::Path, str::FromStr};
 
-use actix_web::{HttpRequest, HttpResponse, Responder, http::StatusCode, web};
+use actix_web::{HttpResponse, http::StatusCode, web};
 use log::{debug, error, info};
 use mime_guess::Mime;
 use minijinja::context;
@@ -9,20 +9,16 @@ use minijinja::context;
 use crate::{
     asset::{Asset, AssetQueryable},
     page::PageSource,
-    routes::RouteSharedData,
-    templates::{TEMPLATE_404, TemplateErrorContext, TemplatePageContext},
+    RoutingState,
+    frontend::templates::{TEMPLATE_ERROR, TemplateErrorContext, TemplatePageContext},
 };
-
-/* -------------------------------------------------------------------------- */
-/*                               Exposed Queries                              */
-/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /*                                Data Querying                               */
 /* -------------------------------------------------------------------------- */
 
 pub async fn get_page<'a, PS: PageSource>(
-    data: &web::Data<RouteSharedData<'a, PS>>,
+    data: &web::Data<RoutingState<'a, PS>>,
     owner: Option<&str>,
     repo: Option<&str>,
     channel: Option<&str>,
@@ -64,7 +60,7 @@ pub async fn get_page<'a, PS: PageSource>(
 
 /// Base action for querying a page via the web.
 pub async fn get_page_raw<'a, PS: PageSource>(
-    data: &web::Data<RouteSharedData<'a, PS>>,
+    data: &web::Data<RoutingState<'a, PS>>,
     owner: &str,
     repo: &str,
     channel: Option<&str>,
@@ -83,7 +79,7 @@ pub async fn get_page_raw<'a, PS: PageSource>(
     let page = match data.provider.page_at(owner.to_string(), repo.to_string(), branch.to_string()).await {
         Ok(v) => v,
         Err(e) => {
-            let tp = data.jinja.get_template(TEMPLATE_404).unwrap();
+            let tp = data.jinja.get_template(TEMPLATE_ERROR).unwrap();
             error!(
                 "Failed to find page (owner: {}, name: {}, branch: {}): {}",
                 owner, repo, branch, e
@@ -98,7 +94,8 @@ pub async fn get_page_raw<'a, PS: PageSource>(
                         },
                         error => TemplateErrorContext {
                             code: 404,
-                            message: format!("Page not found - {:?}", e)
+                            message: format!("Page not found - {:?}", e),
+                            about: "Failed to find the page you were looking for.".to_string()
                         }
                     })
                     .unwrap(),

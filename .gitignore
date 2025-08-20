@@ -1,3 +1,6 @@
 /target/
 /.direnv/
 output.log
+perf.data
+perf.data.old
+flamegraph.svg

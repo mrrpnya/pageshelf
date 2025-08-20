@@ -8,8 +8,8 @@ use actix_web::{
 use criterion::{Criterion, async_executor::AsyncStdExecutor, criterion_group, criterion_main};
 use pageshelf::{
     conf::ServerConfig,
-    providers::{assets::memory::MemoryAsset, testing::create_example_provider_factory},
-    routes::setup_service_config,
+    backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    frontend::setup_service_config,
 };
 use url::Url;
 

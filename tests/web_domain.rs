@@ -4,9 +4,8 @@ use actix_web::{App, http::header::ContentType, test};
 use pageshelf::{
     asset::Asset,
     conf::ServerConfig,
-    page::PageSourceFactory,
-    providers::{assets::memory::MemoryAsset, testing::create_example_provider_factory},
-    routes::setup_service_config,
+    backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    frontend::setup_service_config,
 };
 use url::Url;
 

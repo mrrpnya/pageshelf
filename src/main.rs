@@ -7,9 +7,9 @@ use minijinja::Environment;
 use pageshelf::{
     conf::ServerConfig,
     page::PageSourceFactory,
-    providers::{ForgejoProviderFactory, layers::redis::RedisLayer},
-    routes::setup_service_config,
-    templates::templates_from_builtin,
+    backend::{ForgejoProviderFactory, layers::redis::RedisLayer},
+    frontend::setup_service_config,
+    frontend::templates::templates_from_builtin,
 };
 
 use clap::{arg, crate_authors, crate_description, crate_name, crate_version};
@@ -104,7 +104,6 @@ where
 {
     let port = config.port;
     HttpServer::new(move || {
-        // TODO: See if cloning can be reduced here? It's done every worker.
         let config = config.clone();
         let page_factory = page_factory.clone();
         let templates = templates.clone();

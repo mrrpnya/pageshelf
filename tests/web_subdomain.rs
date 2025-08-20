@@ -4,9 +4,8 @@ use actix_web::{App, http::header::ContentType, test};
 use pageshelf::{
     asset::Asset,
     conf::ServerConfig,
-    page::PageSourceFactory,
-    providers::{assets::memory::MemoryAsset, testing::create_example_provider_factory},
-    routes::setup_service_config,
+    backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    frontend::setup_service_config,
 };
 use url::Url;
 
@@ -29,7 +28,7 @@ async fn exec_subdomain_default_user(config: &ServerConfig) {
     let path_other = Path::new("/other.html");
     let path_long = Path::new("/my/long/path/index.html");
     let asset_index = MemoryAsset::from_str("meow");
-    let asset_other = MemoryAsset::from_str("mrrp");
+    let asset_other = MemoryAsset::from_str("nya");
 
     let factory = create_example_provider_factory()
         .with_asset(

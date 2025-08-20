@@ -136,7 +136,7 @@ impl UrlResolver {
                                             if self.external_enabled {
                                                 UrlResolution::External(url.clone());
                                             } else {
-                                                UrlResolution::BuiltIn;
+                                                drop(UrlResolution::BuiltIn);
                                             }
                                         }
                                     },
@@ -253,18 +253,18 @@ pub mod tests {
     #[test]
     fn root_user_identify() {
         let r = UrlResolver::new(
-            Some(Url::from_str("http://home.domain/mrrp").unwrap()),
-            Some(vec![Url::from_str("http://pages.domain/mrrp").unwrap()]),
+            Some(Url::from_str("http://home.domain/nya").unwrap()),
+            Some(vec![Url::from_str("http://pages.domain/nya").unwrap()]),
             "pages".to_string(),
             "pages".to_string(),
             false,
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://home.domain/mrrp").unwrap()),
+            r.resolve(Url::from_str("http://home.domain/nya").unwrap()),
             UrlResolution::Page(PageAssetLocation {
                 page: PageLocation {
-                    owner: "mrrp".to_string(),
+                    owner: "nya".to_string(),
                     name: "pages".to_string(),
                     branch: "pages".to_string()
                 },
@@ -273,7 +273,7 @@ pub mod tests {
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://other.domain/mrrp").unwrap()),
+            r.resolve(Url::from_str("http://other.domain/nya").unwrap()),
             UrlResolution::BuiltIn
         );
     }
@@ -289,10 +289,10 @@ pub mod tests {
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://home.domain/mrrp").unwrap()),
+            r.resolve(Url::from_str("http://home.domain/nya").unwrap()),
             UrlResolution::Page(PageAssetLocation {
                 page: PageLocation {
-                    owner: "mrrp".to_string(),
+                    owner: "nya".to_string(),
                     name: "pages".to_string(),
                     branch: "pages".to_string()
                 },
@@ -301,10 +301,10 @@ pub mod tests {
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://other.domain/mrrp").unwrap()),
+            r.resolve(Url::from_str("http://other.domain/nya").unwrap()),
             UrlResolution::Page(PageAssetLocation {
                 page: PageLocation {
-                    owner: "mrrp".to_string(),
+                    owner: "nya".to_string(),
                     name: "pages".to_string(),
                     branch: "pages".to_string()
                 },
@@ -324,10 +324,10 @@ pub mod tests {
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://mrrp.home.domain").unwrap()),
+            r.resolve(Url::from_str("http://nya.home.domain").unwrap()),
             UrlResolution::Page(PageAssetLocation {
                 page: PageLocation {
-                    owner: "mrrp".to_string(),
+                    owner: "nya".to_string(),
                     name: "pages".to_string(),
                     branch: "pages".to_string()
                 },

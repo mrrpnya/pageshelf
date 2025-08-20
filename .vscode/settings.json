@@ -4,7 +4,9 @@
         "Actix",
         "Forgejo",
         "minijinja",
-        "pageshelf"
+        "pageshelf",
+        "rsplitn",
+        "serde"
     ],
     "rust-analyzer.checkOnSave": true,
     "rust-analyzer.check.extraArgs": [

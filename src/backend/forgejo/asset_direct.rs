@@ -7,7 +7,7 @@ use log::{error, info, warn};
 
 use crate::asset::{Asset, AssetError, AssetQueryable};
 
-use super::memory::MemoryAsset;
+use crate::backend::memory::MemoryAsset;
 
 pub struct ForgejoDirectReadStorage<'a> {
     forgejo: &'a Forgejo,

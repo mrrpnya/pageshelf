@@ -12,10 +12,6 @@ pub trait Asset {
         None
     }
     fn body(&self) -> &str;
-    fn hash_sha256(&self) -> [u8; 32] {
-        // TODO: Calculate SHA256 from .bytes()
-        [0; 32]
-    }
 }
 
 pub trait AssetQueryable {

@@ -1,28 +1,33 @@
 use std::path::Path;
 
-use actix_web::{HttpRequest, HttpResponse, Responder, get, http::StatusCode, web};
+use actix_web::{
+    HttpRequest, HttpResponse, Responder, get,
+    http::header::HeaderValue,
+    web,
+};
 use log::{debug, info};
 use minijinja::context;
-use url::form_urlencoded::Target;
 
 use crate::{
-    asset::Asset,
-    page::{Page, PageSource},
-    resolver::UrlResolution,
-    routes::{RouteSharedData, pages::get_page, try_get_page_from_analysis},
-    templates::{TEMPLATE_404, TEMPLATE_INDEX, TemplateErrorContext, TemplatePageContext},
+    frontend::{routes::{pages::get_page, RoutingState}, templates::{TemplateErrorContext, TemplatePageContext, TEMPLATE_ERROR, TEMPLATE_INDEX}}, page::{Page, PageSource}, resolver::UrlResolution
 };
 
-// TODO: Split the logic for finding a page into its own function
 pub async fn get_index<'a, PS: PageSource>(
-    data: web::Data<RouteSharedData<'a, PS>>,
+    data: web::Data<RoutingState<'a, PS>>,
     req: HttpRequest,
 ) -> impl Responder {
-    debug!("Index requested");
+    debug!(
+        "Requested by {}",
+        req.headers()
+            .get("Origin")
+            .unwrap_or(&HeaderValue::from_str("Unknown Origin").unwrap())
+            .to_str()
+            .unwrap_or("Unknown Origin")
+    );
     let resolution = data.resolver.resolve_http_request(&req);
     match resolution {
         UrlResolution::BuiltIn => {
-            info!("Built-In");
+            info!("Serving Built-In page");
             return HttpResponse::Ok().body(
                 data.jinja
                     .get_template(TEMPLATE_INDEX)
@@ -66,10 +71,9 @@ pub async fn get_index<'a, PS: PageSource>(
             }
         }
         _ => {
-            return HttpResponse::NotFound().into();
         }
     };
-    let tp = data.jinja.get_template(TEMPLATE_404).unwrap();
+    let tp = data.jinja.get_template(TEMPLATE_ERROR).unwrap();
     return HttpResponse::NotFound().body(
         tp.render(context! {
             server => data.config.template_server_context(),
@@ -79,7 +83,8 @@ pub async fn get_index<'a, PS: PageSource>(
             },
             error => TemplateErrorContext {
                 code: 404,
-                message: "Malformed query".to_string()
+                message: "Malformed query".to_string(),
+                about: "Failed to analyze query.".to_string()
             }
         })
         .unwrap(),
@@ -90,5 +95,5 @@ pub async fn get_index<'a, PS: PageSource>(
 async fn get_favicon_svg() -> impl Responder {
     HttpResponse::Ok()
         .content_type("image/svg+xml")
-        .body(include_str!("../../branding/pageshelf_logo.svg"))
+        .body(include_str!("../../../branding/pageshelf_logo.svg"))
 }

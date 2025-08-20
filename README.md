@@ -1,6 +1,12 @@
+<div style="text-align: center;">
+
+<img src="./branding/pageshelf_logo.webp" width="100" alt="Logo"/>
+
 # Pageshelf
 
 A free and open-source Pages server, written in Rust.
+
+</div>
 
 ## Supported software
 

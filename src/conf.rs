@@ -2,71 +2,11 @@ use clap::crate_version;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::templates::TemplateServerContext;
+use crate::frontend::templates::TemplateServerContext;
 
-fn default_port() -> u16 {
-    8080
-}
-
-fn default_name() -> String {
-    "Pageshelf".to_string()
-}
-
-fn default_description() -> String {
-    "A free and open source Pages server, written in Rust".to_string()
-}
-
-fn default_upstream_url() -> String {
-    "https://codeberg.org".to_string()
-}
-
-fn default_branch() -> String {
-    "pages".to_string()
-}
-
-fn default_branches_allowed() -> Vec<String> {
-    vec!["pages".to_string()]
-}
-
-fn default_security() -> ServerConfigSecurity {
-    ServerConfigSecurity {
-        whitelist: None,
-        blacklist: None,
-    }
-}
-
-fn default_user() -> String {
-    "admin".to_string()
-}
-
-fn default_redis() -> ServerConfigRedis {
-    ServerConfigRedis {
-        enabled: default_redis_enabled(),
-        address: default_redis_address(),
-        port: default_redis_port(),
-        ttl: default_redis_ttl()
-    }
-}
-
-fn default_redis_enabled() -> bool {
-    false
-}
-
-fn default_redis_address() -> String {
-    "127.0.0.1".to_string()
-}
-
-fn default_redis_port() -> u16 {
-    6379
-}
-
-fn default_redis_ttl() -> i64 {
-    1200
-}
-
-fn default_domains_allowed() -> bool {
-    false
-}
+/* -------------------------------------------------------------------------- */
+/*                              Config structure                              */
+/* -------------------------------------------------------------------------- */
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ServerConfigUpstreamType {
@@ -111,6 +51,8 @@ pub struct ServerConfigUpstream {
 pub struct ServerConfigSecurity {
     pub whitelist: Option<String>,
     pub blacklist: Option<String>,
+    #[serde(default = "default_security_show_private")]
+    pub show_private: bool
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -154,13 +96,20 @@ impl ServerConfig {
         TemplateServerContext {
             name: self.name.to_string(),
             about: self.description.to_string(),
-            home_url: None,
+            url: match &self.url {
+                Some(v) => Some(v.as_str().to_string()),
+                None => None
+            },
             icon_url: Some("/pages_favicon.svg".to_string()),
             default_branch: self.upstream.default_branch.clone(),
             version: crate_version!(),
         }
     }
 }
+
+/* -------------------------------------------------------------------------- */
+/*                            Default initializers                            */
+/* -------------------------------------------------------------------------- */
 
 impl Default for ServerConfig {
     fn default() -> Self {
@@ -178,6 +127,7 @@ impl Default for ServerConfig {
             security: ServerConfigSecurity {
                 whitelist: None,
                 blacklist: None,
+                show_private: default_security_show_private()
             },
             upstream: ServerConfigUpstream {
                 r#type: ServerConfigUpstreamType::Forgejo,
@@ -191,3 +141,73 @@ impl Default for ServerConfig {
         }
     }
 }
+
+fn default_port() -> u16 {
+    8080
+}
+
+fn default_name() -> String {
+    "Pageshelf".to_string()
+}
+
+fn default_description() -> String {
+    "A free and open source Pages server, written in Rust".to_string()
+}
+
+fn default_upstream_url() -> String {
+    "https://codeberg.org".to_string()
+}
+
+fn default_branch() -> String {
+    "pages".to_string()
+}
+
+fn default_branches_allowed() -> Vec<String> {
+    vec!["pages".to_string()]
+}
+
+fn default_security() -> ServerConfigSecurity {
+    ServerConfigSecurity {
+        whitelist: None,
+        blacklist: None,
+        show_private: default_security_show_private()
+    }
+}
+
+fn default_security_show_private() -> bool {
+    false
+}
+
+fn default_user() -> String {
+    "admin".to_string()
+}
+
+fn default_redis() -> ServerConfigRedis {
+    ServerConfigRedis {
+        enabled: default_redis_enabled(),
+        address: default_redis_address(),
+        port: default_redis_port(),
+        ttl: default_redis_ttl()
+    }
+}
+
+fn default_redis_enabled() -> bool {
+    false
+}
+
+fn default_redis_address() -> String {
+    "127.0.0.1".to_string()
+}
+
+fn default_redis_port() -> u16 {
+    6379
+}
+
+fn default_redis_ttl() -> i64 {
+    1200
+}
+
+fn default_domains_allowed() -> bool {
+    false
+}
+

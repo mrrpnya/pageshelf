@@ -1,5 +1,3 @@
-// TODO: Implement Redis layer
-
 use std::sync::Arc;
 
 use log::{debug, error, info};
@@ -206,9 +204,10 @@ impl<P: Page> AssetQueryable for RedisCachePage<P> {
                 info!("Cache miss (loading from upstream): {}", e);
                 match self.upstream.asset_at(&path).await {
                     Ok(v) => {
-                        conn.set::<String, &str, String>(key.clone(), v.body())
+                        // TODO: Error reporting
+                        let _ = conn.set::<String, &str, String>(key.clone(), v.body())
                             .await;
-                        conn.expire::<String, String>(key, self.ttl);
+                        let _ = conn.expire::<String, String>(key, self.ttl);
                         Ok(RedisCacheAsset::Load(v))
                     }
                     Err(e) => Err(e),
@@ -287,8 +286,9 @@ impl<PS: PageSource> PageSource for RedisCacheSource<PS> {
                 for domain in domains {
                     let key_o = format!("DOMAIN_RESOLVE_OWNER_{}", domain);
                     let key_r = format!("DOMAIN_RESOLVE_NAME_{}", domain);
-                    conn.set::<String, String, String>(key_o, page.owner().to_string()).await;
-                    conn.set::<String, String, String>(key_r, page.name().to_string()).await;
+                    // TODO: Error reporting
+                    let _ = conn.set::<String, String, String>(key_o, page.owner().to_string()).await;
+                    let _ = conn.set::<String, String, String>(key_r, page.name().to_string()).await;
                 }
 
                 return Ok(RedisCachePage {

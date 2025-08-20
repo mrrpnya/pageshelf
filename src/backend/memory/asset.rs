@@ -38,7 +38,7 @@ impl MemoryAsset {
 
 impl Asset for MemoryAsset {
     fn body(&self) -> &str {
-        unsafe { &self.contents }
+        &self.contents
     }
 }
 

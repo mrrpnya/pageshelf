@@ -1,10 +1,12 @@
+mod asset;
+
 use std::{collections::HashMap, path::Path};
 
 use crate::{
     asset::{Asset, AssetError, AssetQueryable, AssetWritable},
     page::{Page, PageError, PageSource, PageSourceFactory},
-    providers::assets::memory::{MemoryAsset, MemoryCache},
 };
+pub use asset::{MemoryAsset, MemoryCache};
 
 /* -------------------------------------------------------------------------- */
 /*                             Page Implementation                            */

@@ -5,6 +5,10 @@ use log::{error, info};
 /// PageSource -> Page -> Asset -> [your data]
 use std::{fmt::Display, path::Path};
 
+/* -------------------------------- Constants ------------------------------- */
+
+const FILE_DOMAIN: &str = "/.domain";
+
 /* -------------------------------- Utilities ------------------------------- */
 
 #[derive(Debug, PartialEq, Eq)]
@@ -278,17 +282,17 @@ pub trait PageSource {
             {
                 // TODO: Magic string, fix.
                 info!(
-                    "Checking repo {}/{}:{} for .domain file. Matching against domains {:?}...",
+                    "Checking repo {}/{}:{} for domain file. Matching against domains {:?}...",
                     page.owner(),
                     page.name(),
                     page.branch(),
                     domains
                 );
-                let asset = page.asset_at(Path::new("/.domain")).await;
+                let asset = page.asset_at(Path::new(FILE_DOMAIN)).await;
 
                 if let Ok(asset) = asset {
                     info!(
-                        "Found /.domain at {}/{}:{} for .domain file...",
+                        "Found domain file at {}/{}:{}",
                         page.owner(),
                         page.name(),
                         page.branch()

@@ -5,8 +5,8 @@ use pageshelf::{
     asset::{Asset, AssetQueryable},
     conf::ServerConfig,
     page::{PageSource, PageSourceFactory},
-    providers::{assets::memory::MemoryAsset, testing::create_example_provider_factory},
-    routes::setup_service_config,
+    backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    frontend::setup_service_config,
 };
 
 #[tokio::test]

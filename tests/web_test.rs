@@ -1,12 +1,12 @@
-use std::{path::Path, str::FromStr};
+use std::path::Path;
 
 use actix_web::{App, http::header::ContentType, middleware::NormalizePath, test};
 use pageshelf::{
     asset::AssetQueryable,
     conf::ServerConfig,
     page::{PageSource, PageSourceFactory},
-    providers::{assets::memory::MemoryAsset, testing::create_example_provider_factory},
-    routes::setup_service_config,
+    backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    frontend::setup_service_config,
 };
 
 /* -------------------------------------------------------------------------- */
@@ -160,7 +160,7 @@ async fn page_access_branch() {
 
     let path = Path::new("/index.html");
     let asset_1 = MemoryAsset::from_str("meow");
-    let asset_2 = MemoryAsset::from_str("mrrp");
+    let asset_2 = MemoryAsset::from_str("nya");
 
     let config = ServerConfig::default();
     let factory = create_example_provider_factory()

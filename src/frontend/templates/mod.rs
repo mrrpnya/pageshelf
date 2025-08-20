@@ -3,16 +3,24 @@ use log::{error, info};
 use minijinja::Environment;
 use serde::{Deserialize, Serialize};
 
-/// Identifier for the 404 template.
-pub const TEMPLATE_404: &str = "404.html";
+/* -------------------------------------------------------------------------- */
+/*                           Known page identifiers                           */
+/* -------------------------------------------------------------------------- */
+
+/// Identifier for the Error template.
+pub const TEMPLATE_ERROR: &str = "error.html";
 /// Identifier for the Index template.
 pub const TEMPLATE_INDEX: &str = "index.html";
+
+/* -------------------------------------------------------------------------- */
+/*                             Rendering contexts                             */
+/* -------------------------------------------------------------------------- */
 
 #[derive(Serialize)]
 pub struct TemplateServerContext {
     pub name: String,
     pub about: String,
-    pub home_url: Option<String>,
+    pub url: Option<String>,
     pub icon_url: Option<String>,
     pub default_branch: String,
     pub version: &'static str,
@@ -28,7 +36,12 @@ pub struct TemplatePageContext {
 pub struct TemplateErrorContext {
     pub code: u16,
     pub message: String,
+    pub about: String
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                    Setup                                   */
+/* -------------------------------------------------------------------------- */
 
 /// Add a template to an environment.
 /// Logs whether it succeeds or fails.
@@ -52,7 +65,7 @@ pub fn templates_from_builtin<'a>() -> Environment<'a> {
     checked_add_template(&mut env, "styles.css", include_str!("styles.css"));
 
     // Pages
-    checked_add_template(&mut env, TEMPLATE_404, include_str!("404.jinja"));
+    checked_add_template(&mut env, TEMPLATE_ERROR, include_str!("error.jinja"));
     checked_add_template(&mut env, TEMPLATE_INDEX, include_str!("index.jinja"));
     checked_add_template(&mut env, "footer.html", include_str!("footer.jinja"));
     checked_add_template(&mut env, "header.html", include_str!("header.jinja"));

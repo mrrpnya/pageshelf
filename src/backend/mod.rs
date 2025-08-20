@@ -1,7 +1,6 @@
-pub mod assets;
-mod forgejo;
+pub mod forgejo;
+pub mod memory;
 pub mod layers;
-mod memory;
 
 // Export specific types
 pub use forgejo::ForgejoProvider;

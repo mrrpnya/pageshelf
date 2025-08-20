@@ -1,3 +1,5 @@
+mod asset_direct;
+
 use std::{path::Path, str::FromStr};
 
 use crate::{
@@ -9,7 +11,7 @@ use forgejo_api::{Auth, Forgejo, structs::RepoSearchQuery};
 use log::{debug, error, info, warn};
 use url::Url;
 
-use super::assets::forgejo_direct::ForgejoDirectReadStorage;
+use asset_direct::ForgejoDirectReadStorage;
 
 enum Strategy {
     Direct,
@@ -159,7 +161,6 @@ impl PageSource for ForgejoProvider {
                 continue;
             }
 
-            // TODO: Check on the login_name validity
             let user = repo.owner.unwrap().login.unwrap();
             let repo = repo.name.unwrap();
 
@@ -197,7 +198,7 @@ impl PageSource for ForgejoProvider {
                                 });
                             }
                             Err(e) => {
-                                debug!("Failed to get branch!");
+                                error!("Failed to get branch: {}", e);
                                 continue;
                             }
                         }
@@ -224,7 +225,6 @@ pub struct ForgejoProviderFactory {
 }
 
 impl ForgejoProviderFactory {
-    // TODO: Set the error type in this result
     pub fn from_config(config: ServerConfig) -> Result<Self, ()> {
         let url = match url::Url::from_str(&config.upstream.url) {
             Ok(v) => v,

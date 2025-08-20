@@ -8,8 +8,8 @@
         {% include "header.html" %}
     </header>
     <div class="container align-center text-center" style="padding-top: 15px">
-        <h1 class="font-monospace">404 Not Found</h1>
-        <p>Unfortunately, the asset you are looking for was not found.</p>
+        <h1 class="font-monospace"><span class="bold">{{ error.code }}</span> {{ error.message }}</h1>
+        <p>{{ error.about }}</p>
     </div>
     <footer>
         {% include "footer.html" %}

@@ -1,14 +1,15 @@
-name = "SMGames Pages" # or whatever else
-description = "Page system for SMGames"
+name = "Pageshelf" # or whatever else
+description = "A free and open source Pages system, written in the Rust language."
 urls = "http://pages.smgames.club"
 pages_urls = ["http://smgames.club/"]
 default_user = "admin"
 port = 8080
-allow_domains = true
+allow_domains = false
+
 # Optional
 [ui]
 # Optional: Specifies a directory that contains asset files
-# These files can use Jinga templates
+# These files can use Jinja templates
 # Built in files will take priority
 #overrides = "./templates"
 
@@ -19,7 +20,6 @@ type = "forgejo"
 # Leave blank for automatic
 method = "direct"
 # Optional: Identifies where to find the repositories for the pages
-# Defaults to codeberg.org
 url = "https://git.smgames.club"
 # Optional: Specifies what branch should be the default when accessing a page
 # Leave blank for "page"
@@ -30,9 +30,9 @@ branches = ["pages"]
 #token = "my-auth-token"
 
 [security]
-#whitelist = { owner = "*", repo = "*" }
-#blacklist = { owner = "*", repo = "*" }
-#disallow-files = "*"
+#whitelist = { owner = "*", repo = "*", file = "*" }
+#blacklist = { owner = "*", repo = "*", file = "*" }
+show_private = false
 
 [redis]
 enabled = true
