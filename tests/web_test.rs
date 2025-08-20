@@ -3,10 +3,10 @@ use std::path::Path;
 use actix_web::{App, http::header::ContentType, middleware::NormalizePath, test};
 use pageshelf::{
     asset::AssetQueryable,
-    conf::ServerConfig,
-    page::{PageSource, PageSourceFactory},
     backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    conf::ServerConfig,
     frontend::setup_service_config,
+    page::{PageSource, PageSourceFactory},
 };
 
 /* -------------------------------------------------------------------------- */

@@ -49,7 +49,6 @@ impl UrlResolver {
                         .map(|f| f.host_str())
                         .filter(|f| {
                             if f.is_some() {
-                                
                                 return true;
                             }
                             warn!("Failed to determine page domain host");
@@ -250,6 +249,7 @@ pub mod tests {
         );
     }
 
+    /// Try and find a user via root URL
     #[test]
     fn root_user_identify() {
         let r = UrlResolver::new(
@@ -280,13 +280,7 @@ pub mod tests {
 
     #[test]
     fn default_to_root() {
-        let r = UrlResolver::new(
-            None,
-            None,
-            "pages".to_string(),
-            "pages".to_string(),
-            false,
-        );
+        let r = UrlResolver::new(None, None, "pages".to_string(), "pages".to_string(), false);
 
         assert_eq!(
             r.resolve(Url::from_str("http://home.domain/nya").unwrap()),
@@ -339,8 +333,6 @@ pub mod tests {
             r.resolve(Url::from_str("http://home.domain").unwrap()),
             UrlResolution::BuiltIn
         );
-
-        
     }
 
     #[test]

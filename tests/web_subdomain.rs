@@ -3,8 +3,8 @@ use std::{path::Path, str::FromStr};
 use actix_web::{App, http::header::ContentType, test};
 use pageshelf::{
     asset::Asset,
-    conf::ServerConfig,
     backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    conf::ServerConfig,
     frontend::setup_service_config,
 };
 use url::Url;

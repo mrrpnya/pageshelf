@@ -3,10 +3,10 @@ use std::path::Path;
 use actix_web::{App, http::header::ContentType, middleware::NormalizePath, test};
 use pageshelf::{
     asset::{Asset, AssetQueryable},
-    conf::ServerConfig,
-    page::{PageSource, PageSourceFactory},
     backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    conf::ServerConfig,
     frontend::setup_service_config,
+    page::{PageSource, PageSourceFactory},
 };
 
 #[tokio::test]
@@ -52,10 +52,23 @@ async fn page_custom_404() {
         .with_asset("owner_1", "name_1", "with_404", &path_1, asset_1.clone());
 
     let provider = factory.build().unwrap();
-    assert!(provider.page_at("owner_1".to_string(), "name_1".to_string(), "pages".to_string()).await.is_ok());
     assert!(
         provider
-            .page_at("owner_1".to_string(), "name_1".to_string(), "with_404".to_string())
+            .page_at(
+                "owner_1".to_string(),
+                "name_1".to_string(),
+                "pages".to_string()
+            )
+            .await
+            .is_ok()
+    );
+    assert!(
+        provider
+            .page_at(
+                "owner_1".to_string(),
+                "name_1".to_string(),
+                "with_404".to_string()
+            )
             .await
             .unwrap()
             .asset_at(&path_1)

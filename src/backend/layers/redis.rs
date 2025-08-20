@@ -1,3 +1,8 @@
+/// A Layer that allows using Redis to cache page info and Assets.
+///
+/// Redis is a high-speed in-memory cache with data durability.
+/// It is useful for reducing queries upstream (especially when deployed off-site).
+/// See: https://redis.io/ for more information about Redis itself.
 use std::sync::Arc;
 
 use log::{debug, error, info};
@@ -9,6 +14,7 @@ use crate::{
     page::{Page, PageError, PageSource, PageSourceLayer},
 };
 
+/// A Layer that caches page info and assets passed through it via Redis.
 #[derive(Clone)]
 pub struct RedisLayer {
     client: Arc<redis::Client>,
@@ -77,7 +83,6 @@ impl<A: Asset> Asset for RedisCacheAsset<A> {
     }
 }
 
-
 pub enum RedisCacheAssetEither<A: Asset, B: Asset> {
     A(A),
     B(B),
@@ -92,12 +97,19 @@ impl<A: Asset, B: Asset> Asset for RedisCacheAssetEither<A, B> {
     }
 }
 
-pub enum RedisCacheAssetIterEither<A: Asset, B: Asset, AI: Iterator<Item = A>, BI: Iterator<Item = B>> {
+pub enum RedisCacheAssetIterEither<
+    A: Asset,
+    B: Asset,
+    AI: Iterator<Item = A>,
+    BI: Iterator<Item = B>,
+> {
     A(AI),
     B(BI),
 }
 
-impl<A: Asset, B: Asset, AI: Iterator<Item = A>, BI: Iterator<Item = B>> Iterator for RedisCacheAssetIterEither<A, B, AI, BI> {
+impl<A: Asset, B: Asset, AI: Iterator<Item = A>, BI: Iterator<Item = B>> Iterator
+    for RedisCacheAssetIterEither<A, B, AI, BI>
+{
     type Item = RedisCacheAssetEither<A, B>;
     fn next(&mut self) -> Option<Self::Item> {
         match self {
@@ -106,41 +118,41 @@ impl<A: Asset, B: Asset, AI: Iterator<Item = A>, BI: Iterator<Item = B>> Iterato
                     return Some(RedisCacheAssetEither::<A, B>::A(d));
                 }
                 None
-            },
+            }
             Self::B(data) => {
                 if let Some(d) = data.next() {
                     return Some(RedisCacheAssetEither::<A, B>::B(d));
                 }
                 None
-            },
+            }
         }
     }
 }
 
 pub enum RedisCachePageMerge<PA: Page, PB: Page> {
     A(PA),
-    B(PB)
+    B(PB),
 }
 
 impl<PA: Page, PB: Page> Page for RedisCachePageMerge<PA, PB> {
     fn name(&self) -> &str {
         match self {
             Self::A(v) => v.name(),
-            Self::B(v) => v.name()
+            Self::B(v) => v.name(),
         }
     }
 
     fn branch(&self) -> &str {
         match self {
             Self::A(v) => v.branch(),
-            Self::B(v) => v.branch()
+            Self::B(v) => v.branch(),
         }
     }
 
     fn owner(&self) -> &str {
         match self {
             Self::A(v) => v.owner(),
-            Self::B(v) => v.owner()
+            Self::B(v) => v.owner(),
         }
     }
 }
@@ -150,12 +162,12 @@ impl<PA: Page, PB: Page> AssetQueryable for RedisCachePageMerge<PA, PB> {
         match self {
             Self::A(v) => match v.asset_at(path).await {
                 Ok(v) => Ok(RedisCacheAssetEither::A(v)),
-                Err(e) => Err(e)
+                Err(e) => Err(e),
             },
             Self::B(v) => match v.asset_at(path).await {
                 Ok(v) => Ok(RedisCacheAssetEither::B(v)),
-                Err(e) => Err(e)
-            }
+                Err(e) => Err(e),
+            },
         }
     }
 
@@ -163,16 +175,15 @@ impl<PA: Page, PB: Page> AssetQueryable for RedisCachePageMerge<PA, PB> {
         match self {
             Self::A(v) => match v.assets() {
                 Ok(v) => Ok(RedisCacheAssetIterEither::A(v)),
-                Err(e) => Err(e)
+                Err(e) => Err(e),
             },
             Self::B(v) => match v.assets() {
                 Ok(v) => Ok(RedisCacheAssetIterEither::B(v)),
-                Err(e) => Err(e)
-            }
+                Err(e) => Err(e),
+            },
         }
     }
 }
-
 
 impl<P: Page> AssetQueryable for RedisCachePage<P> {
     async fn asset_at(
@@ -205,7 +216,8 @@ impl<P: Page> AssetQueryable for RedisCachePage<P> {
                 match self.upstream.asset_at(&path).await {
                     Ok(v) => {
                         // TODO: Error reporting
-                        let _ = conn.set::<String, &str, String>(key.clone(), v.body())
+                        let _ = conn
+                            .set::<String, &str, String>(key.clone(), v.body())
                             .await;
                         let _ = conn.expire::<String, String>(key, self.ttl);
                         Ok(RedisCacheAsset::Load(v))
@@ -267,19 +279,21 @@ impl<PS: PageSource> PageSource for RedisCacheSource<PS> {
             let key_r = format!("DOMAIN_RESOLVE_NAME_{}", domain);
             if let Ok(o) = conn.get::<String, String>(key_o).await {
                 if let Ok(r) = conn.get::<String, String>(key_r).await {
-                    if let Ok(upstream) = self.page_at(o, r, self.default_branch().to_string()).await {
+                    if let Ok(upstream) =
+                        self.page_at(o, r, self.default_branch().to_string()).await
+                    {
                         info!("Cache hit! Found by cached domain.");
                         return Ok(RedisCachePage {
                             upstream: RedisCachePageMerge::A(upstream),
                             client: self.client.clone(),
-                            ttl: self.ttl
+                            ttl: self.ttl,
                         });
                     }
                 }
             }
         }
         info!("Cache miss! Finding by domain...");
-        
+
         let find = self.upstream.find_by_domains(domains).await;
         match find {
             Ok(page) => {
@@ -287,19 +301,21 @@ impl<PS: PageSource> PageSource for RedisCacheSource<PS> {
                     let key_o = format!("DOMAIN_RESOLVE_OWNER_{}", domain);
                     let key_r = format!("DOMAIN_RESOLVE_NAME_{}", domain);
                     // TODO: Error reporting
-                    let _ = conn.set::<String, String, String>(key_o, page.owner().to_string()).await;
-                    let _ = conn.set::<String, String, String>(key_r, page.name().to_string()).await;
+                    let _ = conn
+                        .set::<String, String, String>(key_o, page.owner().to_string())
+                        .await;
+                    let _ = conn
+                        .set::<String, String, String>(key_r, page.name().to_string())
+                        .await;
                 }
 
                 return Ok(RedisCachePage {
                     upstream: RedisCachePageMerge::B(page),
                     client: self.client.clone(),
-                    ttl: self.ttl
+                    ttl: self.ttl,
                 });
-            },
-            Err(e) => {
-                Err(e)
             }
+            Err(e) => Err(e),
         }
     }
 }

@@ -1,14 +1,10 @@
 use std::{path::Path, str::FromStr};
 
-use actix_web::{
-    App,
-    http::header::ContentType,
-    test,
-};
+use actix_web::{App, http::header::ContentType, test};
 use criterion::{Criterion, async_executor::AsyncStdExecutor, criterion_group, criterion_main};
 use pageshelf::{
-    conf::ServerConfig,
     backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    conf::ServerConfig,
     frontend::setup_service_config,
 };
 use url::Url;

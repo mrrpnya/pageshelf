@@ -5,12 +5,17 @@ use fern::colors::{Color, ColoredLevelConfig};
 use log::debug;
 use minijinja::Environment;
 use pageshelf::{
-    conf::ServerConfig,
-    page::PageSourceFactory,
-    backend::{ForgejoProviderFactory, layers::redis::RedisLayer},
-    frontend::setup_service_config,
-    frontend::templates::templates_from_builtin,
+    conf::ServerConfig, frontend::setup_service_config,
+    frontend::templates::templates_from_builtin, page::PageSourceFactory,
 };
+
+#[cfg(feature = "forgejo")]
+use pageshelf::backend::ForgejoProviderFactory;
+
+use pageshelf::conf::ServerConfigUpstreamType;
+
+#[cfg(feature = "redis")]
+use pageshelf::backend::layers::redis::RedisLayer;
 
 use clap::{arg, crate_authors, crate_description, crate_name, crate_version};
 
@@ -53,18 +58,35 @@ async fn main() -> std::io::Result<()> {
 
     let templates = templates_from_builtin();
 
-    let factory = match ForgejoProviderFactory::from_config(config.clone()) {
-        Ok(v) => v,
-        Err(_) => {
+    match config.upstream.r#type {
+        #[cfg(feature = "forgejo")]
+        ServerConfigUpstreamType::Forgejo => {
+            match ForgejoProviderFactory::from_config(config.clone()) {
+                Ok(factory) => {
+                    #[cfg(feature = "redis")]
+                    let redis = RedisLayer::from_config(&config).unwrap();
+                    #[cfg(feature = "redis")]
+                    match config.redis.enabled {
+                        true => {
+                            let factory = factory.wrap(redis);
+                            return run_server(factory, config, templates).await;
+                        }
+                        false => {}
+                    }
+                    run_server(factory, config, templates).await
+                }
+                Err(_) => {
+                    log::error!("Failed to generate Forgejo provider via configs");
+                    return Ok(());
+                }
+            }
+        }
+        // This will be used as a fallback, should no feature be available.
+        _ => {
+            log::error!("Failed to determine provider to use");
             return Ok(());
         }
-    };
-    if config.redis.enabled {
-        let redis = RedisLayer::from_config(&config).unwrap();
-        let f = factory.wrap(redis);
-        return run_server(f, config, templates).await;
     }
-    run_server(factory, config, templates).await
 }
 
 /* -------------------------------------------------------------------------- */

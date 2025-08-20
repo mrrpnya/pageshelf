@@ -1,7 +1,6 @@
+/// Utilities for sourcing pages from Forgejo directly, via raw file access.
 use std::path::Path;
 
-/// Utilities for sourcing pages from Forgejo directly.
-/// This is lazy-loaded.
 use forgejo_api::{Forgejo, structs::RepoGetRawFileQuery};
 use log::{error, info, warn};
 

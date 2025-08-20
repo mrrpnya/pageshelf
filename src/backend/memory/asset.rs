@@ -1,5 +1,6 @@
-/// In-memory implementation of an
-/// It will simply show pages that are stored in memory inside it.
+/// In-memory implementation of Assets and asset storage
+///
+/// It will simply show what is stored in memory inside it. Useful for mocking.
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -9,6 +10,7 @@ use log::info;
 
 use crate::asset::{Asset, AssetError, AssetQueryable, AssetWritable};
 
+/// An Asset that is stored and accessed from memory.
 #[derive(Clone)]
 pub struct MemoryAsset {
     contents: String,
@@ -58,6 +60,7 @@ impl<'a, A: Asset> Asset for AssetRef<'a, A> {
     }
 }
 
+/// A group of assets that are stored in memory and can be accessed.
 #[derive(Clone)]
 pub struct MemoryCache {
     data: HashMap<PathBuf, MemoryAsset>,
@@ -113,6 +116,7 @@ mod tests {
 
     use super::MemoryAsset;
 
+    /// Can we get the same string back from the asset?
     #[test]
     fn memory_asset_str() {
         let data = "meow";

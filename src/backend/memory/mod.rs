@@ -1,3 +1,6 @@
+/// In-Memory backend and tools.
+///
+/// This allows sourcing pages from memory; This is useful for mocking.
 mod asset;
 
 use std::{collections::HashMap, path::Path};
@@ -57,7 +60,7 @@ impl PageSource for MemoryPageProvider {
         &self,
         owner: String,
         name: String,
-        channel: String
+        channel: String,
     ) -> Result<impl Page, PageError> {
         let owner = owner.to_string();
         let name = name.to_string();
@@ -191,8 +194,22 @@ pub mod testing {
 
         assert_eq!(p.pages().await.unwrap().count(), 2);
 
-        let page_1 = p.page_at(OWNER_1.to_string(), NAME_1.to_string(), BRANCH_1.to_string()).await.unwrap();
-        let page_2 = p.page_at(OWNER_2.to_string(), NAME_2.to_string(), BRANCH_2.to_string()).await.unwrap();
+        let page_1 = p
+            .page_at(
+                OWNER_1.to_string(),
+                NAME_1.to_string(),
+                BRANCH_1.to_string(),
+            )
+            .await
+            .unwrap();
+        let page_2 = p
+            .page_at(
+                OWNER_2.to_string(),
+                NAME_2.to_string(),
+                BRANCH_2.to_string(),
+            )
+            .await
+            .unwrap();
 
         // Validate asset count
         assert_eq!(page_1.assets().unwrap().count(), 1);
@@ -205,18 +222,98 @@ pub mod testing {
         assert!(page_2.asset_at(&asset_path_1).await.is_err());
 
         // Validate incorrect page accessing
-        assert!(p.page_at(OWNER_2.to_string(), NAME_1.to_string(), BRANCH_1.to_string()).await.is_err());
-        assert!(p.page_at(OWNER_2.to_string(), NAME_1.to_string(), BRANCH_2.to_string()).await.is_err());
-        assert!(p.page_at(OWNER_1.to_string(), NAME_2.to_string(), BRANCH_1.to_string()).await.is_err());
-        assert!(p.page_at(OWNER_1.to_string(), NAME_2.to_string(), BRANCH_2.to_string()).await.is_err());
+        assert!(
+            p.page_at(
+                OWNER_2.to_string(),
+                NAME_1.to_string(),
+                BRANCH_1.to_string()
+            )
+            .await
+            .is_err()
+        );
+        assert!(
+            p.page_at(
+                OWNER_2.to_string(),
+                NAME_1.to_string(),
+                BRANCH_2.to_string()
+            )
+            .await
+            .is_err()
+        );
+        assert!(
+            p.page_at(
+                OWNER_1.to_string(),
+                NAME_2.to_string(),
+                BRANCH_1.to_string()
+            )
+            .await
+            .is_err()
+        );
+        assert!(
+            p.page_at(
+                OWNER_1.to_string(),
+                NAME_2.to_string(),
+                BRANCH_2.to_string()
+            )
+            .await
+            .is_err()
+        );
         if BRANCH_1 != BRANCH_2 {
-            assert!(p.page_at(OWNER_1.to_string(), NAME_1.to_string(), BRANCH_2.to_string()).await.is_err());
-            assert!(p.page_at(OWNER_2.to_string(), NAME_1.to_string(), BRANCH_2.to_string()).await.is_err());
-            assert!(p.page_at(OWNER_2.to_string(), NAME_2.to_string(), BRANCH_1.to_string()).await.is_err());
+            assert!(
+                p.page_at(
+                    OWNER_1.to_string(),
+                    NAME_1.to_string(),
+                    BRANCH_2.to_string()
+                )
+                .await
+                .is_err()
+            );
+            assert!(
+                p.page_at(
+                    OWNER_2.to_string(),
+                    NAME_1.to_string(),
+                    BRANCH_2.to_string()
+                )
+                .await
+                .is_err()
+            );
+            assert!(
+                p.page_at(
+                    OWNER_2.to_string(),
+                    NAME_2.to_string(),
+                    BRANCH_1.to_string()
+                )
+                .await
+                .is_err()
+            );
         } else {
-            assert!(p.page_at(OWNER_1.to_string(), NAME_1.to_string(), BRANCH_2.to_string()).await.is_ok());
-            assert!(p.page_at(OWNER_2.to_string(), NAME_2.to_string(), BRANCH_1.to_string()).await.is_ok());
-            assert!(p.page_at(OWNER_2.to_string(), NAME_1.to_string(), BRANCH_2.to_string()).await.is_err());
+            assert!(
+                p.page_at(
+                    OWNER_1.to_string(),
+                    NAME_1.to_string(),
+                    BRANCH_2.to_string()
+                )
+                .await
+                .is_ok()
+            );
+            assert!(
+                p.page_at(
+                    OWNER_2.to_string(),
+                    NAME_2.to_string(),
+                    BRANCH_1.to_string()
+                )
+                .await
+                .is_ok()
+            );
+            assert!(
+                p.page_at(
+                    OWNER_2.to_string(),
+                    NAME_1.to_string(),
+                    BRANCH_2.to_string()
+                )
+                .await
+                .is_err()
+            );
         }
     }
 }

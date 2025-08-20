@@ -36,7 +36,7 @@ pub struct TemplatePageContext {
 pub struct TemplateErrorContext {
     pub code: u16,
     pub message: String,
-    pub about: String
+    pub about: String,
 }
 
 /* -------------------------------------------------------------------------- */

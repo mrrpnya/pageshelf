@@ -1,6 +1,6 @@
 use actix_web::web::{self, ServiceConfig};
 use minijinja::Environment;
-use routes::{register_routes_to_config, RoutingState};
+use routes::{RoutingState, register_routes_to_config};
 use templates::templates_from_builtin;
 
 use crate::{conf::ServerConfig, page::PageSourceFactory, resolver::UrlResolver};
@@ -28,7 +28,7 @@ pub fn setup_service_config<'a, PS: PageSourceFactory + Sync + Send + 'static>(
             server_config.pages_urls.clone(),
             "pages".to_string(),
             "pages".to_string(),
-            server_config.allow_domains
+            server_config.allow_domains,
         ),
     }));
     //.wrap(middleware::NormalizePath::trim())

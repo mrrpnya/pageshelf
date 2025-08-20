@@ -1,4 +1,4 @@
-/// Default Actix routes for querying pages.
+/// A set of utilities for querying pages and getting an HTTP output.
 use std::{path::Path, str::FromStr};
 
 use actix_web::{HttpResponse, http::StatusCode, web};
@@ -7,17 +7,20 @@ use mime_guess::Mime;
 use minijinja::context;
 
 use crate::{
-    asset::{Asset, AssetQueryable},
-    page::PageSource,
     RoutingState,
+    asset::{Asset, AssetQueryable},
     frontend::templates::{TEMPLATE_ERROR, TemplateErrorContext, TemplatePageContext},
+    page::PageSource,
 };
 
 /* -------------------------------------------------------------------------- */
 /*                                Data Querying                               */
 /* -------------------------------------------------------------------------- */
 
-pub async fn get_page<'a, PS: PageSource>(
+/// Attempts to get a Page, given parameters.
+///
+/// Will result in a 200 OK response if successful, otherwise will check for index or 404.
+pub async fn get_page_response<'a, PS: PageSource>(
     data: &web::Data<RoutingState<'a, PS>>,
     owner: Option<&str>,
     repo: Option<&str>,
@@ -35,21 +38,21 @@ pub async fn get_page<'a, PS: PageSource>(
     let primary = match file.is_dir() {
         false => {
             let buf = file;
-            get_page_raw(data, owner, repo, channel, &buf, 200).await
+            get_page_response_raw(data, owner, repo, channel, &buf, 200).await
         }
         true => {
             let file = file.join("index.html");
-            get_page_raw(data, owner, repo, channel, &file, 200).await
+            get_page_response_raw(data, owner, repo, channel, &file, 200).await
         }
     };
     if primary.1 == 404 {
         let p = file.join("./index.html");
         debug!("404'd, trying to see if there's an index here...");
-        let secondary = get_page_raw(data, owner, repo, channel, &p, 200).await;
+        let secondary = get_page_response_raw(data, owner, repo, channel, &p, 200).await;
 
         if secondary.1 == 404 {
             debug!("404'd, trying to see if there's a custom 404 here...");
-            return get_page_raw(data, owner, repo, channel, Path::new("./404.html"), 404)
+            return get_page_response_raw(data, owner, repo, channel, Path::new("./404.html"), 404)
                 .await
                 .0;
         }
@@ -58,8 +61,10 @@ pub async fn get_page<'a, PS: PageSource>(
     primary.0
 }
 
-/// Base action for querying a page via the web.
-pub async fn get_page_raw<'a, PS: PageSource>(
+/// Get a page directly as a response, without checking for fallbacks.
+///
+/// Also returns the status as a u16.
+pub async fn get_page_response_raw<'a, PS: PageSource>(
     data: &web::Data<RoutingState<'a, PS>>,
     owner: &str,
     repo: &str,
@@ -76,7 +81,11 @@ pub async fn get_page_raw<'a, PS: PageSource>(
 
     /* ------------------------------- Page Query ------------------------------- */
 
-    let page = match data.provider.page_at(owner.to_string(), repo.to_string(), branch.to_string()).await {
+    let page = match data
+        .provider
+        .page_at(owner.to_string(), repo.to_string(), branch.to_string())
+        .await
+    {
         Ok(v) => v,
         Err(e) => {
             let tp = data.jinja.get_template(TEMPLATE_ERROR).unwrap();

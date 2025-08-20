@@ -1,3 +1,4 @@
+#[cfg(feature = "forgejo")]
 use crate::asset::{Asset, AssetQueryable};
 use log::{error, info};
 /// Deals with the utilities for loading pages.
@@ -37,13 +38,13 @@ impl Display for PageError {
 pub struct PageLocation {
     pub owner: String,
     pub name: String,
-    pub branch: String
+    pub branch: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PageAssetLocation {
     pub page: PageLocation,
-    pub asset: String
+    pub asset: String,
 }
 
 /// A Page represents a site to be hosted.
@@ -55,10 +56,10 @@ pub trait Page: AssetQueryable {
     fn branch(&self) -> &str;
     fn owner(&self) -> &str;
     fn location(&self) -> PageLocation {
-        PageLocation { 
-            owner: self.owner().to_string(), 
-            name: self.name().to_string(), 
-            branch: self.branch().to_string() 
+        PageLocation {
+            owner: self.owner().to_string(),
+            name: self.name().to_string(),
+            branch: self.branch().to_string(),
         }
     }
 }
@@ -327,6 +328,7 @@ pub trait PageSource {
 /* -------------------------------------------------------------------------- */
 /*                             Page Source Factory                            */
 /* -------------------------------------------------------------------------- */
+
 /// Offers an impl-agnostic of creating Page Sources.
 pub trait PageSourceFactory: Clone {
     type Source: PageSource;
@@ -379,5 +381,3 @@ impl<'a, F: PageSourceFactory, L: PageSourceLayer<F::Source>> PageSourceFactory
 /* -------------------------------------------------------------------------- */
 /*                           Reusable Test Utilities                          */
 /* -------------------------------------------------------------------------- */
-
-// TODO: Make reusable test utilities for Page and PageSource traits

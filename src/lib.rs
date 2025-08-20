@@ -1,9 +1,10 @@
+/// Pageshelf is a free and open source Pages server, written in Rust.
 use frontend::routes::RoutingState;
 
 pub mod asset;
-pub mod conf;
-pub mod page;
 pub mod backend;
+pub mod conf;
 pub mod frontend;
-pub mod util;
+pub mod page;
 pub mod resolver;
+pub mod util;

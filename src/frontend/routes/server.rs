@@ -1,15 +1,17 @@
+/// Primary route for accessing Pages (and built-in pages).
 use std::path::Path;
 
-use actix_web::{
-    HttpRequest, HttpResponse, Responder, get,
-    http::header::HeaderValue,
-    web,
-};
+use actix_web::{HttpRequest, HttpResponse, Responder, get, http::header::HeaderValue, web};
 use log::{debug, info};
 use minijinja::context;
 
 use crate::{
-    frontend::{routes::{pages::get_page, RoutingState}, templates::{TemplateErrorContext, TemplatePageContext, TEMPLATE_ERROR, TEMPLATE_INDEX}}, page::{Page, PageSource}, resolver::UrlResolution
+    frontend::{
+        routes::{RoutingState, pages::get_page_response},
+        templates::{TEMPLATE_ERROR, TEMPLATE_INDEX, TemplateErrorContext, TemplatePageContext},
+    },
+    page::{Page, PageSource},
+    resolver::UrlResolution,
 };
 
 pub async fn get_index<'a, PS: PageSource>(
@@ -40,7 +42,7 @@ pub async fn get_index<'a, PS: PageSource>(
         }
         UrlResolution::Page(loc) => {
             info!("Page: {:?}", loc);
-            return get_page(
+            return get_page_response(
                 &data,
                 Some(&loc.page.owner),
                 Some(&loc.page.name),
@@ -56,7 +58,7 @@ pub async fn get_index<'a, PS: PageSource>(
                 Ok(page) => {
                     let s = req.uri().to_string();
                     let file = Path::new(&s);
-                    return get_page(
+                    return get_page_response(
                         &data,
                         Some(page.owner()),
                         Some(page.name()),
@@ -70,8 +72,7 @@ pub async fn get_index<'a, PS: PageSource>(
                 }
             }
         }
-        _ => {
-        }
+        _ => {}
     };
     let tp = data.jinja.get_template(TEMPLATE_ERROR).unwrap();
     return HttpResponse::NotFound().body(
@@ -91,9 +92,9 @@ pub async fn get_index<'a, PS: PageSource>(
     );
 }
 
-#[get("/pages_favicon.svg")]
-async fn get_favicon_svg() -> impl Responder {
+#[get("/pages_favicon.png")]
+async fn get_favicon_png() -> impl Responder {
     HttpResponse::Ok()
-        .content_type("image/svg+xml")
-        .body(include_str!("../../../branding/pageshelf_logo.svg"))
+        .content_type("image/png")
+        .body(std::include_bytes!("../../../branding/pageshelf_logo.png").as_slice())
 }

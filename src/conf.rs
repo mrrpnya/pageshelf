@@ -1,5 +1,5 @@
 use clap::crate_version;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use url::Url;
 
 use crate::frontend::templates::TemplateServerContext;
@@ -8,7 +8,7 @@ use crate::frontend::templates::TemplateServerContext;
 /*                              Config structure                              */
 /* -------------------------------------------------------------------------- */
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum ServerConfigUpstreamType {
     #[serde(rename = "forgejo")]
     Forgejo,
@@ -20,7 +20,7 @@ impl Default for ServerConfigUpstreamType {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum ServerConfigUpstreamMethod {
     #[serde(rename = "direct")]
     Direct,
@@ -32,10 +32,14 @@ impl Default for ServerConfigUpstreamMethod {
     }
 }
 
+/// Upstream configuration for the server.
+/// This configures where to get page data from.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ServerConfigUpstream {
+    /// What type of platform
     #[serde(default)]
     pub r#type: ServerConfigUpstreamType,
+    /// How to get data from that platform
     #[serde(default)]
     pub method: ServerConfigUpstreamMethod,
     #[serde(default = "default_upstream_url")]
@@ -52,21 +56,27 @@ pub struct ServerConfigSecurity {
     pub whitelist: Option<String>,
     pub blacklist: Option<String>,
     #[serde(default = "default_security_show_private")]
-    pub show_private: bool
+    pub show_private: bool,
 }
 
+/// Redis configuration for the server
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ServerConfigRedis {
+    /// Should Redis be used?
     #[serde(default = "default_redis_enabled")]
     pub enabled: bool,
+    /// Where to find the Redis server (address)
     #[serde(default = "default_redis_address")]
     pub address: String,
+    /// Where to find the Redis server (port)
     #[serde(default = "default_redis_port")]
     pub port: u16,
+    /// How long should cached assets live in Redis?
     #[serde(default = "default_redis_ttl")]
-    pub ttl: i64
+    pub ttl: i64,
 }
 
+/// Aggregate configuration of the server (Contains all other configs)
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ServerConfig {
     // General
@@ -98,14 +108,16 @@ impl ServerConfig {
             about: self.description.to_string(),
             url: match &self.url {
                 Some(v) => Some(v.as_str().to_string()),
-                None => None
+                None => None,
             },
-            icon_url: Some("/pages_favicon.svg".to_string()),
+            icon_url: Some("/pages_favicon.png".to_string()),
             default_branch: self.upstream.default_branch.clone(),
             version: crate_version!(),
         }
     }
 }
+
+/* ---------------------------------- Serde --------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /*                            Default initializers                            */
@@ -127,7 +139,7 @@ impl Default for ServerConfig {
             security: ServerConfigSecurity {
                 whitelist: None,
                 blacklist: None,
-                show_private: default_security_show_private()
+                show_private: default_security_show_private(),
             },
             upstream: ServerConfigUpstream {
                 r#type: ServerConfigUpstreamType::Forgejo,
@@ -170,7 +182,7 @@ fn default_security() -> ServerConfigSecurity {
     ServerConfigSecurity {
         whitelist: None,
         blacklist: None,
-        show_private: default_security_show_private()
+        show_private: default_security_show_private(),
     }
 }
 
@@ -187,7 +199,7 @@ fn default_redis() -> ServerConfigRedis {
         enabled: default_redis_enabled(),
         address: default_redis_address(),
         port: default_redis_port(),
-        ttl: default_redis_ttl()
+        ttl: default_redis_ttl(),
     }
 }
 
@@ -210,4 +222,3 @@ fn default_redis_ttl() -> i64 {
 fn default_domains_allowed() -> bool {
     false
 }
-

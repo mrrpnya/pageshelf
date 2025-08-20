@@ -1,13 +1,7 @@
-use actix_web::{
-    web::{self, ServiceConfig},
-};
+use actix_web::web::{self, ServiceConfig};
 use minijinja::Environment;
 
-use crate::{
-    conf::ServerConfig,
-    page::PageSource,
-    resolver::UrlResolver
-};
+use crate::{conf::ServerConfig, page::PageSource, resolver::UrlResolver};
 
 pub mod pages;
 pub mod server;
@@ -29,6 +23,6 @@ pub fn register_routes_to_config<'a, PS: PageSource + 'static>(
     config: &'a mut ServiceConfig,
 ) -> &'a mut ServiceConfig {
     config
-        .service(server::get_favicon_svg)
+        .service(server::get_favicon_png)
         .route("/{tail:.*}", web::get().to(server::get_index::<PS>))
 }
