@@ -1,11 +1,12 @@
 use std::{path::Path, str::FromStr};
 
 use actix_web::{
-    HttpRequest, HttpResponse, Responder,
+    HttpRequest, HttpResponse,
     web::{self, ServiceConfig},
 };
+use log::debug;
 use minijinja::Environment;
-use pages::get_page;
+use pages::{get_page, is_base_url};
 use url::Url;
 
 use crate::{
@@ -30,20 +31,45 @@ async fn try_get_page_from_analysis<'a, PS: PageSource>(
     req: &HttpRequest,
 ) -> Option<HttpResponse> {
     let mut analysis: Option<UrlAnalysis> = None;
-    if let Some(urls) = &data.config.pages_urls {
-        if let Some(host) = req.headers().get("Host") {
-            for url in urls {
-                if let Ok(host) = host.to_str() {
+
+    let uri = req.uri().to_string();
+    if let Some(host) = req.headers().get("Host") {
+        if let Ok(host) = host.to_str() {
+            if is_base_url(&data, &req) {
+                let host_http = format!("http://{}", host);
+                if let Some(url) = &data.config.url {
+                    if let Ok(host_url) = Url::from_str(host_http.as_str()) {
+                        analysis = analyze_url(&host_url.join(&uri).unwrap(), Some(&url))
+                    }
+                } else {
+                    if let Ok(host_url) = Url::from_str(host_http.as_str()) {
+                        analysis = analyze_url(&host_url.join(&uri).unwrap(), None)
+                    }
+                }
+            } else if let Some(urls) = &data.config.pages_urls {
+                for url in urls {
                     let host_http = format!("http://{}", host);
                     if let Ok(host_url) = Url::from_str(host_http.as_str()) {
                         let uri = req.uri().to_string();
-                        if let Some(a) = analyze_url(&host_url.join(&uri).unwrap(), &url) {
+                        if let Some(a) = analyze_url(&host_url.join(&uri).unwrap(), Some(&url)) {
                             analysis = Some(a);
                             break;
                         }
                     }
                 }
+            } else {
+                debug!("Falling back to URI paths...");
+                let host_http = format!("http://{}", "host");
+                if let Ok(host_url) = Url::from_str(host_http.as_str()) {
+                    analysis = analyze_url(&host_url.join(&uri).unwrap(), None)
+                }
             }
+        }
+    } else {
+        debug!("No hostname detected; Analyzing URI...");
+        let host_http = format!("http://{}", "host");
+        if let Ok(host_url) = Url::from_str(host_http.as_str()) {
+            analysis = analyze_url(&host_url.join(&uri).unwrap(), None)
         }
     }
 
@@ -72,7 +98,7 @@ fn register_routes_to_config<'a, PS: PageSource + 'static>(
     config: &'a mut ServiceConfig,
 ) -> &'a mut ServiceConfig {
     config
-        .route(
+        /*  .route(
             "/{owner}/{repo}:{branch}/{file:.*}",
             web::get().to(pages::get_page_orbf::<PS>),
         )
@@ -84,9 +110,9 @@ fn register_routes_to_config<'a, PS: PageSource + 'static>(
         .route(
             "/{owner}/{repo}/{file:.*}",
             web::get().to(pages::get_page_orf::<PS>),
-        )
-        .route("/{tail:.*}", web::get().to(server::get_index::<PS>))
+        )*/
         .service(server::get_favicon_svg)
+        .route("/{tail:.*}", web::get().to(server::get_index::<PS>))
 }
 
 pub fn setup_service_config<'a, PS: PageSourceFactory + Sync + Send + 'static>(

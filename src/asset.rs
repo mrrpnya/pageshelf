@@ -12,7 +12,6 @@ pub trait Asset {
         None
     }
     fn body(&self) -> String;
-    fn bytes(&self) -> impl Iterator<Item = u8>;
     fn hash_sha256(&self) -> [u8; 32] {
         // TODO: Calculate SHA256 from .bytes()
         [0; 32]

@@ -1,11 +1,10 @@
 /// Default Actix routes for querying pages.
-use std::{path::Path, str::FromStr, time::SystemTime};
+use std::{path::Path, str::FromStr};
 
 use actix_web::{HttpRequest, HttpResponse, Responder, http::StatusCode, web};
-use log::{error, info};
+use log::{debug, error, info};
 use mime_guess::Mime;
 use minijinja::context;
-use url::Url;
 
 use crate::{
     asset::{Asset, AssetQueryable},
@@ -27,22 +26,76 @@ pub fn is_base_url<'a, PS: PageSource>(
     req: &HttpRequest,
 ) -> bool {
     match req.headers().get("Host") {
-        Some(v) => match &data.config.url {
-            Some(base_url) => base_url.host_str().unwrap() == v,
-            None => match &data.config.pages_urls {
-                Some(pages_urls) => match v.to_str() {
-                    Ok(v) => !pages_urls.iter().any(|f| {
-                        let s = f.host_str().unwrap();
-                        log::debug!("Checking if {} ends in {}...", v, s);
-                        v[0..v.find("/").unwrap_or(v.len())].ends_with(s)
-                    }),
-                    Err(_) => true,
-                },
-                None => true,
-            },
+        Some(url) => match &data.config.url {
+            Some(base_url) => {
+                debug!("Checking if host {:?} is base url", url);
+                let url = url.to_str().unwrap();
+                let d_start = match url.starts_with("www.") {
+                    true => url.find('.').unwrap(),
+                    false => 0,
+                };
+                let url = &url[d_start..url.len()];
+                base_url.host_str().unwrap() == url
+            }
+            None => {
+                debug!("No host found");
+                return false;
+            } /*match &data.config.pages_urls {
+                  Some(pages_urls) => match v.to_str() {
+                      Ok(v) => !pages_urls.iter().any(|f| {
+                          let s = f.host_str().unwrap();
+                          log::debug!("Checking if {} ends in {}...", v, s);
+                          v[0..v.find("/").unwrap_or(v.len())].ends_with(s)
+                      }),
+                      Err(_) => true,
+                  },
+                  None => true,
+              },*/
         },
         None => true,
     }
+}
+
+pub fn is_page_url<'a, PS: PageSource>(
+    data: &web::Data<RouteSharedData<'a, PS>>,
+    req: &HttpRequest,
+) -> bool {
+    log::debug!("page url check...");
+    match req.headers().get("Host") {
+        Some(host) => {
+            log::debug!("has host...");
+            match &data.config.pages_urls {
+                Some(page_urls) => {
+                    let host = host.to_str().unwrap();
+                    let d_start = match host.starts_with("www.") {
+                        true => host.find('.').unwrap(),
+                        false => 0,
+                    };
+                    let host = &host[d_start..host.len()];
+                    for page_url in page_urls {
+                        let s = page_url.domain().unwrap();
+                        log::debug!("Checking if {} is a page url...", s);
+                        if is_in_url(&s, host) && s != host {
+                            return true;
+                        }
+                    }
+                }
+                None => {
+                    return false;
+                }
+            }
+        }
+        None => {
+            return false;
+        }
+    }
+
+    false
+}
+
+fn is_in_url(url_base: &str, url: &str) -> bool {
+    log::debug!("Checking if {} ends in {}...", url, url_base);
+    url.ends_with(url_base)
 }
 
 /// Page query route (Owner-Repo-File)
@@ -160,16 +213,17 @@ pub async fn get_page<'a, PS: PageSource>(
         }
     };
     if primary.1 == 404 {
-        /*let buf = match file.is_dir() {
-            true => file.join(Path::new("./404.html")),
-            false => match file.parent() {
-                Some(v) => v.join(Path::new("./404.html")),
-                None => file.join(Path::new("./404.html")),
-            },
-        };*/
-        return get_page_raw(data, owner, repo, channel, Path::new("/404.html"), 404)
-            .await
-            .0;
+        let p = file.join("./index.html");
+        debug!("404'd, trying to see if there's an index here...");
+        let secondary = get_page_raw(data, owner, repo, channel, &p, 200).await;
+
+        if secondary.1 == 404 {
+            debug!("404'd, trying to see if there's a custom 404 here...");
+            return get_page_raw(data, owner, repo, channel, Path::new("/404.html"), 404)
+                .await
+                .0;
+        }
+        return secondary.0;
     }
     primary.0
 }

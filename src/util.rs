@@ -1,4 +1,3 @@
-use actix_web::body::None;
 use url::Url;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -9,9 +8,43 @@ pub struct UrlAnalysis {
     pub asset: String,
 }
 
-pub fn analyze_url(url: &Url, pages_url: &Url) -> Option<UrlAnalysis> {
-    let host = url.host_str()?;
-    let base_host = pages_url.host_str()?;
+pub fn analyze_url(url: &Url, pages_url: Option<&Url>) -> Option<UrlAnalysis> {
+    // Assume pages_url is example.domain;
+    // (If none is returned, assume it's not valid)
+    // (url "other.domain") -> None
+    // (url "other.domain/my_asset") -> None
+    // (url "person.other.domain") -> None
+    // (url "person.other.domain/my_asset") -> None
+    // (url "page.person.other.domain") -> None
+    // (url "page.person.other.domain/my_asset") -> None
+    // (url "unstable.page.person.other.domain") -> None
+    // (url "unstable.page.person.other.domain/my_asset") -> None
+    // (url "example.domain") -> Some (owner none, repo none, branch none, asset /)
+    // (url "example.domain/person") -> Some (owner person, repo none, branch none, asset /)
+    // (url "example.domain/person/page") -> Some (owner person, repo page, branch none, asset /)
+    // (url "example.domain/person/page:unstable") -> Some (owner person, repo page, branch unstable, asset /)
+    // (url "person.example.domain") -> Some (owner person, repo none, branch none, asset /)
+    // (url "person.example.domain/my_asset") -> Some (owner person, repo none, branch none, asset my_asset)
+    // (url "page.person.example.domain") -> Some (owner person, repo page, branch none, asset /)
+    // (url "page.person.example.domain/my_asset") -> Some (owner person, repo page, branch none, asset my_asset)
+    // (url "unstable.page.person.example.domain") -> Some (owner person, repo page, branch unstable, asset /)
+    // (url "unstable.page.person.example.domain/my_asset") -> Some (owner person, repo page, branch unstable, asset my_asset)
+
+    let host = match pages_url {
+        Some(_) => url.host_str().unwrap(),
+        None => "no.host",
+    };
+    let h_start = match host.starts_with("www.") {
+        true => host.find('.').unwrap() + 1,
+        false => 0,
+    };
+
+    let host = &host[h_start..host.len()];
+
+    let base_host = match pages_url {
+        Some(v) => v.host_str().unwrap(),
+        None => "no.host",
+    };
 
     // If host is unrelated
     if host != base_host && !host.ends_with(&format!(".{base_host}")) {
@@ -89,7 +122,7 @@ mod tests {
     use super::{UrlAnalysis, analyze_url};
 
     #[test]
-    fn test_analyze_url_subdirectory() {
+    fn test_analyze_url_all_subdirectory() {
         let domain = Url::from_str("http://example.domain").unwrap();
 
         let params: Vec<(&str, Option<UrlAnalysis>)> = vec![
@@ -136,7 +169,60 @@ mod tests {
         for param in params {
             let url_str = format!("http://{}", param.0);
             let url = Url::from_str(url_str.as_str()).unwrap();
-            let a = analyze_url(&url, &domain);
+            let a = analyze_url(&url, Some(&domain));
+            assert_eq!(a, param.1, "Analyzing {}", param.0)
+        }
+    }
+
+    #[test]
+    fn test_analyze_url_basic_subdirectory() {
+        let domain = Url::from_str("http://example.domain").unwrap();
+
+        let params: Vec<(&str, Option<UrlAnalysis>)> = vec![
+            ("other.domain", None),
+            ("other.domain/my_asset", None),
+            (
+                "example.domain",
+                Some(UrlAnalysis {
+                    owner: None,
+                    repo: None,
+                    branch: None,
+                    asset: "/".to_string(),
+                }),
+            ),
+            (
+                "example.domain/person",
+                Some(UrlAnalysis {
+                    owner: Some("person".to_string()),
+                    repo: None,
+                    branch: None,
+                    asset: "/".to_string(),
+                }),
+            ),
+            (
+                "example.domain/person/page",
+                Some(UrlAnalysis {
+                    owner: Some("person".to_string()),
+                    repo: Some("page".to_string()),
+                    branch: None,
+                    asset: "/".to_string(),
+                }),
+            ),
+            (
+                "example.domain/person/page:unstable",
+                Some(UrlAnalysis {
+                    owner: Some("person".to_string()),
+                    repo: Some("page".to_string()),
+                    branch: Some("unstable".to_string()),
+                    asset: "/".to_string(),
+                }),
+            ),
+        ];
+
+        for param in params {
+            let url_str = format!("http://{}", param.0);
+            let url = Url::from_str(url_str.as_str()).unwrap();
+            let a = analyze_url(&url, Some(&domain));
             assert_eq!(a, param.1, "Analyzing {}", param.0)
         }
     }
@@ -202,7 +288,7 @@ mod tests {
         for param in params {
             let url_str = format!("http://{}", param.0);
             let url = Url::from_str(url_str.as_str()).unwrap();
-            let a = analyze_url(&url, &domain);
+            let a = analyze_url(&url, Some(&domain));
             assert_eq!(a, param.1, "Analyzing {}", param.0)
         }
     }

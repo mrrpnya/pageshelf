@@ -71,7 +71,7 @@ impl<'a> AssetQueryable for ForgejoDirectReadStorage<'a> {
             )
             .await
         {
-            Ok(v) => Ok(MemoryAsset::from_bytes(&v)),
+            Ok(v) => Ok(MemoryAsset::from_bytes(v)),
             Err(e) => {
                 error!(
                     "Failed to find (raw) data file {} in Forgejo repository {}/{}:{} - {}",

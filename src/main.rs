@@ -2,10 +2,14 @@ use actix_web::{App, HttpServer, Result, middleware::NormalizePath};
 use clap::Command;
 use config::{Config, File};
 use fern::colors::{Color, ColoredLevelConfig};
+use log::debug;
 use minijinja::Environment;
 use pageshelf::{
-    conf::ServerConfig, page::PageSourceFactory, providers::ForgejoProviderFactory,
-    routes::setup_service_config, templates::templates_from_builtin,
+    conf::ServerConfig,
+    page::PageSourceFactory,
+    providers::{ForgejoProviderFactory, layers::redis::RedisLayer},
+    routes::setup_service_config,
+    templates::templates_from_builtin,
 };
 
 use clap::{arg, crate_authors, crate_description, crate_name, crate_version};
@@ -21,22 +25,24 @@ async fn main() -> std::io::Result<()> {
         .author(crate_authors!(","))
         .about(crate_description!())
         .arg(arg!(-c --config <FILE> "Path to a config file").required(false))
+        .arg(arg!(-d --debug "Enables debug information").required(false))
         //.arg(arg!(-l --log_level "Sets the logging level").required(false))
         .get_matches();
 
-    let _ = setup_logger();
+    let _ = setup_logger(cmd.get_flag("debug"));
+    debug!("If you're seeing this, debug logging is enabled.");
 
-    let mut settings_builder = Config::builder()
-        // Add in settings from the environment (with a prefix of APP)
-        // Eg.. `APP_DEBUG=1 ./target/app` would set the `debug` key
-        .add_source(config::Environment::with_prefix("page").separator("_"));
-
+    let mut settings_builder = Config::builder();
     match cmd.get_one::<String>("config") {
         Some(v) => {
             settings_builder = settings_builder.add_source(File::with_name(v));
         }
         None => {}
     }
+    // Add in settings from the environment (with a prefix of APP)
+    // Eg.. `APP_DEBUG=1 ./target/app` would set the `debug` key
+    settings_builder =
+        settings_builder.add_source(config::Environment::with_prefix("page").separator("_"));
 
     let settings = settings_builder.build().unwrap();
 
@@ -53,7 +59,11 @@ async fn main() -> std::io::Result<()> {
             return Ok(());
         }
     };
-
+    if config.redis.enabled {
+        let redis = RedisLayer::from_config(&config).unwrap();
+        let f = factory.wrap(redis);
+        return run_server(f, config, templates).await;
+    }
     run_server(factory, config, templates).await
 }
 
@@ -61,20 +71,24 @@ async fn main() -> std::io::Result<()> {
 /*                                Major Actions                               */
 /* -------------------------------------------------------------------------- */
 
-fn setup_logger() -> Result<(), fern::InitError> {
+fn setup_logger(debug: bool) -> Result<(), fern::InitError> {
     fern::Dispatch::new()
         .format(|out, message, record| {
             let colors = ColoredLevelConfig::new()
                 .info(Color::BrightGreen)
                 .error(Color::BrightRed)
-                .warn(Color::BrightYellow);
+                .warn(Color::BrightYellow)
+                .debug(Color::Magenta);
             out.finish(format_args!(
                 "[{}] {}",
                 colors.color(record.level()),
                 message
             ))
         })
-        .level(log::LevelFilter::Info)
+        .level(match debug {
+            true => log::LevelFilter::Debug,
+            false => log::LevelFilter::Info,
+        })
         .chain(std::io::stdout())
         .apply()?;
     Ok(())

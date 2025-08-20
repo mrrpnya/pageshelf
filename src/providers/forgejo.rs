@@ -6,7 +6,7 @@ use crate::{
     page::{Page, PageError, PageSource, PageSourceFactory},
 };
 use forgejo_api::{Auth, Forgejo, structs::RepoSearchQuery};
-use log::{error, warn};
+use log::{debug, error, info, warn};
 use url::Url;
 
 use super::assets::forgejo_direct::ForgejoDirectReadStorage;
@@ -160,7 +160,7 @@ impl PageSource for ForgejoProvider {
             }
 
             // TODO: Check on the login_name validity
-            let user = repo.owner.unwrap().login_name.unwrap();
+            let user = repo.owner.unwrap().login.unwrap();
             let repo = repo.name.unwrap();
 
             match &self.branches {
@@ -172,9 +172,21 @@ impl PageSource for ForgejoProvider {
                             .forgejo
                             .repo_get_branch(user.as_str(), repo.as_str(), branch.as_str())
                             .await;
+                        debug!(
+                            "Getting repo branch {}/{}:{}",
+                            user.as_str(),
+                            repo.as_str(),
+                            branch.as_str()
+                        );
 
                         match branch_result {
                             Ok(_) => {
+                                info!(
+                                    "Found page at: {}/{}:{}",
+                                    user.as_str(),
+                                    repo.as_str(),
+                                    branch.as_str()
+                                );
                                 pages.push(ForgejoPage {
                                     storage: ForgejoDirectReadStorage::new(
                                         &self.forgejo,
@@ -185,6 +197,7 @@ impl PageSource for ForgejoProvider {
                                 });
                             }
                             Err(e) => {
+                                debug!("Failed to get branch!");
                                 continue;
                             }
                         }

@@ -1,14 +1,14 @@
 use std::{path::Path, str::FromStr};
 
-use actix_web::{App, http::header::ContentType, middleware::NormalizePath, test};
+use actix_web::{App, http::header::ContentType, test};
 use pageshelf::{
-    asset::{Asset, AssetQueryable},
+    asset::Asset,
     conf::ServerConfig,
-    page::{PageSource, PageSourceFactory},
+    page::PageSourceFactory,
     providers::{assets::memory::MemoryAsset, testing::create_example_provider_factory},
     routes::setup_service_config,
 };
-use url::{Host, Url};
+use url::Url;
 
 #[tokio::test]
 async fn page_subdomain_default_user() {
@@ -17,18 +17,42 @@ async fn page_subdomain_default_user() {
         .filter_level(log::LevelFilter::Debug)
         .try_init();
 
+    let mut config = ServerConfig::default();
+    config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
+    exec_subdomain_default_user(&config).await;
+    config.url = Some(Url::from_str("https://root.domain").unwrap());
+    exec_subdomain_default_user(&config).await;
+}
+
+async fn exec_subdomain_default_user(config: &ServerConfig) {
     let path_index = Path::new("/index.html");
     let path_other = Path::new("/other.html");
     let path_long = Path::new("/my/long/path/index.html");
     let asset_index = MemoryAsset::from_str("meow");
     let asset_other = MemoryAsset::from_str("mrrp");
 
-    let mut config = ServerConfig::default();
-    config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
     let factory = create_example_provider_factory()
-        .with_asset("owner_1", "pages", "pages", &path_index, asset_index.clone())
-        .with_asset("owner_1", "pages", "pages", &path_other, asset_other.clone())
-        .with_asset("owner_2", "other_thing", "pages", &path_index, asset_index.clone())
+        .with_asset(
+            "owner_1",
+            "pages",
+            "pages",
+            &path_index,
+            asset_index.clone(),
+        )
+        .with_asset(
+            "owner_1",
+            "pages",
+            "pages",
+            &path_other,
+            asset_other.clone(),
+        )
+        .with_asset(
+            "owner_2",
+            "other_thing",
+            "pages",
+            &path_index,
+            asset_index.clone(),
+        )
         .with_asset("owner_1", "pages", "pages", &path_long, asset_index.clone());
 
     let app = test::init_service(App::new().configure(move |f| {
@@ -138,7 +162,6 @@ async fn page_subdomain_specific() {
     let body = test::read_body(resp).await;
     assert_eq!(body, asset_1.body());
 
-    // Owner 2 has no default page, should fail
     let req = test::TestRequest::get()
         .uri("/")
         .insert_header(("Host", "other_thing.owner_2.example.domain"))
@@ -161,11 +184,8 @@ async fn page_subdomain_specific() {
     /* ---------------------------- Long path testing --------------------------- */
 
     let req = test::TestRequest::get()
-        .uri("/")
-        .insert_header((
-            "Host",
-            "other_thing.owner_2.example.domain/my/long/path/index.html",
-        ))
+        .uri("/my/long/path/index.html")
+        .insert_header(("Host", "other_thing.owner_2.example.domain"))
         .insert_header(ContentType::plaintext())
         .to_request();
     let resp = test::call_service(&app, req).await;
@@ -174,11 +194,8 @@ async fn page_subdomain_specific() {
     assert_eq!(body, asset_2.body());
 
     let req = test::TestRequest::get()
-        .uri("/")
-        .insert_header((
-            "Host",
-            "pages.owner_1.example.domain/my/long/path/index.html",
-        ))
+        .uri("/my/long/path/index.html")
+        .insert_header(("Host", "pages.owner_1.example.domain"))
         .insert_header(ContentType::plaintext())
         .to_request();
     let resp = test::call_service(&app, req).await;
@@ -192,14 +209,23 @@ async fn page_base_priority() {
         .filter_level(log::LevelFilter::Debug)
         .try_init();
 
-    let path = Path::new("/index.html");
-    let path_long = Path::new("/my/long/path/index.html");
-    let asset = MemoryAsset::from_str("meow");
-
     let mut config = ServerConfig::default();
     config.default_user = "user".to_string();
     config.url = Some(Url::from_str("https://example.domain").unwrap());
     config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
+    exec_base_priority(&config).await;
+}
+
+async fn exec_base_priority(config: &ServerConfig) {
+    let _ = env_logger::builder()
+        .is_test(true)
+        .filter_level(log::LevelFilter::Debug)
+        .try_init();
+
+    let path = Path::new("/index.html");
+    let path_long = Path::new("/my/long/path/index.html");
+    let asset = MemoryAsset::from_str("meow");
+
     let factory = create_example_provider_factory()
         .with_asset("user", "pages", "pages", &path, asset.clone())
         .with_asset("user", "pages", "pages", &path_long, asset.clone());

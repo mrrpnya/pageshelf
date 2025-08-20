@@ -11,36 +11,34 @@ use crate::asset::{Asset, AssetError, AssetQueryable, AssetWritable};
 
 #[derive(Clone)]
 pub struct MemoryAsset {
-    contents: Vec<u8>,
+    contents: String,
 }
 
 impl MemoryAsset {
-    pub fn from_bytes(data: &[u8]) -> Self {
-        Self {
-            contents: Vec::from(data),
+    pub fn from_bytes(data: Vec<u8>) -> Self {
+        unsafe {
+            Self {
+                contents: String::from_utf8_unchecked(data).to_string(),
+            }
         }
     }
 
     pub fn from_str(data: &str) -> Self {
         Self {
-            contents: data.as_bytes().to_vec(),
+            contents: data.to_string(),
         }
     }
 
     pub fn empty() -> Self {
         Self {
-            contents: Vec::new(),
+            contents: "".to_string(),
         }
     }
 }
 
 impl Asset for MemoryAsset {
     fn body(&self) -> String {
-        unsafe { String::from_utf8_unchecked(self.contents.clone()) }
-    }
-
-    fn bytes(&self) -> impl Iterator<Item = u8> {
-        self.contents.iter().cloned()
+        unsafe { self.contents.clone() }
     }
 }
 
@@ -57,9 +55,6 @@ impl<'a, A: Asset> AssetRef<'a, A> {
 impl<'a, A: Asset> Asset for AssetRef<'a, A> {
     fn body(&self) -> String {
         self.asset.body()
-    }
-    fn bytes(&self) -> impl Iterator<Item = u8> {
-        self.asset.bytes()
     }
 }
 
@@ -104,7 +99,7 @@ impl AssetWritable for MemoryCache {
         self.data.insert(
             std::path::absolute(path.to_path_buf()).unwrap(),
             MemoryAsset {
-                contents: asset.bytes().collect(),
+                contents: asset.body(),
             },
         );
 
@@ -117,14 +112,6 @@ mod tests {
     use crate::asset::Asset;
 
     use super::MemoryAsset;
-
-    #[test]
-    fn memory_asset_bytes() {
-        let data = [8; 8];
-        let asset = MemoryAsset::from_bytes(&data);
-
-        assert!(asset.bytes().count() == data.iter().count())
-    }
 
     #[test]
     fn memory_asset_str() {

@@ -1,15 +1,13 @@
-use std::{fmt::Debug, path::Path, str::FromStr};
+use std::{path::Path, str::FromStr};
 
 use actix_web::{
     App,
-    dev::{Service, ServiceResponse},
     http::header::ContentType,
     test,
 };
 use criterion::{Criterion, async_executor::AsyncStdExecutor, criterion_group, criterion_main};
 use pageshelf::{
     conf::ServerConfig,
-    page::PageSource,
     providers::{assets::memory::MemoryAsset, testing::create_example_provider_factory},
     routes::setup_service_config,
 };

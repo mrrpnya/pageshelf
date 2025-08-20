@@ -1,7 +1,7 @@
 name = "SMGames Pages" # or whatever else
 description = "Page system for SMGames"
-urls = "https://pages.smgames.club"
-pages_urls = ["https://pages.smgames.club"]
+#urls = "http://pages.smgames.club"
+#pages_urls = ["http://localhost"]
 default_user = "admin"
 port = 8080
 
@@ -33,3 +33,6 @@ branches = ["pages"]
 #whitelist = { owner = "*", repo = "*" }
 #blacklist = { owner = "*", repo = "*" }
 #disallow-files = "*"
+
+[redis]
+enabled = false

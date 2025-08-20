@@ -1,5 +1,5 @@
 use crate::asset::{Asset, AssetQueryable};
-use log::error;
+use log::{error, info};
 /// Deals with the utilities for loading pages.
 /// Generally, to access something a page, you go through these steps:
 /// PageSource -> Page -> Asset -> [your data]
@@ -249,6 +249,7 @@ pub trait PageSource {
     async fn find_by_domains(&self, domains: &[&str]) -> Result<impl Page, PageError> {
         let pages = self.pages().await;
         if let Err(e) = pages {
+            error!("Error getting pages to find: {}", e);
             return Err(e);
         }
         let pages = pages.unwrap();
@@ -256,19 +257,41 @@ pub trait PageSource {
             let mut applies = false;
             {
                 // TODO: Magic string, fix.
-                let asset = page.asset_at(Path::new(".domain")).await;
+                info!(
+                    "Checking repo {}/{}:{} for .domain file. Matching against domains {:?}...",
+                    page.owner(),
+                    page.name(),
+                    page.branch(),
+                    domains
+                );
+                let asset = page.asset_at(Path::new("/.domain")).await;
 
                 if let Ok(asset) = asset {
-                    if asset
-                        .body()
-                        .split("\n")
-                        .any(|a| domains.iter().any(|d| d == &a))
+                    info!(
+                        "Found /.domain at {}/{}:{} for .domain file...",
+                        page.owner(),
+                        page.name(),
+                        page.branch()
+                    );
+                    let body = asset.body();
+
+                    // Trim lines in the body to avoid whitespace issues
+                    let trimmed_body_lines: Vec<String> = body
+                        .split('\n')
+                        .map(|line| line.trim().to_string())
+                        .collect();
+
+                    // Check if any domain is in the trimmed body lines
+                    if trimmed_body_lines
+                        .iter()
+                        .any(|line| domains.contains(&line.as_str()))
                     {
-                        applies = true
+                        applies = true;
                     }
                 }
             }
             if applies {
+                info!("Resolved page");
                 return Ok(page);
             }
         }
@@ -284,10 +307,7 @@ pub trait PageSource {
 pub trait PageSourceFactory: Clone {
     type Source: PageSource;
 
-    fn layer<'a, L: PageSourceLayer<Self::Source>>(
-        &'a self,
-        layer: &'a L,
-    ) -> PageSourceFactoryLayer<'a, Self, L> {
+    fn wrap<L: PageSourceLayer<Self::Source>>(self, layer: L) -> PageSourceFactoryLayer<Self, L> {
         PageSourceFactoryLayer {
             parent: self,
             layer,
@@ -306,13 +326,13 @@ pub trait PageSourceLayer<PS: PageSource>: Clone {
 }
 
 #[derive(Clone)]
-pub struct PageSourceFactoryLayer<'a, F: PageSourceFactory, L: PageSourceLayer<F::Source>> {
-    parent: &'a F,
-    layer: &'a L,
+pub struct PageSourceFactoryLayer<F: PageSourceFactory, L: PageSourceLayer<F::Source>> {
+    parent: F,
+    layer: L,
 }
 
 impl<'a, F: PageSourceFactory, L: PageSourceLayer<F::Source>> PageSourceFactory
-    for PageSourceFactoryLayer<'a, F, L>
+    for PageSourceFactoryLayer<F, L>
 {
     type Source = L::Source;
 

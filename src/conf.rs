@@ -39,6 +39,26 @@ fn default_user() -> String {
     "admin".to_string()
 }
 
+fn default_redis() -> ServerConfigRedis {
+    ServerConfigRedis {
+        enabled: default_redis_enabled(),
+        address: default_redis_address(),
+        port: default_redis_port(),
+    }
+}
+
+fn default_redis_enabled() -> bool {
+    false
+}
+
+fn default_redis_address() -> String {
+    "127.0.0.1".to_string()
+}
+
+fn default_redis_port() -> u16 {
+    6379
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ServerConfigUpstreamType {
     #[serde(rename = "forgejo")]
@@ -85,6 +105,16 @@ pub struct ServerConfigSecurity {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ServerConfigRedis {
+    #[serde(default = "default_redis_enabled")]
+    pub enabled: bool,
+    #[serde(default = "default_redis_address")]
+    pub address: String,
+    #[serde(default = "default_redis_port")]
+    pub port: u16,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ServerConfig {
     // General
     #[serde(default = "default_name")]
@@ -102,6 +132,8 @@ pub struct ServerConfig {
     #[serde(default = "default_security")]
     pub security: ServerConfigSecurity,
     pub upstream: ServerConfigUpstream,
+    #[serde(default = "default_redis")]
+    pub redis: ServerConfigRedis,
 }
 
 impl ServerConfig {
@@ -110,7 +142,7 @@ impl ServerConfig {
             name: self.name.to_string(),
             about: self.description.to_string(),
             home_url: None,
-            icon_url: Some("/favicon.svg".to_string()),
+            icon_url: Some("/pages_favicon.svg".to_string()),
             default_branch: self.upstream.default_branch.clone(),
             version: crate_version!(),
         }
@@ -141,6 +173,7 @@ impl Default for ServerConfig {
                 branches: Vec::new(),
                 token: None,
             },
+            redis: default_redis(),
         }
     }
 }
