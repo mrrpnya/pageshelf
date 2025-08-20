@@ -15,12 +15,12 @@ A free and open-source Pages server, written in Rust.
 ## Features
 
 - [x] Dynamic hosting of sites
+  - [x] Simple `example.domain/user/repo(:branch))` style subdirectories
+  - [x] `((branch).repo).user.example.domain` style subdomains
+  - [x] Custom domains
 - [x] Integration Tested
   - [x] In-Memory Mock
 - [x] Redis Support
-- [ ] Prometheus endpoint
-- [ ] 100% customizable UI
-- [ ] Auth-locking of sites
 
 ## License
 

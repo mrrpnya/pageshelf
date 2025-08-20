@@ -1,6 +1,6 @@
 [package]
 name = "pageshelf"
-description = "A free and open source Pages server."
+description = "A free and open source Pages server, written in Rust"
 authors = ["Mrrp (https://git.smgames.club/mrrp, https://codeberg.org/mrrp)"]
 version = "0.1.0"
 license = "MIT License"
