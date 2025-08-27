@@ -9,12 +9,18 @@ publish = false
 
 [dependencies]
 forgejo-api = { version = "0.7", optional = true }
-actix-web = "4.5.45"
+actix-web = { version = "4.5.45", default-features = false, features = [
+    "macros",
+    "compress-zstd",
+    "compress-gzip",
+] }
 clap = { version = "4.5.45", features = ["cargo"] }
 log = "0.4"
 fern = { version = "0.7", features = ["colored"] }
 url = { version = "2.5.4", features = ["serde"] }
-minijinja = "2.11"
+minijinja = { version = "2.11", default-features = false, features = [
+    "multi_template",
+] }
 serde = "1"
 config = "0.15"
 toml = "0.9"
@@ -25,6 +31,7 @@ redis = { version = "0.32", features = ["aio", "tokio-comp"], optional = true }
 tokio = { version = "1.47", features = ["macros"] }
 env_logger = "0.11"
 criterion = { version = "0.5", features = ["html_reports", "async_std"] }
+rand = "0.9"
 
 [features]
 default = ["redis", "forgejo"]
@@ -35,8 +42,14 @@ redis = ["dep:redis"]
 name = "web_access"
 harness = false
 
+[[bench]]
+name = "memory"
+harness = false
+
 [profile.release]
 opt-level = 3
 overflow-checks = true
-debug = 0
+debug = false
 lto = true
+strip = true
+panic = 'abort'

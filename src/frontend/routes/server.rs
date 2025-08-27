@@ -93,7 +93,7 @@ pub async fn get_index<'a, PS: PageSource>(
 }
 
 #[get("/pages_favicon.png")]
-async fn get_favicon_png() -> impl Responder {
+pub async fn get_favicon_png() -> impl Responder {
     HttpResponse::Ok()
         .content_type("image/png")
         .body(std::include_bytes!("../../../branding/pageshelf_logo.png").as_slice())

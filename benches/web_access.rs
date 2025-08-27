@@ -10,11 +10,6 @@ use pageshelf::{
 use url::Url;
 
 fn bench_access_index(c: &mut Criterion) {
-    // let _ = env_logger::builder()
-    //     .is_test(true)
-    //     .filter_level(log::LevelFilter::Debug)
-    //     .try_init();
-
     let factory = create_example_provider_factory();
 
     let config = ServerConfig::default();
@@ -39,11 +34,6 @@ fn bench_access_index(c: &mut Criterion) {
 }
 
 fn bench_access_page_index(c: &mut Criterion) {
-    //  let _ = env_logger::builder()
-    //      .is_test(true)
-    //      .filter_level(log::LevelFilter::Debug)
-    //      .try_init();
-
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
     let asset = MemoryAsset::from_str("meow");
@@ -76,5 +66,5 @@ fn bench_access_page_index(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_access_index, bench_access_page_index);
-criterion_main!(benches);
+criterion_group!(basic_access, bench_access_index, bench_access_page_index);
+criterion_main!(basic_access);

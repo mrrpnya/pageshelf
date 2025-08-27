@@ -1,8 +1,8 @@
 name = "Pageshelf" # or whatever else
 description = "A free and open source Pages system, written in the Rust language."
-urls = "http://pages.smgames.club"
-pages_urls = ["http://smgames.club/"]
-default_user = "admin"
+urls = "http://localhost"
+#pages_urls = ["http://localhost/"]
+default_user = "mrrp"
 port = 8080
 allow_domains = false
 
