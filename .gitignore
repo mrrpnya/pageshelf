@@ -4,3 +4,5 @@ output.log
 perf.data
 perf.data.old
 flamegraph.svg
+graph.png
+graph.svg

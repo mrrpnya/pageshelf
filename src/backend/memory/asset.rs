@@ -91,7 +91,7 @@ impl AssetQueryable for MemoryCache {
 
 impl AssetWritable for MemoryCache {
     fn delete_asset(&mut self, path: &Path) -> Result<(), AssetError> {
-        let buf = std::path::absolute(path.to_path_buf()).unwrap();
+        let buf = path.to_path_buf();
         match self.data.remove(&buf) {
             Some(_) => Ok(()),
             None => Err(AssetError::NotFound),
@@ -100,7 +100,7 @@ impl AssetWritable for MemoryCache {
 
     fn write_asset(&mut self, path: &Path, asset: &impl Asset) -> Result<(), AssetError> {
         self.data.insert(
-            std::path::absolute(path.to_path_buf()).unwrap(),
+            path.to_path_buf(),
             MemoryAsset {
                 contents: asset.body().to_string(),
             },

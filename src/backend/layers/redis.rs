@@ -199,8 +199,8 @@ impl<P: Page> AssetQueryable for RedisCachePage<P> {
             }
         };
         let key = format!(
-            "o{},r{},b{},a{}",
-            self.name(),
+            "o{}:r{}:b{}:a{}",
+            self.owner(),
             self.name(),
             self.branch(),
             path.to_str().unwrap()
