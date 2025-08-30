@@ -21,6 +21,7 @@ A free and open-source Pages server, written in Rust.
 - [x] Integration Tested
   - [x] In-Memory Mock
 - [x] Redis Support
+- [ ] Smart cache invalidation
 
 ## License
 
