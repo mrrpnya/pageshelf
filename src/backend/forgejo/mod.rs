@@ -135,7 +135,7 @@ impl PageSource for ForgejoProvider {
                 sort: None,
                 order: None,
                 page: None,
-                limit: None,
+                limit: Some(999999),
             })
             .await
         {
@@ -158,11 +158,16 @@ impl PageSource for ForgejoProvider {
 
         for repo in repos {
             if repo.name.is_none() || repo.owner.is_none() {
+                warn!("Repo {:?}/{:?} is invalid, skipping check...", repo.owner, repo.name);
                 continue;
             }
 
+
+
             let user = repo.owner.unwrap().login.unwrap();
             let repo = repo.name.unwrap();
+
+            info!("Scanning repo {}/{}...", user.as_str(), repo.as_str());
 
             match &self.branches {
                 Some(v) => {
