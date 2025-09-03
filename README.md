@@ -1,4 +1,4 @@
-<div style="text-align: center;">
+<div align="center">
 
 <img src="./branding/pageshelf_logo.webp" width="100" alt="Logo"/>
 
