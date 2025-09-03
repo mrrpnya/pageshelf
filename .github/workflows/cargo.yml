@@ -4,9 +4,6 @@ on:
       - "*"
   workflow_dispatch:
 
-permissions:
-  contents: read
-  
 jobs:
   tests:
     name: 🦀 Test on ${{ matrix.label }}
@@ -14,6 +11,8 @@ jobs:
       matrix:
         label: ['ubuntu-latest']
     runs-on: ${{ matrix.label }}
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
