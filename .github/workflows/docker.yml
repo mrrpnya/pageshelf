@@ -1,7 +1,9 @@
 on:
-  push:
-    branches:
-      - "canary"
+  workflow_run:
+    workflows: ["Cargo"]
+    branches: [canary]
+    types: 
+      - completed
   workflow_dispatch:
     
 
