@@ -6,6 +6,8 @@
 
 A free and open-source Pages server, written in Rust.
 
+![GitHub License](https://img.shields.io/github/license/mrrpnya/pageshelf)
+
 </div>
 
 ## Supported software
