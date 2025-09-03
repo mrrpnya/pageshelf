@@ -1,0 +1,16 @@
+on:
+  push:
+    branches:
+      - "stable"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: 🐋 Build and publish to Docker
+    runs-on: ubuntu-rust
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: https://github.com/docker/setup-docker-action@v4

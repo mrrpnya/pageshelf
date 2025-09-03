@@ -9,7 +9,7 @@ jobs:
     name: 🦀 Test on ${{ matrix.label }}
     strategy:
       matrix:
-        label: ['ubuntu-rust']
+        label: ['ubuntu-latest']
     runs-on: ${{ matrix.label }}
     steps:
       - name: Checkout repository
@@ -21,7 +21,7 @@ jobs:
 
   clippy:
     name: 📎 Clippy
-    runs-on: ubuntu-rust
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
 
   formatting:
     name: 🧹 Formatting
-    runs-on: ubuntu-rust
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
