@@ -1,13 +1,9 @@
-use std::{
-    path::Path
-};
+use std::path::Path;
 
 use criterion::{Criterion, async_executor::AsyncStdExecutor, criterion_group, criterion_main};
 use pageshelf::{
     asset::{Asset, AssetQueryable},
-    backend::{
-        MemoryPageProviderFactory, memory::MemoryAsset,
-    },
+    backend::{MemoryPageProviderFactory, memory::MemoryAsset},
     page::{PageSource, PageSourceFactory},
 };
 use rand::{Rng, distr::Alphanumeric};
@@ -54,10 +50,10 @@ pub fn one_page_many_file(c: &mut Criterion) {
 
     for _ in 0..2048 {
         let file: String = rand::rng()
-                .sample_iter(&Alphanumeric)
-                .take(7)
-                .map(char::from)
-                .collect();
+            .sample_iter(&Alphanumeric)
+            .take(7)
+            .map(char::from)
+            .collect();
         let file = Path::new(&file);
 
         factory = factory.with_asset(owner, name, branch, file, asset_other.clone())
