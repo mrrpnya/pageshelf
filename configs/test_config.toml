@@ -1,9 +1,17 @@
-name = "Pageshelf" # or whatever else
+name = "Pageshelf"
 description = "A free and open source Pages system, written in the Rust language."
+# URLs in which this can be accessed (built-in pages, or using subdirectories (/user/repo(:branch))
 urls = "http://localhost"
+# If present, pages can be accessed via wildcard subdomains of these URLs
 #pages_urls = ["http://localhost/"]
+# Default user to infer if no user is specified
 default_user = "mrrp"
+# Port to serve pages over (HTTP)
 port = 8080
+# Whether or not to allow custom domains
+# If enabled, create a ".domain" file in the pages branch.
+# Each line in the domain file will be a domain that it can be accessed from.
+# (It will automatically determine what page to serve)
 allow_domains = false
 
 # Optional
@@ -11,6 +19,7 @@ allow_domains = false
 # Optional: Specifies a directory that contains asset files
 # These files can use Jinja templates
 # Built in files will take priority
+# TODO: Implement
 #overrides = "./templates"
 
 [upstream]
@@ -30,10 +39,16 @@ branches = ["pages"]
 #token = "my-auth-token"
 
 [security]
+# TODO: Implement
+# Security measures
+# Regex based filters for pages
 #whitelist = { owner = "*", repo = "*", file = "*" }
 #blacklist = { owner = "*", repo = "*", file = "*" }
+# Whether or not to show private repos
 show_private = false
 
 [redis]
-enabled = true
+enabled = false
+port = 6379
+address = "localhost"
 ttl = 480
