@@ -4,6 +4,9 @@ on:
       - "*"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  
 jobs:
   tests:
     name: 🦀 Test on ${{ matrix.label }}
