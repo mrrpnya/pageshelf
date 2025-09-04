@@ -9,7 +9,7 @@ publish = false
 
 [dependencies]
 forgejo-api = { version = "0.7", optional = true }
-actix-web = { version = "4.5.45", default-features = false, features = [
+actix-web = { version = "4.11.0", default-features = false, features = [
     "macros",
     "compress-zstd",
     "compress-gzip",
