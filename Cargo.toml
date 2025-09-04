@@ -17,7 +17,7 @@ actix-web = { version = "4.5.45", default-features = false, features = [
 clap = { version = "4.5.45", features = ["cargo"] }
 log = "0.4"
 fern = { version = "0.7", features = ["colored"] }
-url = { version = "2.5.4", features = ["serde"] }
+url = { version = "2.5.7", features = ["serde"] }
 minijinja = { version = "2.11", default-features = false, features = [
     "multi_template",
 ] }
