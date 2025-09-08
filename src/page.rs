@@ -62,6 +62,7 @@ pub trait Page: AssetQueryable {
             branch: self.branch().to_string(),
         }
     }
+    fn version(&self) -> &str;
 }
 
 /* -------------------------------------------------------------------------- */

@@ -68,6 +68,9 @@ async fn main() -> std::io::Result<()> {
                     #[cfg(feature = "redis")]
                     match config.redis.enabled {
                         true => {
+                            use log::info;
+
+                            info!("Redis is enabled");
                             let factory = factory.wrap(redis);
                             return run_server(factory, config, templates).await;
                         }

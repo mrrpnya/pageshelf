@@ -9,8 +9,8 @@ default_user = "mrrp"
 # Port to serve pages over (HTTP)
 port = 8080
 # Whether or not to allow custom domains
-# If enabled, create a ".domain" file in the pages branch.
-# Each line in the domain file will be a domain that it can be accessed from.
+# If enabled, create a ".domain" file in the branch the page is being served from
+# Each line in the domain file will be a domain that it can be accessed from
 # (It will automatically determine what page to serve)
 allow_domains = false
 
@@ -36,6 +36,7 @@ default_branch = "pages"
 # Optional: Specifies what branches are allowed to be shown
 # If not specified, any branch will be accepted
 branches = ["pages"]
+poll_interval = 60
 #token = "my-auth-token"
 
 [security]
@@ -48,7 +49,6 @@ branches = ["pages"]
 show_private = false
 
 [redis]
-enabled = false
+enabled = true
 port = 6379
 address = "localhost"
-ttl = 480

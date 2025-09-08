@@ -26,6 +26,7 @@ config = "0.15"
 toml = "0.9"
 mime_guess = "2"
 redis = { version = "0.32", features = ["aio", "tokio-comp"], optional = true }
+tokio = { version = "1", features = ["full"] }
 
 [dev-dependencies]
 tokio = { version = "1.47", features = ["macros"] }
