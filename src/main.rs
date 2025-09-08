@@ -1,4 +1,7 @@
-use actix_web::{App, HttpServer, Result, middleware::NormalizePath};
+use actix_web::{
+    App, HttpServer, Result,
+    middleware::{self, NormalizePath},
+};
 use clap::Command;
 use config::{Config, File};
 use fern::colors::{Color, ColoredLevelConfig};
@@ -132,9 +135,12 @@ where
         let config = config.clone();
         let page_factory = page_factory.clone();
         let templates = templates.clone();
-        App::new().wrap(NormalizePath::trim()).configure(move |f| {
-            setup_service_config(f, &config, page_factory, Some(templates));
-        })
+        App::new()
+            .wrap(NormalizePath::trim())
+            .wrap(middleware::Compress::default())
+            .configure(move |f| {
+                setup_service_config(f, &config, page_factory, Some(templates));
+            })
     })
     .bind(("0.0.0.0", port))?
     .run()

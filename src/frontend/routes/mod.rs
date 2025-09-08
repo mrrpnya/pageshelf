@@ -23,6 +23,6 @@ pub fn register_routes_to_config<'a, PS: PageSource + 'static>(
     config: &'a mut ServiceConfig,
 ) -> &'a mut ServiceConfig {
     config
-        .service(server::get_favicon_png)
+        .service(server::get_favicon_webp)
         .route("/{tail:.*}", web::get().to(server::get_index::<PS>))
 }

@@ -111,7 +111,7 @@ impl ServerConfig {
                 Some(v) => Some(v.as_str().to_string()),
                 None => None,
             },
-            icon_url: Some("/pages_favicon.png".to_string()),
+            icon_url: Some("/pages_favicon.webp".to_string()),
             default_branch: self.upstream.default_branch.clone(),
             version: crate_version!(),
         }

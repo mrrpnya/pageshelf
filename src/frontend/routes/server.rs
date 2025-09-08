@@ -1,7 +1,7 @@
 /// Primary route for accessing Pages (and built-in pages).
 use std::path::Path;
 
-use actix_web::{HttpRequest, HttpResponse, Responder, get, http::header::HeaderValue, web};
+use actix_web::{get, http::header::{CacheControl, CacheDirective, HeaderValue}, web, HttpRequest, HttpResponse, Responder};
 use log::{debug, info};
 use minijinja::context;
 
@@ -92,9 +92,18 @@ pub async fn get_index<'a, PS: PageSource>(
     );
 }
 
-#[get("/pages_favicon.png")]
-pub async fn get_favicon_png() -> impl Responder {
+#[get("/pages_favicon.webp")]
+pub async fn get_favicon_webp() -> impl Responder {
     HttpResponse::Ok()
-        .content_type("image/png")
-        .body(std::include_bytes!("../../../branding/pageshelf_logo.png").as_slice())
+        .insert_header(
+            CacheControl(
+                vec![
+                    // Allow caching for 24 hours
+                    CacheDirective::MaxAge(86400u32)
+                ]
+            )
+        )
+        .content_type("image/webp")
+        .body(std::include_bytes!("../../../branding/pageshelf_logo.webp").as_slice())
+        
 }
