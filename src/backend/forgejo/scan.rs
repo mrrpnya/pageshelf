@@ -6,7 +6,7 @@ use std::{
 
 use forgejo_api::{Forgejo, structs::RepoSearchQuery};
 use log::info;
-use tokio::sync::RwLock;
+use tokio::{sync::RwLock, task::JoinHandle};
 
 /// Analysis on the current state of a Forgejo instance
 pub struct ForgejoAnalyzer {
@@ -14,6 +14,7 @@ pub struct ForgejoAnalyzer {
     pub repos: Arc<RwLock<HashMap<(String, String, String), ForgejoAnalysisRepo>>>,
     pub target_branches: Vec<String>,
     auto_scan: Arc<AtomicBool>, // TODO: Domain name resolution data
+    handle: JoinHandle<()>,
 }
 
 pub struct ForgejoAnalysisRepo {
@@ -24,25 +25,28 @@ impl Drop for ForgejoAnalyzer {
     fn drop(&mut self) {
         self.auto_scan
             .store(false, std::sync::atomic::Ordering::SeqCst);
+
+        self.handle.abort();
     }
 }
 
 impl ForgejoAnalyzer {
     pub fn start(forgejo: Arc<Forgejo>, target_branches: Vec<String>, poll_interval: u64) -> Self {
+        let repos = Arc::new(RwLock::new(HashMap::new()));
+        let auto_scan = Arc::new(AtomicBool::new(true));
         let s = Self {
-            forgejo,
-            repos: Arc::new(RwLock::new(HashMap::new())),
-            target_branches,
-            auto_scan: Arc::new(AtomicBool::new(true)),
+            forgejo: forgejo.clone(),
+            repos: repos.clone(),
+            target_branches: target_branches.clone(),
+            auto_scan: auto_scan.clone(),
+            handle: tokio::spawn(Self::auto_scan(
+                poll_interval,
+                auto_scan,
+                forgejo,
+                repos,
+                target_branches,
+            )),
         };
-
-        let _ = tokio::spawn(Self::auto_scan(
-            poll_interval,
-            s.auto_scan.clone(),
-            s.forgejo.clone(),
-            s.repos.clone(),
-            s.target_branches.clone(),
-        ));
 
         s
     }
