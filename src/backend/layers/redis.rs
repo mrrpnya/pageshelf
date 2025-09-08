@@ -18,7 +18,7 @@ use crate::{
 #[derive(Clone)]
 pub struct RedisLayer {
     client: Arc<redis::Client>,
-    ttl: i64,
+    ttl: Option<i64>,
 }
 
 impl RedisLayer {
@@ -52,7 +52,7 @@ impl<PS: PageSource> PageSourceLayer<PS> for RedisLayer {
 pub struct RedisCachePage<P: Page> {
     upstream: P,
     client: Arc<Client>,
-    ttl: i64,
+    ttl: Option<i64>,
 }
 
 impl<P: Page> Page for RedisCachePage<P> {
@@ -66,6 +66,10 @@ impl<P: Page> Page for RedisCachePage<P> {
 
     fn owner(&self) -> &str {
         self.upstream.owner()
+    }
+
+    fn version(&self) -> &str {
+        self.upstream.version()
     }
 }
 
@@ -155,6 +159,13 @@ impl<PA: Page, PB: Page> Page for RedisCachePageMerge<PA, PB> {
             Self::B(v) => v.owner(),
         }
     }
+
+    fn version(&self) -> &str {
+        match self {
+            Self::A(v) => v.version(),
+            Self::B(v) => v.version(),
+        }
+    }
 }
 
 impl<PA: Page, PB: Page> AssetQueryable for RedisCachePageMerge<PA, PB> {
@@ -199,7 +210,7 @@ impl<P: Page> AssetQueryable for RedisCachePage<P> {
             }
         };
         let key = format!(
-            "o{}:r{}:b{}:a{}",
+            "page:{}:{}:{}:asset:{}",
             self.owner(),
             self.name(),
             self.branch(),
@@ -219,7 +230,9 @@ impl<P: Page> AssetQueryable for RedisCachePage<P> {
                         let _ = conn
                             .set::<String, &str, String>(key.clone(), v.body())
                             .await;
-                        let _ = conn.expire::<String, String>(key, self.ttl);
+                        if self.ttl.is_some() {
+                            let _ = conn.expire::<String, String>(key, self.ttl.unwrap()).await;
+                        }
                         Ok(RedisCacheAsset::Load(v))
                     }
                     Err(e) => Err(e),
@@ -238,7 +251,7 @@ impl<P: Page> AssetQueryable for RedisCachePage<P> {
 pub struct RedisCacheSource<PS: PageSource> {
     upstream: PS,
     client: Arc<Client>,
-    ttl: i64,
+    ttl: Option<i64>,
 }
 
 impl<PS: PageSource> PageSource for RedisCacheSource<PS> {
@@ -248,12 +261,54 @@ impl<PS: PageSource> PageSource for RedisCacheSource<PS> {
         name: String,
         branch: String,
     ) -> Result<impl Page, crate::page::PageError> {
-        debug!("Wrapping page in a Redis abstraction...");
         match self.upstream.page_at(owner, name, branch).await {
-            Ok(v) => Ok(RedisCachePage {
-                upstream: v,
-                client: self.client.clone(),
-                ttl: self.ttl,
+            Ok(page) => Ok({
+                let mut conn = match self.client.get_multiplexed_async_connection().await {
+                    Ok(v) => v,
+                    Err(e) => {
+                        error!("Failed to create multiplexed async Redis connection: {}", e);
+                        return Err(PageError::ProviderError);
+                    }
+                };
+                let version_key = format!(
+                    "page:{}:{}:{}:version",
+                    page.owner(),
+                    page.name(),
+                    page.branch()
+                );
+                match conn.get::<String, String>(version_key.clone()).await {
+                    Ok(v) => {
+                        if v != page.version() {
+                            // Invalidate cache
+                            info!("Page was updated; Invalidating cache...");
+                            let _ = conn
+                                .del::<String, u32>(format!(
+                                    "page:{}:{}:{}:*",
+                                    page.owner(),
+                                    page.name(),
+                                    page.branch()
+                                ))
+                                .await;
+
+                            let _ = conn
+                                .set::<String, String, String>(
+                                    version_key,
+                                    page.version().to_string(),
+                                )
+                                .await;
+                        }
+                    }
+                    Err(e) => {
+                        let _ = conn
+                            .set::<String, String, String>(version_key, page.version().to_string())
+                            .await;
+                    }
+                }
+                RedisCachePage {
+                    upstream: page,
+                    client: self.client.clone(),
+                    ttl: self.ttl,
+                }
             }),
             Err(e) => Err(e),
         }
@@ -275,8 +330,8 @@ impl<PS: PageSource> PageSource for RedisCacheSource<PS> {
             }
         };
         for domain in domains {
-            let key_o = format!("DOMAIN_RESOLVE_OWNER_{}", domain);
-            let key_r = format!("DOMAIN_RESOLVE_NAME_{}", domain);
+            let key_o = format!("domain:owner:{}", domain);
+            let key_r = format!("domain:name:{}", domain);
             if let Ok(o) = conn.get::<String, String>(key_o).await {
                 if let Ok(r) = conn.get::<String, String>(key_r).await {
                     if let Ok(upstream) =
@@ -298,8 +353,8 @@ impl<PS: PageSource> PageSource for RedisCacheSource<PS> {
         match find {
             Ok(page) => {
                 for domain in domains {
-                    let key_o = format!("DOMAIN_RESOLVE_OWNER_{}", domain);
-                    let key_r = format!("DOMAIN_RESOLVE_NAME_{}", domain);
+                    let key_o = format!("domain:{}:owner", domain);
+                    let key_r = format!("domain:{}:name", domain);
                     // TODO: Error reporting
                     let _ = conn
                         .set::<String, String, String>(key_o, page.owner().to_string())

@@ -49,6 +49,7 @@ pub struct ServerConfigUpstream {
     #[serde(default = "default_branches_allowed")]
     pub branches: Vec<String>,
     pub token: Option<String>,
+    pub poll_interval: Option<u64>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -73,7 +74,7 @@ pub struct ServerConfigRedis {
     pub port: u16,
     /// How long should cached assets live in Redis?
     #[serde(default = "default_redis_ttl")]
-    pub ttl: i64,
+    pub ttl: Option<i64>,
 }
 
 /// Aggregate configuration of the server (Contains all other configs)
@@ -144,6 +145,7 @@ impl Default for ServerConfig {
             upstream: ServerConfigUpstream {
                 r#type: ServerConfigUpstreamType::Forgejo,
                 method: ServerConfigUpstreamMethod::Direct,
+                poll_interval: None,
                 url: "".to_string(),
                 default_branch: default_branch(),
                 branches: Vec::new(),
@@ -215,8 +217,8 @@ fn default_redis_port() -> u16 {
     6379
 }
 
-fn default_redis_ttl() -> i64 {
-    1200
+fn default_redis_ttl() -> Option<i64> {
+    None
 }
 
 fn default_domains_allowed() -> bool {

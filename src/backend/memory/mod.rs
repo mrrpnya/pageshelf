@@ -19,6 +19,7 @@ struct MemoryPage<'a> {
     owner: String,
     name: String,
     branch: String,
+    version: String,
     data: &'a MemoryCache,
 }
 
@@ -33,6 +34,10 @@ impl<'a> Page for MemoryPage<'a> {
 
     fn owner(&self) -> &str {
         &self.owner
+    }
+
+    fn version(&self) -> &str {
+        &self.version
     }
 }
 
@@ -72,6 +77,7 @@ impl PageSource for MemoryPageProvider {
                 name,
                 branch: channel,
                 data: v,
+                version: "".to_string(),
             }),
             None => Err(PageError::NotFound),
         }
@@ -82,6 +88,7 @@ impl PageSource for MemoryPageProvider {
             owner: f.0.0.clone(),
             name: f.0.1.clone(),
             branch: f.0.2.clone(),
+            version: "".to_string(),
             data: &f.1,
         }))
     }

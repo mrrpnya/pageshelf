@@ -1,15 +1,20 @@
 mod asset_direct;
+mod scan;
 
-use std::{path::Path, str::FromStr};
+use std::{
+    path::Path,
+    str::FromStr,
+    sync::Arc,
+};
 
 use crate::{
     asset::{Asset, AssetError, AssetQueryable},
     conf::ServerConfig,
     page::{Page, PageError, PageSource, PageSourceFactory},
 };
-use forgejo_api::{Auth, Forgejo, structs::RepoSearchQuery};
-use log::{debug, error, info, warn};
-use url::Url;
+use forgejo_api::{Auth, Forgejo};
+use log::{error, warn};
+use scan::ForgejoAnalyzer;
 
 use asset_direct::ForgejoDirectReadStorage;
 
@@ -18,9 +23,9 @@ enum Strategy {
 }
 
 pub struct ForgejoProvider {
-    forgejo: Forgejo,
+    forgejo: Arc<Forgejo>,
     strategy: Strategy,
-    branches: Option<Vec<String>>,
+    analyzer: Arc<ForgejoAnalyzer>,
 }
 
 struct ForgejoPage<'a> {
@@ -39,6 +44,10 @@ impl<'a> Page for ForgejoPage<'a> {
     fn owner(&self) -> &str {
         self.storage.owner()
     }
+
+    fn version(&self) -> &str {
+        self.storage.version()
+    }
 }
 
 impl<'a> AssetQueryable for ForgejoPage<'a> {
@@ -52,12 +61,14 @@ impl<'a> AssetQueryable for ForgejoPage<'a> {
 }
 
 impl ForgejoProvider {
-    pub fn direct(forgejo: Forgejo, branches: Option<Vec<String>>) -> Self {
-        Self {
-            forgejo,
+    pub fn direct(forgejo: Arc<Forgejo>, analyzer: Arc<ForgejoAnalyzer>) -> Self {
+        let s = Self {
+            forgejo: forgejo,
             strategy: Strategy::Direct,
-            branches,
-        }
+            analyzer,
+        };
+
+        s
     }
 }
 
@@ -68,47 +79,34 @@ impl PageSource for ForgejoProvider {
         name: String,
         channel: String,
     ) -> Result<impl Page, PageError> {
-        match &self.branches {
-            Some(v) => {
-                if !v.iter().any(|f| f == &channel) {
-                    warn!(
-                        "Failed to access a Forgejo page: The branch {} is not in the list of accepted branches",
-                        channel
-                    );
-                    warn!("Accepted branches are [{}]", v.join(", "));
-                    return Err(PageError::NotFound);
-                }
-            }
-            None => {}
+        if !self.analyzer.target_branches.iter().any(|f| f == &channel) {
+            warn!(
+                "Failed to access a Forgejo page: The branch {} is not in the list of accepted branches",
+                channel
+            );
+            warn!(
+                "Accepted branches are [{}]",
+                self.analyzer.target_branches.join(", ")
+            );
+            return Err(PageError::NotFound);
         }
 
-        match self.forgejo.repo_get(&owner, &name).await {
-            Ok(v) => {
-                // Verify that channel exists
-                match self.forgejo.repo_get_branch(&owner, &name, &channel).await {
-                    Ok(_) => v,
-                    Err(e) => {
-                        error!(
-                            "Failed to find Forgejo branch {} at {}/{} - {}",
-                            channel, owner, name, e
-                        );
-                        return Err::<ForgejoPage, PageError>(PageError::ProviderError);
-                    }
-                };
+        let repos = self.analyzer.repos.read().await;
 
-                Ok(ForgejoPage {
-                    storage: ForgejoDirectReadStorage::new(
-                        &self.forgejo,
-                        owner.to_string(),
-                        name.to_string(),
-                        channel.to_string(),
-                    ),
-                })
-            }
-            Err(e) => {
+        match repos.get(&(owner.clone(), name.clone(), channel.clone())) {
+            Some(v) => Ok(ForgejoPage {
+                storage: ForgejoDirectReadStorage::new(
+                    &self.forgejo,
+                    owner.to_string(),
+                    name.to_string(),
+                    channel.to_string(),
+                    v.version.clone(),
+                ),
+            }),
+            None => {
                 error!(
-                    "Failed to find Forgejo repository at {}/{} - {}",
-                    owner, name, e
+                    "Failed to find Forgejo repository at {}/{}:{}",
+                    owner, name, channel
                 );
                 Err::<ForgejoPage, PageError>(PageError::ProviderError)
             }
@@ -116,7 +114,25 @@ impl PageSource for ForgejoProvider {
     }
 
     async fn pages(&self) -> Result<impl Iterator<Item = impl Page>, PageError> {
-        let repo_search = match self
+        let repos = self.analyzer.repos.read().await;
+
+        let mut pages: Vec<ForgejoPage> = vec![];
+
+        for repo in repos.keys() {
+            pages.push(ForgejoPage {
+                storage: ForgejoDirectReadStorage::new(
+                    &self.forgejo,
+                    repo.0.to_string(),
+                    repo.1.to_string(),
+                    repo.2.to_string(),
+                    repos[repo].version.clone(),
+                ),
+            });
+        }
+
+        Ok(pages.into_iter())
+
+        /*let repo_search = match self
             .forgejo
             .repo_search(RepoSearchQuery {
                 q: None,
@@ -170,53 +186,46 @@ impl PageSource for ForgejoProvider {
 
             info!("Scanning repo {}/{}...", user.as_str(), repo.as_str());
 
-            match &self.branches {
-                Some(v) => {
-                    for branch in v {
-                        let user = user.clone();
-                        let repo = repo.clone();
-                        let branch_result = self
-                            .forgejo
-                            .repo_get_branch(user.as_str(), repo.as_str(), branch.as_str())
-                            .await;
-                        debug!(
-                            "Getting repo branch {}/{}:{}",
+            for branch in self.analyzer.target_branches.clone() {
+                let user = user.clone();
+                let repo = repo.clone();
+                let branch_result = self
+                    .forgejo
+                    .repo_get_branch(user.as_str(), repo.as_str(), branch.as_str())
+                    .await;
+                debug!(
+                    "Getting repo branch {}/{}:{}",
+                    user.as_str(),
+                    repo.as_str(),
+                    branch.as_str()
+                );
+
+                match branch_result {
+                    Ok(_) => {
+                        info!(
+                            "Found page at: {}/{}:{}",
                             user.as_str(),
                             repo.as_str(),
                             branch.as_str()
                         );
-
-                        match branch_result {
-                            Ok(_) => {
-                                info!(
-                                    "Found page at: {}/{}:{}",
-                                    user.as_str(),
-                                    repo.as_str(),
-                                    branch.as_str()
-                                );
-                                pages.push(ForgejoPage {
-                                    storage: ForgejoDirectReadStorage::new(
-                                        &self.forgejo,
-                                        user,
-                                        repo,
-                                        branch.to_string(),
-                                    ),
-                                });
-                            }
-                            Err(e) => {
-                                error!("Failed to get branch: {}", e);
-                                continue;
-                            }
-                        }
+                        pages.push(ForgejoPage {
+                            storage: ForgejoDirectReadStorage::new(
+                                &self.forgejo,
+                                user,
+                                repo,
+                                branch.to_string(),
+                            ),
+                        });
                     }
-                }
-                None => {
-                    // TODO: All Branches mode
+                    Err(e) => {
+                        error!("Failed to get branch: {}", e);
+                        continue;
+                    }
                 }
             }
         }
 
-        Ok(pages.into_iter())
+        Ok(pages.into_iter())*/
     }
 }
 
@@ -226,8 +235,8 @@ impl PageSource for ForgejoProvider {
 
 #[derive(Clone)]
 pub struct ForgejoProviderFactory {
-    config: ServerConfig,
-    url: Url,
+    analyzer: Arc<ForgejoAnalyzer>,
+    forgejo: Arc<Forgejo>,
 }
 
 impl ForgejoProviderFactory {
@@ -240,41 +249,33 @@ impl ForgejoProviderFactory {
             }
         };
 
-        Ok(Self { url, config })
-    }
-}
-impl PageSourceFactory for ForgejoProviderFactory {
-    type Source = ForgejoProvider;
-
-    fn build(&self) -> Result<Self::Source, ()> {
-        let fj = match Forgejo::new(Auth::None, self.url.clone()) {
+        let fj = Arc::new(match Forgejo::new(Auth::None, url.clone()) {
             Ok(v) => v,
             Err(e) => {
                 error!("Failed to create Forgejo authentication: {}", e);
                 return Err(());
             }
-        };
+        });
 
+        let mut branches = config.upstream.branches.clone();
+        if branches.len() == 0 {
+            branches.push("pages".to_string());
+        }
+
+        Ok(Self {
+            forgejo: fj.clone(),
+            analyzer: Arc::new(ForgejoAnalyzer::start(fj, branches, config.upstream.poll_interval.unwrap_or(240)))
+        })
+    }
+}
+
+impl PageSourceFactory for ForgejoProviderFactory {
+    type Source = ForgejoProvider;
+
+    fn build(&self) -> Result<Self::Source, ()> {
         Ok(ForgejoProvider::direct(
-            fj,
-            Some(self.config.upstream.branches.clone()),
+            self.forgejo.clone(),
+            self.analyzer.clone(),
         ))
     }
 }
-
-/*
-impl PageSourceConfigurator for ForgejoProvider {
-    type Source = ForgejoProvider;
-
-    fn from_config(config: &crate::conf::ServerConfig) -> Self::Source {
-        ForgejoProvider::direct(
-            Forgejo::new(
-                Auth::None,
-                url::Url::from_str(&config.upstream.url).unwrap(),
-            )
-            .unwrap(),
-            Some(config.upstream.branches.clone()),
-        )
-    }
-}
-*/

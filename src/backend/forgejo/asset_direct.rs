@@ -13,6 +13,7 @@ pub struct ForgejoDirectReadStorage<'a> {
     owner: String,
     repo: String,
     branch: String,
+    version: String,
 }
 
 struct EmptyAssetIter {}
@@ -32,12 +33,19 @@ impl Iterator for EmptyAssetIter {
 }
 
 impl<'a> ForgejoDirectReadStorage<'a> {
-    pub fn new(forgejo: &'a Forgejo, owner: String, repo: String, branch: String) -> Self {
+    pub fn new(
+        forgejo: &'a Forgejo,
+        owner: String,
+        repo: String,
+        branch: String,
+        version: String,
+    ) -> Self {
         Self {
             forgejo,
             owner,
             repo,
             branch,
+            version,
         }
     }
 
@@ -51,6 +59,10 @@ impl<'a> ForgejoDirectReadStorage<'a> {
 
     pub fn branch(&self) -> &str {
         &self.branch
+    }
+
+    pub fn version(&self) -> &str {
+        &self.version
     }
 }
 
