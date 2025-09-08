@@ -9,16 +9,16 @@ publish = false
 
 [dependencies]
 forgejo-api = { version = "0.7", optional = true }
-actix-web = { version = "4.5.45", default-features = false, features = [
+actix-web = { version = "4.11.0", default-features = false, features = [
     "macros",
     "compress-zstd",
     "compress-gzip",
 ] }
-clap = { version = "4.5.45", features = ["cargo"] }
+clap = { version = "4.5.47", features = ["cargo"] }
 log = "0.4"
 fern = { version = "0.7", features = ["colored"] }
 url = { version = "2.5.7", features = ["serde"] }
-minijinja = { version = "2.11", default-features = false, features = [
+minijinja = { version = "2.12", default-features = false, features = [
     "multi_template",
 ] }
 serde = "1"
@@ -26,11 +26,12 @@ config = "0.15"
 toml = "0.9"
 mime_guess = "2"
 redis = { version = "0.32", features = ["aio", "tokio-comp"], optional = true }
+tokio = { version = "1", features = ["full"] }
 
 [dev-dependencies]
 tokio = { version = "1.47", features = ["macros"] }
 env_logger = "0.11"
-criterion = { version = "0.5", features = ["html_reports", "async_std"] }
+criterion = { version = "0.7", features = ["html_reports", "async_std"] }
 rand = "0.9"
 
 [features]

@@ -1,13 +1,19 @@
 on:
-  push:
-    branches:
-      - "canary"
+  workflow_run:
+    workflows: ["Cargo"]
+    branches: [canary]
+    types: 
+      - completed
   workflow_dispatch:
+    
 
 jobs:
   build-publish:
     name: 🐋 Build and Publish (Canary)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout GitHub Action
         uses: actions/checkout@v4

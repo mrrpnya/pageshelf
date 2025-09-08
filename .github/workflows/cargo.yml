@@ -1,3 +1,4 @@
+name: "Cargo"
 on:
   push:
     branches:
@@ -11,6 +12,8 @@ jobs:
       matrix:
         label: ['ubuntu-latest']
     runs-on: ${{ matrix.label }}
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,6 +25,8 @@ jobs:
   clippy:
     name: 📎 Clippy
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,6 +38,8 @@ jobs:
   formatting:
     name: 🧹 Formatting
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
