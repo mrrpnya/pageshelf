@@ -148,7 +148,6 @@ impl ForgejoAnalyzer {
                     continue;
                 }
 
-                
                 let version = commit.id.unwrap();
                 repos.insert(
                     (
@@ -163,7 +162,13 @@ impl ForgejoAnalyzer {
 
                 update_count += 1;
 
-                log::debug!("Analyzed {}/{}:{} (version {})", login, repo_name, branch_name, version)
+                log::debug!(
+                    "Analyzed {}/{}:{} (version {})",
+                    login,
+                    repo_name,
+                    branch_name,
+                    version
+                )
             }
         }
 

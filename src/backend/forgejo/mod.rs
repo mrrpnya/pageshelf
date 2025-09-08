@@ -1,11 +1,7 @@
 mod asset_direct;
 mod scan;
 
-use std::{
-    path::Path,
-    str::FromStr,
-    sync::Arc,
-};
+use std::{path::Path, str::FromStr, sync::Arc};
 
 use crate::{
     asset::{Asset, AssetError, AssetQueryable},
@@ -264,7 +260,11 @@ impl ForgejoProviderFactory {
 
         Ok(Self {
             forgejo: fj.clone(),
-            analyzer: Arc::new(ForgejoAnalyzer::start(fj, branches, config.upstream.poll_interval.unwrap_or(240)))
+            analyzer: Arc::new(ForgejoAnalyzer::start(
+                fj,
+                branches,
+                config.upstream.poll_interval.unwrap_or(240),
+            )),
         })
     }
 }

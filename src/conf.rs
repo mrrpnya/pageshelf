@@ -49,7 +49,7 @@ pub struct ServerConfigUpstream {
     #[serde(default = "default_branches_allowed")]
     pub branches: Vec<String>,
     pub token: Option<String>,
-    pub poll_interval: Option<u64>
+    pub poll_interval: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
