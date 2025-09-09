@@ -90,6 +90,23 @@ impl CacheConnection for RedisCacheConnection {
     }
 
     async fn get(&mut self, key: &str) -> Result<Vec<u8>, CacheError> {
+        let exists = self.conn.exists::<&str, bool>(key).await;
+
+        match exists {
+            Ok(v) => {
+                if !v {
+                    return Err(CacheError::NotFound);
+                }
+            }
+            Err(e) => {
+                error!(
+                    "Redis error while checking if key \"{}\" exists: {}",
+                    key, e
+                );
+                return Err(CacheError::OperationError(e.to_string()));
+            }
+        }
+
         let result = self.conn.get::<&str, Vec<u8>>(key).await;
 
         match result {

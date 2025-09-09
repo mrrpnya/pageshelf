@@ -204,11 +204,13 @@ impl<P: Page, C: Cache> AssetSource for CachePage<P, C> {
                 info!("Cache miss (loading from upstream): {:?}", e);
                 match self.upstream.get_asset(path).await {
                     Ok(v) => {
-                        // TODO: Error reporting
                         let _ = conn.set(&key, v.bytes()).await;
                         Ok(CacheAsset::Load(v))
                     }
-                    Err(e) => Err(e),
+                    Err(e) => {
+                        error!("Error getting asset from upstream: {:?}", e);
+                        Err(e)
+                    }
                 }
             }
         }
@@ -246,13 +248,17 @@ impl<PS: PageSource, C: Cache> PageSource for CacheLayerSource<PS, C> {
                     Ok(v) => {
                         let version = std::str::from_utf8(&v);
                         if version.is_err() {
+                            debug!("Page version is not UTF-8!");
                             return Err(PageError::ProviderError);
                         }
                         let version = version.unwrap();
 
                         if version != page.version() {
                             // Invalidate cache
-                            info!("Page was updated; Invalidating cache...");
+                            info!(
+                                "Page was updated (version: {}); Invalidating cache...",
+                                version
+                            );
                             let key = format!(
                                 "page:{}:{}:{}:*",
                                 page.owner(),
@@ -261,7 +267,7 @@ impl<PS: PageSource, C: Cache> PageSource for CacheLayerSource<PS, C> {
                             );
                             let _ = conn.delete(&key).await;
 
-                            let _ = conn.set(&version_key, &v).await;
+                            let _ = conn.set(&version_key, page.version().as_bytes()).await;
                         }
                     }
                     Err(e) => {

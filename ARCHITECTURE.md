@@ -8,7 +8,7 @@
   - [Model](#model)
     - [Pages](#pages)
   - [Source Map](#source-map)
-    - [`src/backend`](#srcbackend)
+    - [`src/provider`](#srcprovider)
     - [`src/frontend`](#srcfrontend)
 
 ## Terminology
@@ -68,19 +68,20 @@ flowchart BR
     bob_page_2 --> bob_page_2_default
 ```
 
-It's an Owner -> Page -> Branch relation.<br>
+It's an Owner -> Page -> Branch relation.
+
 This shows the structure of information needed when accessing a page.
 
 ## Source Map
 
-### `src/backend`
+### `src/provider`
 
 This implements and exposes utilities for getting Pages and Assets from various sources, as well as layers to alter how they're accessed.
 
 This includes presently;
 
 - In-Memory
-- Forgejo (Direct Raw-Access)
+- Forgejo (via Raw)
 - Redis (Caching)
 
 ### `src/frontend`
