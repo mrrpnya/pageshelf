@@ -1,7 +1,13 @@
+pub mod cache;
 #[cfg(feature = "forgejo")]
 pub mod forgejo;
+#[cfg(feature = "gitea")]
+pub mod gitea;
+#[cfg(feature = "gitlab")]
+pub mod gitlab;
 pub mod layers;
 pub mod memory;
+mod scanner;
 
 // Export specific types
 #[cfg(feature = "forgejo")]

@@ -3,15 +3,19 @@
     "cSpell.words": [
         "Actix",
         "Forgejo",
+        "gitea",
         "Jemalloc",
         "minijinja",
         "pageshelf",
         "rsplitn",
-        "serde"
+        "serde",
+        "Valkey"
     ],
     "rust-analyzer.checkOnSave": true,
     "rust-analyzer.check.extraArgs": [
         "--target-dir",
         "${workspaceFolder}/target/check"
-    ]
+    ],
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true,
 }

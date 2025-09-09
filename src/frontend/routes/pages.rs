@@ -7,10 +7,9 @@ use mime_guess::Mime;
 use minijinja::context;
 
 use crate::{
-    RoutingState,
-    asset::{Asset, AssetQueryable},
+    Asset, AssetSource, PageSource, RoutingState,
     frontend::templates::{TEMPLATE_ERROR, TemplateErrorContext, TemplatePageContext},
-    page::PageSource,
+    resolver::UrlResolver,
 };
 
 /* -------------------------------------------------------------------------- */
@@ -20,8 +19,8 @@ use crate::{
 /// Attempts to get a Page, given parameters.
 ///
 /// Will result in a 200 OK response if successful, otherwise will check for index or 404.
-pub async fn get_page_response<'a, PS: PageSource>(
-    data: &web::Data<RoutingState<'a, PS>>,
+pub async fn get_page_response<'a, PS: PageSource, UR: UrlResolver>(
+    data: &web::Data<RoutingState<'a, PS, UR>>,
     owner: Option<&str>,
     repo: Option<&str>,
     channel: Option<&str>,
@@ -38,7 +37,7 @@ pub async fn get_page_response<'a, PS: PageSource>(
     let primary = match file.is_dir() {
         false => {
             let buf = file;
-            get_page_response_raw(data, owner, repo, channel, &buf, 200).await
+            get_page_response_raw(data, owner, repo, channel, buf, 200).await
         }
         true => {
             let file = file.join("index.html");
@@ -64,8 +63,8 @@ pub async fn get_page_response<'a, PS: PageSource>(
 /// Get a page directly as a response, without checking for fallbacks.
 ///
 /// Also returns the status as a u16.
-pub async fn get_page_response_raw<'a, PS: PageSource>(
-    data: &web::Data<RoutingState<'a, PS>>,
+pub async fn get_page_response_raw<'a, PS: PageSource, UR: UrlResolver>(
+    data: &web::Data<RoutingState<'a, PS, UR>>,
     owner: &str,
     repo: &str,
     channel: Option<&str>,
@@ -94,7 +93,7 @@ pub async fn get_page_response_raw<'a, PS: PageSource>(
                 owner, repo, branch, e
             );
             return (
-                HttpResponse::NotFound().body(
+                HttpResponse::NotFound().content_type("text/html").body(
                     tp.render(context! {
                         server => data.config.template_server_context(),
                         page => TemplatePageContext {
@@ -114,23 +113,11 @@ pub async fn get_page_response_raw<'a, PS: PageSource>(
         }
     };
 
-    // Page is found - Log that we're getting the asset
-    match channel {
-        Some(v) => info!(
-            "Retrieving asset {:?} from page {}/{} (Branch \"{}\")...",
-            file, owner, repo, v
-        ),
-        None => info!(
-            "Retrieving asset {:?} from page {}/{} (No specified branch)...",
-            file, owner, repo
-        ),
-    }
-
     /* ------------------------------- Query Asset ------------------------------ */
 
     let path = file;
 
-    let asset = match page.asset_at(&path).await {
+    let asset = match page.get_asset(path).await {
         Ok(v) => v,
         Err(e) => {
             error!(
@@ -156,7 +143,7 @@ pub async fn get_page_response_raw<'a, PS: PageSource>(
     (
         HttpResponse::build(StatusCode::from_u16(ok_code).unwrap())
             .content_type(guesses.first_or(Mime::from_str("application/octet-stream").unwrap()))
-            .body(asset.body().to_string()),
+            .body(asset.into_bytes()),
         ok_code,
     )
 }

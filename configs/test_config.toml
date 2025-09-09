@@ -46,9 +46,10 @@ poll_interval = 60
 #whitelist = { owner = "*", repo = "*", file = "*" }
 #blacklist = { owner = "*", repo = "*", file = "*" }
 # Whether or not to show private repos
-show_private = false
+#show_private = false
 
-[redis]
+[cache]
 enabled = true
 port = 6379
 address = "localhost"
+#ttl=400 

@@ -1,12 +1,11 @@
-use std::path::Path;
+use std::{path::Path, sync::Arc};
 
 use actix_web::{App, http::header::ContentType, middleware::NormalizePath, test};
 use pageshelf::{
-    asset::{Asset, AssetQueryable},
-    backend::{memory::MemoryAsset, testing::create_example_provider_factory},
     conf::ServerConfig,
     frontend::setup_service_config,
-    page::{PageSource, PageSourceFactory},
+    provider::{memory::MemoryAsset, testing::create_example_provider_factory},
+    {Asset, AssetSource}, {PageSource, PageSourceFactory},
 };
 
 #[tokio::test]
@@ -21,7 +20,8 @@ async fn page_server_404() {
     let config = ServerConfig::default();
 
     let app = test::init_service(App::new().configure(move |f| {
-        setup_service_config(f, &config, factory, None);
+        let provider = Arc::new(factory.build().unwrap());
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -44,7 +44,7 @@ async fn page_custom_404() {
     let path_1 = Path::new("/404.html");
     let path_2 = Path::new("/other.html");
 
-    let asset_1 = MemoryAsset::from_str("meow");
+    let asset_1 = MemoryAsset::new_from_str("meow");
 
     let config = ServerConfig::default();
     let factory = create_example_provider_factory()
@@ -71,13 +71,14 @@ async fn page_custom_404() {
             )
             .await
             .unwrap()
-            .asset_at(&path_1)
+            .get_asset(&path_1)
             .await
             .is_ok()
     );
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        setup_service_config(f, &config, factory, None);
+        let provider = Arc::new(factory.build().unwrap());
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -88,7 +89,7 @@ async fn page_custom_404() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 404);
     let body = test::read_body(resp).await;
-    assert_ne!(body, asset_1.body());
+    assert_ne!(body, asset_1.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/owner_1/name_1/index.html")
@@ -97,7 +98,7 @@ async fn page_custom_404() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 404);
     let body = test::read_body(resp).await;
-    assert_ne!(body, asset_1.body());
+    assert_ne!(body, asset_1.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/owner_1/name_1:with_404")
@@ -106,7 +107,7 @@ async fn page_custom_404() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 404);
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_1.body());
+    assert_eq!(body, asset_1.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/owner_1/name_1:with_404/index.html")
@@ -115,5 +116,5 @@ async fn page_custom_404() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 404);
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_1.body());
+    assert_eq!(body, asset_1.body().unwrap());
 }

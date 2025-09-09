@@ -1,21 +1,29 @@
-use actix_web::HttpRequest;
 use log::warn;
 use url::Url;
 
-use crate::{
-    page::{PageAssetLocation, PageLocation},
-    util::analyze_url,
-};
+use crate::{PageAssetLocation, PageLocation};
+
+use super::util::analyze_url;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum UrlResolution {
+    /// The URL pointed to a page at this location.
     Page(PageAssetLocation),
+    // TODO: Rethink this? Should probably override the URL resolver entirely.
+    /// The URL is a built-in page.
     BuiltIn,
+    /// The URL points to a domain.
     External(Url),
+    /// The URL is invalid.
     Malformed(String),
 }
 
-pub struct UrlResolver {
+pub trait UrlResolver {
+    fn resolve(&self, url: Url) -> UrlResolution;
+}
+
+#[derive(Clone)]
+pub struct DefaultUrlResolver {
     home_domain: Option<String>,
     page_domains: Option<Vec<String>>,
     external_enabled: bool,
@@ -23,7 +31,20 @@ pub struct UrlResolver {
     default_branch: String,
 }
 
-impl UrlResolver {
+impl DefaultUrlResolver {
+    /// Creates a default URL resolver, based on the provided parameters.
+    ///
+    /// # Arguments
+    ///
+    /// - `home_domain` (`Option<Url>`) - The domain that is associated with the server directly.
+    /// - `page_domains` (`Option<Vec<Url>>`) - The (wildcard) domains that also are associated with the server.
+    /// - `default_repo` (`String`) - The repository to default to if none is specified.
+    /// - `default_branch` (`String`) - The branch to default to if none is specified.
+    /// - `external_enabled` (`bool`) - Whether or not to consider arbitrary domains.
+    ///
+    /// # Returns
+    ///
+    /// - `Self` - A URL resolver that will operate according to the above parameters.
     pub fn new(
         home_domain: Option<Url>,
         page_domains: Option<Vec<Url>>,
@@ -43,29 +64,28 @@ impl UrlResolver {
                 }
                 None => None,
             },
-            page_domains: match page_domains {
-                Some(v) => Some(
-                    v.iter()
-                        .map(|f| f.host_str())
-                        .filter(|f| {
-                            if f.is_some() {
-                                return true;
-                            }
-                            warn!("Failed to determine page domain host");
-                            false
-                        })
-                        .map(|f| f.unwrap().to_string())
-                        .collect(),
-                ),
-                None => None,
-            },
+            page_domains: page_domains.map(|v| {
+                v.iter()
+                    .map(|f| f.host_str())
+                    .filter(|f| {
+                        if f.is_some() {
+                            return true;
+                        }
+                        warn!("Failed to determine page domain host");
+                        false
+                    })
+                    .map(|f| f.unwrap().to_string())
+                    .collect()
+            }),
             default_repo,
             default_branch,
             external_enabled,
         }
     }
+}
 
-    pub fn resolve(&self, url: Url) -> UrlResolution {
+impl UrlResolver for DefaultUrlResolver {
+    fn resolve(&self, url: Url) -> UrlResolution {
         let host = url.host_str();
 
         let is_root = (self.page_domains.iter().count() == 0 && !self.external_enabled)
@@ -93,19 +113,15 @@ impl UrlResolver {
         match is_root {
             true => match analyze_url(&url, None) {
                 Some(a) => match a.owner {
-                    Some(owner) => {
-                        return UrlResolution::Page(PageAssetLocation {
-                            page: PageLocation {
-                                owner: owner,
-                                name: a.repo.unwrap_or(self.default_repo.clone()),
-                                branch: a.branch.unwrap_or(self.default_branch.clone()),
-                            },
-                            asset: a.asset,
-                        });
-                    }
-                    None => {
-                        return UrlResolution::BuiltIn;
-                    }
+                    Some(owner) => UrlResolution::Page(PageAssetLocation {
+                        page: PageLocation {
+                            owner,
+                            name: a.repo.unwrap_or(self.default_repo.clone()),
+                            branch: a.branch.unwrap_or(self.default_branch.clone()),
+                        },
+                        asset: a.asset,
+                    }),
+                    None => UrlResolution::BuiltIn,
                 },
                 None => UrlResolution::BuiltIn,
             },
@@ -114,13 +130,13 @@ impl UrlResolver {
                 match &self.page_domains {
                     Some(pds) => {
                         for pd in pds {
-                            if is_in_url(&pd, host) {
-                                match analyze_url(&url, Some(&pd)) {
+                            if is_in_url(pd, host) {
+                                match analyze_url(&url, Some(pd)) {
                                     Some(a) => match a.owner {
                                         Some(owner) => {
                                             return UrlResolution::Page(PageAssetLocation {
                                                 page: PageLocation {
-                                                    owner: owner,
+                                                    owner,
                                                     name: a
                                                         .repo
                                                         .unwrap_or(self.default_repo.clone()),
@@ -133,7 +149,7 @@ impl UrlResolver {
                                         }
                                         None => {
                                             if self.external_enabled {
-                                                UrlResolution::External(url.clone());
+                                                return UrlResolution::External(url.clone());
                                             } else {
                                                 drop(UrlResolution::BuiltIn);
                                             }
@@ -162,10 +178,6 @@ impl UrlResolver {
             }
         }
     }
-
-    pub fn resolve_http_request(&self, req: &HttpRequest) -> UrlResolution {
-        self.resolve(req.full_url())
-    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -189,15 +201,15 @@ pub mod tests {
     use url::Url;
 
     use crate::{
-        page::{PageAssetLocation, PageLocation},
-        resolver::UrlResolution,
+        PageAssetLocation, PageLocation,
+        resolver::{DefaultUrlResolver, UrlResolution},
     };
 
     use super::UrlResolver;
 
     #[test]
     fn root_builtin() {
-        let r = UrlResolver::new(
+        let r = DefaultUrlResolver::new(
             Some(Url::from_str("http://home.domain").unwrap()),
             Some(vec![Url::from_str("http://pages.domain").unwrap()]),
             "pages".to_string(),
@@ -225,7 +237,7 @@ pub mod tests {
             UrlResolution::BuiltIn
         );
 
-        let r = UrlResolver::new(
+        let r = DefaultUrlResolver::new(
             Some(Url::from_str("http://home.domain").unwrap()),
             Some(vec![Url::from_str("http://pages.domain").unwrap()]),
             "pages".to_string(),
@@ -252,7 +264,7 @@ pub mod tests {
     /// Try and find a user via root URL
     #[test]
     fn root_user_identify() {
-        let r = UrlResolver::new(
+        let r = DefaultUrlResolver::new(
             Some(Url::from_str("http://home.domain/nya").unwrap()),
             Some(vec![Url::from_str("http://pages.domain/nya").unwrap()]),
             "pages".to_string(),
@@ -280,7 +292,8 @@ pub mod tests {
 
     #[test]
     fn default_to_root() {
-        let r = UrlResolver::new(None, None, "pages".to_string(), "pages".to_string(), false);
+        let r =
+            DefaultUrlResolver::new(None, None, "pages".to_string(), "pages".to_string(), false);
 
         assert_eq!(
             r.resolve(Url::from_str("http://home.domain/nya").unwrap()),
@@ -309,7 +322,7 @@ pub mod tests {
 
     #[test]
     fn subdomains() {
-        let r = UrlResolver::new(
+        let r = DefaultUrlResolver::new(
             None,
             Some(vec![Url::from_str("http://home.domain").unwrap()]),
             "pages".to_string(),
@@ -337,7 +350,7 @@ pub mod tests {
 
     #[test]
     fn domains() {
-        let r = UrlResolver::new(
+        let r = DefaultUrlResolver::new(
             Some(Url::from_str("http://pages.home.domain").unwrap()),
             Some(vec![Url::from_str("http://home.domain").unwrap()]),
             "pages".to_string(),

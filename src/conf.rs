@@ -1,8 +1,10 @@
+//! Configuration schema and utilities for Pageshelf.
+
 use clap::crate_version;
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::frontend::templates::TemplateServerContext;
+use crate::{frontend::templates::TemplateServerContext, resolver::DefaultUrlResolver};
 
 /* -------------------------------------------------------------------------- */
 /*                              Config structure                              */
@@ -60,21 +62,21 @@ pub struct ServerConfigSecurity {
     pub show_private: bool,
 }
 
-/// Redis configuration for the server
+/// Cache configuration for the server
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ServerConfigRedis {
-    /// Should Redis be used?
-    #[serde(default = "default_redis_enabled")]
+pub struct ServerConfigCache {
+    /// Should Cache be used?
+    #[serde(default = "default_cache_enabled")]
     pub enabled: bool,
-    /// Where to find the Redis server (address)
-    #[serde(default = "default_redis_address")]
+    /// Where to find the Cache server (address)
+    #[serde(default = "default_cache_address")]
     pub address: String,
-    /// Where to find the Redis server (port)
-    #[serde(default = "default_redis_port")]
+    /// Where to find the Cache server (port)
+    #[serde(default = "default_cache_port")]
     pub port: u16,
-    /// How long should cached assets live in Redis?
-    #[serde(default = "default_redis_ttl")]
-    pub ttl: Option<i64>,
+    /// How long should cached assets live in Cache?
+    #[serde(default = "default_cache_ttl")]
+    pub ttl: Option<u32>,
 }
 
 /// Aggregate configuration of the server (Contains all other configs)
@@ -98,8 +100,8 @@ pub struct ServerConfig {
     #[serde(default = "default_security")]
     pub security: ServerConfigSecurity,
     pub upstream: ServerConfigUpstream,
-    #[serde(default = "default_redis")]
-    pub redis: ServerConfigRedis,
+    #[serde(default = "default_cache")]
+    pub cache: ServerConfigCache,
 }
 
 impl ServerConfig {
@@ -107,14 +109,21 @@ impl ServerConfig {
         TemplateServerContext {
             name: self.name.to_string(),
             about: self.description.to_string(),
-            url: match &self.url {
-                Some(v) => Some(v.as_str().to_string()),
-                None => None,
-            },
-            icon_url: Some("/pages_favicon.png".to_string()),
+            url: self.url.as_ref().map(|v| v.as_str().to_string()),
+            icon_url: Some("/pages_favicon.webp".to_string()),
             default_branch: self.upstream.default_branch.clone(),
             version: crate_version!(),
         }
+    }
+
+    pub fn url_resolver(&self) -> DefaultUrlResolver {
+        DefaultUrlResolver::new(
+            self.url.clone(),
+            self.pages_urls.clone(),
+            "pages".to_string(),
+            "pages".to_string(),
+            self.allow_domains,
+        )
     }
 }
 
@@ -151,7 +160,7 @@ impl Default for ServerConfig {
                 branches: Vec::new(),
                 token: None,
             },
-            redis: default_redis(),
+            cache: default_cache(),
         }
     }
 }
@@ -196,28 +205,28 @@ fn default_user() -> String {
     "admin".to_string()
 }
 
-fn default_redis() -> ServerConfigRedis {
-    ServerConfigRedis {
-        enabled: default_redis_enabled(),
-        address: default_redis_address(),
-        port: default_redis_port(),
-        ttl: default_redis_ttl(),
+fn default_cache() -> ServerConfigCache {
+    ServerConfigCache {
+        enabled: default_cache_enabled(),
+        address: default_cache_address(),
+        port: default_cache_port(),
+        ttl: default_cache_ttl(),
     }
 }
 
-fn default_redis_enabled() -> bool {
+fn default_cache_enabled() -> bool {
     false
 }
 
-fn default_redis_address() -> String {
+fn default_cache_address() -> String {
     "127.0.0.1".to_string()
 }
 
-fn default_redis_port() -> u16 {
+fn default_cache_port() -> u16 {
     6379
 }
 
-fn default_redis_ttl() -> Option<i64> {
+fn default_cache_ttl() -> Option<u32> {
     None
 }
 

@@ -41,10 +41,7 @@ pub fn analyze_url(url: &Url, base_domain: Option<&str>) -> Option<UrlAnalysis> 
 
     let host = &host[h_start..host.len()];
 
-    let base_host = match base_domain {
-        Some(v) => v,
-        None => "no.host",
-    };
+    let base_host = base_domain.unwrap_or("no.host");
 
     // If host is unrelated
     if host != base_host && !host.ends_with(&format!(".{base_host}")) {

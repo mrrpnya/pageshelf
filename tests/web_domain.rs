@@ -1,11 +1,11 @@
-use std::{path::Path, str::FromStr};
+use std::{path::Path, str::FromStr, sync::Arc};
 
 use actix_web::{App, http::header::ContentType, test};
 use pageshelf::{
-    asset::Asset,
-    backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    Asset, PageSourceFactory,
     conf::ServerConfig,
     frontend::setup_service_config,
+    provider::{memory::MemoryAsset, testing::create_example_provider_factory},
 };
 use url::Url;
 
@@ -29,9 +29,10 @@ async fn exec_domain_custom(config: &ServerConfig) {
     let path_index = Path::new("/index.html");
     let path_other = Path::new("/other.html");
     let path_long = Path::new("/my/long/path/index.html");
-    let asset_domains = MemoryAsset::from_str("example_custom.domain\nwww.example_custom.domain");
-    let asset_index = MemoryAsset::from_str("meow");
-    let asset_other = MemoryAsset::from_str("meow");
+    let asset_domains =
+        MemoryAsset::new_from_str("example_custom.domain\nwww.example_custom.domain");
+    let asset_index = MemoryAsset::new_from_str("meow");
+    let asset_other = MemoryAsset::new_from_str("meow");
 
     let factory = create_example_provider_factory()
         .with_asset(
@@ -72,7 +73,8 @@ async fn exec_domain_custom(config: &ServerConfig) {
         );
 
     let app = test::init_service(App::new().configure(move |f| {
-        setup_service_config(f, &config, factory, None);
+        let provider = Arc::new(factory.build().unwrap());
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -85,7 +87,7 @@ async fn exec_domain_custom(config: &ServerConfig) {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_index.body());
+    assert_eq!(body, asset_index.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/")
@@ -95,7 +97,7 @@ async fn exec_domain_custom(config: &ServerConfig) {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_index.body());
+    assert_eq!(body, asset_index.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/index.html")
@@ -105,7 +107,7 @@ async fn exec_domain_custom(config: &ServerConfig) {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_index.body());
+    assert_eq!(body, asset_index.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/other.html")
@@ -115,7 +117,7 @@ async fn exec_domain_custom(config: &ServerConfig) {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_other.body());
+    assert_eq!(body, asset_other.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/")
@@ -135,7 +137,7 @@ async fn exec_domain_custom(config: &ServerConfig) {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 200);
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_other.body());
+    assert_eq!(body, asset_other.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/my/long/path/index.html")

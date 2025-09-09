@@ -8,38 +8,35 @@ use std::{
 
 use log::info;
 
-use crate::asset::{Asset, AssetError, AssetQueryable, AssetWritable};
+use crate::{Asset, AssetError, AssetSource, AssetWritable};
 
 /// An Asset that is stored and accessed from memory.
 #[derive(Clone)]
 pub struct MemoryAsset {
-    contents: String,
+    contents: Vec<u8>,
 }
 
 impl MemoryAsset {
-    pub fn from_bytes(data: Vec<u8>) -> Self {
-        unsafe {
-            Self {
-                contents: String::from_utf8_unchecked(data).to_string(),
-            }
-        }
+    pub fn new_from_bytes(data: Vec<u8>) -> Self {
+        Self { contents: data }
     }
 
-    pub fn from_str(data: &str) -> Self {
+    pub fn new_from_str(data: &str) -> Self {
         Self {
-            contents: data.to_string(),
+            contents: data.into(),
         }
     }
 
     pub fn empty() -> Self {
-        Self {
-            contents: "".to_string(),
-        }
+        Self { contents: vec![] }
     }
 }
 
 impl Asset for MemoryAsset {
-    fn body(&self) -> &str {
+    fn into_bytes(self) -> Vec<u8> {
+        self.contents
+    }
+    fn bytes(&self) -> &[u8] {
         &self.contents
     }
 }
@@ -55,8 +52,11 @@ impl<'a, A: Asset> AssetRef<'a, A> {
 }
 
 impl<'a, A: Asset> Asset for AssetRef<'a, A> {
-    fn body(&self) -> &str {
-        self.asset.body()
+    fn into_bytes(self) -> Vec<u8> {
+        self.asset.bytes().to_vec()
+    }
+    fn bytes(&self) -> &[u8] {
+        self.asset.bytes()
     }
 }
 
@@ -74,18 +74,20 @@ impl MemoryCache {
     }
 }
 
-impl AssetQueryable for MemoryCache {
-    async fn asset_at(&self, path: &Path) -> Result<impl Asset, AssetError> {
-        let buf = std::path::absolute(Path::new("/").join(path.to_path_buf())).unwrap();
+impl Default for MemoryCache {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl AssetSource for MemoryCache {
+    async fn get_asset(&self, path: &Path) -> Result<impl Asset, AssetError> {
+        let buf = std::path::absolute(Path::new("/").join(path)).unwrap();
         info!("Getting MemoryAsset {:?}...", buf);
         match self.data.get(&buf) {
             Some(v) => Ok(AssetRef::new(v)),
             None => Err(AssetError::NotFound),
         }
-    }
-
-    fn assets(&self) -> Result<impl Iterator<Item = impl Asset>, AssetError> {
-        Ok(self.data.values().map(|f| AssetRef::new(f)))
     }
 }
 
@@ -98,11 +100,11 @@ impl AssetWritable for MemoryCache {
         }
     }
 
-    fn write_asset(&mut self, path: &Path, asset: &impl Asset) -> Result<(), AssetError> {
+    fn set_asset(&mut self, path: &Path, asset: &impl Asset) -> Result<(), AssetError> {
         self.data.insert(
             path.to_path_buf(),
             MemoryAsset {
-                contents: asset.body().to_string(),
+                contents: asset.bytes().to_vec(),
             },
         );
 
@@ -112,16 +114,16 @@ impl AssetWritable for MemoryCache {
 
 #[cfg(test)]
 mod tests {
-    use crate::asset::Asset;
+    use crate::Asset;
 
     use super::MemoryAsset;
 
     /// Can we get the same string back from the asset?
     #[test]
     fn memory_asset_str() {
-        let data = "meow";
-        let asset = MemoryAsset::from_str(data);
+        let data: Vec<u8> = vec![b'm', b'e', b'o', b'w'];
+        let asset = MemoryAsset::new_from_bytes(data.clone());
 
-        assert_eq!(asset.body(), data)
+        assert_eq!(asset.bytes(), data)
     }
 }

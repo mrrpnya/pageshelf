@@ -1,21 +1,29 @@
 /// Primary route for accessing Pages (and built-in pages).
 use std::path::Path;
 
-use actix_web::{HttpRequest, HttpResponse, Responder, get, http::header::HeaderValue, web};
+use actix_web::{
+    HttpRequest, HttpResponse, Responder, get,
+    http::header::{CacheControl, CacheDirective, HeaderValue},
+    web,
+};
 use log::{debug, info};
 use minijinja::context;
 
 use crate::{
+    Page, PageSource,
     frontend::{
         routes::{RoutingState, pages::get_page_response},
         templates::{TEMPLATE_ERROR, TEMPLATE_INDEX, TemplateErrorContext, TemplatePageContext},
     },
-    page::{Page, PageSource},
-    resolver::UrlResolution,
+    resolver::{UrlResolution, UrlResolver},
 };
 
-pub async fn get_index<'a, PS: PageSource>(
-    data: web::Data<RoutingState<'a, PS>>,
+fn resolve_http_request<UR: UrlResolver>(resolver: &UR, req: &HttpRequest) -> UrlResolution {
+    resolver.resolve(req.full_url())
+}
+
+pub async fn get_index<'a, PS: PageSource, UR: UrlResolver>(
+    data: web::Data<RoutingState<'a, PS, UR>>,
     req: HttpRequest,
 ) -> impl Responder {
     debug!(
@@ -26,11 +34,11 @@ pub async fn get_index<'a, PS: PageSource>(
             .to_str()
             .unwrap_or("Unknown Origin")
     );
-    let resolution = data.resolver.resolve_http_request(&req);
+    let resolution = resolve_http_request(&data.resolver, &req);
     match resolution {
         UrlResolution::BuiltIn => {
             info!("Serving Built-In page");
-            return HttpResponse::Ok().body(
+            return HttpResponse::Ok().content_type("text/html").body(
                 data.jinja
                     .get_template(TEMPLATE_INDEX)
                     .unwrap()
@@ -63,7 +71,7 @@ pub async fn get_index<'a, PS: PageSource>(
                         Some(page.owner()),
                         Some(page.name()),
                         Some(page.branch()),
-                        &file,
+                        file,
                     )
                     .await;
                 }
@@ -75,7 +83,7 @@ pub async fn get_index<'a, PS: PageSource>(
         _ => {}
     };
     let tp = data.jinja.get_template(TEMPLATE_ERROR).unwrap();
-    return HttpResponse::NotFound().body(
+    HttpResponse::NotFound().content_type("text/html").body(
         tp.render(context! {
             server => data.config.template_server_context(),
             page => TemplatePageContext {
@@ -89,12 +97,16 @@ pub async fn get_index<'a, PS: PageSource>(
             }
         })
         .unwrap(),
-    );
+    )
 }
 
-#[get("/pages_favicon.png")]
-pub async fn get_favicon_png() -> impl Responder {
+#[get("/pages_favicon.webp")]
+pub async fn get_favicon_webp() -> impl Responder {
     HttpResponse::Ok()
-        .content_type("image/png")
-        .body(std::include_bytes!("../../../branding/pageshelf_logo.png").as_slice())
+        .insert_header(CacheControl(vec![
+            // Allow caching for 24 hours
+            CacheDirective::MaxAge(86400u32),
+        ]))
+        .content_type("image/webp")
+        .body(std::include_bytes!("../../../branding/pageshelf_logo.webp").as_slice())
 }
