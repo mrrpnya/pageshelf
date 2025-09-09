@@ -1,0 +1,20 @@
+version: '3'
+services:
+  pages:
+    build: ./
+    #image: ghcr.io/mrrpnya/pageshelf:canary
+    command: "pageshelf -c /config.toml"
+    restart: always
+    environment:
+      # Supports overriding config via environment variables:
+      - PAGE_CACHE_ADDRESS=redis
+    volumes:
+    - ./configs/test_config.toml:/config.toml:ro
+    ports:
+      - '8080:8080'
+  # Redis is *technically* optional, but highly recommended.
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - '6379:6379'

@@ -37,6 +37,12 @@ This project follows a modular design; You can add your own providers, caches, a
   - [ ] Auth-locking specific pages
   - [ ] Private repo serving
 
+## Getting Started
+
+### Docker
+
+There is a [compose.yml](./compose.yml) included with this project - It shows how to use it via Docker Compose.
+
 ## License
 
 Licensed under the terms of the MIT License. See [LICENSE](./LICENSE) for more information.
