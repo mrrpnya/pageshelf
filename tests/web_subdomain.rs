@@ -27,8 +27,8 @@ async fn exec_subdomain_default_user(config: &ServerConfig) {
     let path_index = Path::new("/index.html");
     let path_other = Path::new("/other.html");
     let path_long = Path::new("/my/long/path/index.html");
-    let asset_index = MemoryAsset::from_str("meow");
-    let asset_other = MemoryAsset::from_str("nya");
+    let asset_index = MemoryAsset::new_from_str("meow");
+    let asset_other = MemoryAsset::new_from_str("nya");
 
     let factory = create_example_provider_factory()
         .with_asset(
@@ -56,7 +56,7 @@ async fn exec_subdomain_default_user(config: &ServerConfig) {
 
     let app = test::init_service(App::new().configure(move |f| {
         let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, None);
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -69,7 +69,7 @@ async fn exec_subdomain_default_user(config: &ServerConfig) {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_index.body());
+    assert_eq!(body, asset_index.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/index.html")
@@ -79,7 +79,7 @@ async fn exec_subdomain_default_user(config: &ServerConfig) {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_index.body());
+    assert_eq!(body, asset_index.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/other.html")
@@ -89,7 +89,7 @@ async fn exec_subdomain_default_user(config: &ServerConfig) {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_other.body());
+    assert_eq!(body, asset_other.body().unwrap());
 
     // Owner 2 has no default page, should fail
     let req = test::TestRequest::get()
@@ -110,7 +110,7 @@ async fn exec_subdomain_default_user(config: &ServerConfig) {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 200);
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_index.body());
+    assert_eq!(body, asset_index.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/my/long/path/index.html")
@@ -130,8 +130,8 @@ async fn page_subdomain_specific() {
 
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
-    let asset_1 = MemoryAsset::from_str("meow");
-    let asset_2 = MemoryAsset::from_str("meow");
+    let asset_1 = MemoryAsset::new_from_str("meow");
+    let asset_2 = MemoryAsset::new_from_str("meow");
 
     let mut config = ServerConfig::default();
     config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
@@ -148,7 +148,7 @@ async fn page_subdomain_specific() {
 
     let app = test::init_service(App::new().configure(move |f| {
         let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, None);
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -161,7 +161,7 @@ async fn page_subdomain_specific() {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_1.body());
+    assert_eq!(body, asset_1.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/")
@@ -171,7 +171,7 @@ async fn page_subdomain_specific() {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_2.body());
+    assert_eq!(body, asset_2.body().unwrap());
 
     // Owner 2 has no default page, should fail
     let req = test::TestRequest::get()
@@ -192,7 +192,7 @@ async fn page_subdomain_specific() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 200);
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_2.body());
+    assert_eq!(body, asset_2.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/my/long/path/index.html")
@@ -225,7 +225,7 @@ async fn exec_base_priority(config: &ServerConfig) {
 
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
-    let asset = MemoryAsset::from_str("meow");
+    let asset = MemoryAsset::new_from_str("meow");
 
     let factory = create_example_provider_factory()
         .with_asset("user", "pages", "pages", &path, asset.clone())
@@ -233,7 +233,7 @@ async fn exec_base_priority(config: &ServerConfig) {
 
     let app = test::init_service(App::new().configure(move |f| {
         let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, None);
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -246,7 +246,7 @@ async fn exec_base_priority(config: &ServerConfig) {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_ne!(body, asset.body());
+    assert_ne!(body, asset.body().unwrap());
 
     // If we specify a page, however, the page will take priority
     let req = test::TestRequest::get()
@@ -257,5 +257,5 @@ async fn exec_base_priority(config: &ServerConfig) {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success());
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset.body());
+    assert_eq!(body, asset.body().unwrap());
 }

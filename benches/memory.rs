@@ -13,7 +13,7 @@ pub fn one_page_one_file(c: &mut Criterion) {
     let branch = "unstable";
     let path = Path::new("/neo");
 
-    let asset = MemoryAsset::from_str("Big shot");
+    let asset = MemoryAsset::new_from_str("Big shot");
 
     let provider = MemoryPageProviderFactory::new()
         .with_asset(owner, name, branch, path, asset.clone())
@@ -41,8 +41,8 @@ pub fn one_page_many_file(c: &mut Criterion) {
     let branch = "unstable";
     let path = Path::new("/neo");
 
-    let asset = MemoryAsset::from_str("Big shot");
-    let asset_other = MemoryAsset::from_str("TV Time");
+    let asset = MemoryAsset::new_from_str("Big shot");
+    let asset_other = MemoryAsset::new_from_str("TV Time");
 
     let mut factory =
         MemoryPageProviderFactory::new().with_asset(owner, name, branch, path, asset.clone());

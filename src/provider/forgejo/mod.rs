@@ -44,20 +44,11 @@ impl<'a> AssetSource for ForgejoPage<'a> {
     async fn get_asset(&self, path: &Path) -> Result<impl Asset, AssetError> {
         self.storage.get_asset(path).await
     }
-
-    fn assets(&self) -> Result<impl Iterator<Item = impl Asset>, AssetError> {
-        self.storage.assets()
-    }
 }
 
 impl ForgejoProvider {
     pub fn new(forgejo: Arc<Forgejo>, analyzer: Arc<ForgejoScanner>) -> Self {
-        let s = Self {
-            forgejo: forgejo,
-            analyzer,
-        };
-
-        s
+        Self { forgejo, analyzer }
     }
 }
 
@@ -68,19 +59,25 @@ impl PageSource for ForgejoProvider {
         name: String,
         channel: String,
     ) -> Result<impl Page, PageError> {
-        if !self.analyzer.target_branches.iter().any(|f| f == &channel) {
+        if !self
+            .analyzer
+            .data
+            .target_branches
+            .iter()
+            .any(|f| f == &channel)
+        {
             warn!(
                 "Failed to access a Forgejo page: The branch {} is not in the list of accepted branches",
                 channel
             );
             warn!(
                 "Accepted branches are [{}]",
-                self.analyzer.target_branches.join(", ")
+                self.analyzer.data.target_branches.join(", ")
             );
             return Err(PageError::NotFound);
         }
 
-        let repos = self.analyzer.repos.read().await;
+        let repos = self.analyzer.data.repos.read().await;
 
         match repos.get(&(owner.clone(), name.clone(), channel.clone())) {
             Some(v) => Ok(ForgejoPage {
@@ -103,7 +100,7 @@ impl PageSource for ForgejoProvider {
     }
 
     async fn pages(&self) -> Result<impl Iterator<Item = impl Page>, PageError> {
-        let repos = self.analyzer.repos.read().await;
+        let repos = self.analyzer.data.repos.read().await;
 
         let mut pages: Vec<ForgejoPage> = vec![];
 
@@ -152,7 +149,7 @@ impl ForgejoProviderFactory {
         });
 
         let mut branches = config.upstream.branches.clone();
-        if branches.len() == 0 {
+        if branches.is_empty() {
             branches.push("pages".to_string());
         }
 

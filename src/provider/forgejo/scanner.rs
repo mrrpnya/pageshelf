@@ -8,16 +8,13 @@ use forgejo_api::{Forgejo, structs::RepoSearchQuery};
 use log::info;
 use tokio::{sync::RwLock, task::JoinHandle};
 
+use crate::provider::scanner::{ProviderScannedRepoData, ProviderScannerData, RepoMap};
+
 /// Analysis on the current state of a Forgejo instance
 pub struct ForgejoScanner {
-    pub repos: Arc<RwLock<HashMap<(String, String, String), ForgejoScannedRepo>>>,
-    pub target_branches: Vec<String>,
+    pub data: ProviderScannerData,
     auto_scan: Arc<AtomicBool>, // TODO: Domain name resolution data
     handle: JoinHandle<()>,
-}
-
-pub struct ForgejoScannedRepo {
-    pub version: String,
 }
 
 impl Drop for ForgejoScanner {
@@ -33,9 +30,11 @@ impl ForgejoScanner {
     pub fn start(forgejo: Arc<Forgejo>, target_branches: Vec<String>, poll_interval: u64) -> Self {
         let repos = Arc::new(RwLock::new(HashMap::new()));
         let auto_scan = Arc::new(AtomicBool::new(true));
-        let s = Self {
-            repos: repos.clone(),
-            target_branches: target_branches.clone(),
+        Self {
+            data: ProviderScannerData {
+                repos: repos.clone(),
+                target_branches: target_branches.clone(),
+            },
             auto_scan: auto_scan.clone(),
             handle: tokio::spawn(Self::auto_scan(
                 poll_interval,
@@ -44,16 +43,14 @@ impl ForgejoScanner {
                 repos,
                 target_branches,
             )),
-        };
-
-        s
+        }
     }
 
     async fn auto_scan(
         poll_interval: u64,
         run: Arc<AtomicBool>,
         forgejo: Arc<Forgejo>,
-        repo_storage: Arc<RwLock<HashMap<(String, String, String), ForgejoScannedRepo>>>,
+        repo_storage: Arc<RwLock<RepoMap>>,
         target_branches: Vec<String>,
     ) {
         let interval_duration = Duration::from_secs(poll_interval);
@@ -79,7 +76,7 @@ impl ForgejoScanner {
 
     async fn update(
         forgejo: &Forgejo,
-        repo_storage: Arc<RwLock<HashMap<(String, String, String), ForgejoScannedRepo>>>,
+        repo_storage: Arc<RwLock<RepoMap>>,
         target_branches: &Vec<String>,
     ) {
         info!("Updating Forgejo analysis...");
@@ -157,7 +154,7 @@ impl ForgejoScanner {
                         repo_name.to_string(),
                         branch_name.to_string(),
                     ),
-                    ForgejoScannedRepo {
+                    ProviderScannedRepoData {
                         version: version.clone(),
                     },
                 );

@@ -45,10 +45,6 @@ impl<'a> AssetSource for MemoryPage<'a> {
     async fn get_asset(&self, path: &Path) -> Result<impl Asset, AssetError> {
         self.data.get_asset(path).await
     }
-
-    fn assets(&self) -> Result<impl Iterator<Item = impl Asset>, AssetError> {
-        self.data.assets()
-    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -89,7 +85,7 @@ impl PageSource for MemoryPageProvider {
             name: f.0.1.clone(),
             branch: f.0.2.clone(),
             version: "".to_string(),
-            data: &f.1,
+            data: f.1,
         }))
     }
 }
@@ -149,6 +145,12 @@ impl PageSourceFactory for MemoryPageProviderFactory {
     }
 }
 
+impl Default for MemoryPageProviderFactory {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /* -------------------------------------------------------------------------- */
 /*                                    Tests                                   */
 /* -------------------------------------------------------------------------- */
@@ -183,12 +185,12 @@ pub mod testing {
         let asset_path_1 = Path::new("/asset_1");
         let asset_path_2 = Path::new("/asset_2");
 
-        let asset_1 = MemoryAsset::from_str(DATA_1);
-        let asset_2 = MemoryAsset::from_str(DATA_2);
+        let asset_1 = MemoryAsset::new_from_str(DATA_1);
+        let asset_2 = MemoryAsset::new_from_str(DATA_2);
 
         MemoryPageProviderFactory::new()
-            .with_asset(OWNER_1, NAME_1, BRANCH_1, &asset_path_1, asset_1)
-            .with_asset(OWNER_2, NAME_2, BRANCH_2, &asset_path_2, asset_2)
+            .with_asset(OWNER_1, NAME_1, BRANCH_1, asset_path_1, asset_1)
+            .with_asset(OWNER_2, NAME_2, BRANCH_2, asset_path_2, asset_2)
     }
 
     pub fn create_example_provider() -> MemoryPageProvider {
@@ -218,21 +220,27 @@ pub mod testing {
             .await
             .unwrap();
 
-        // Validate asset count
-        assert_eq!(page_1.assets().unwrap().count(), 1);
-        assert_eq!(page_2.assets().unwrap().count(), 1);
-
         // Validate asset accessing
         assert_eq!(
-            page_1.get_asset(&asset_path_1).await.unwrap().body(),
+            page_1
+                .get_asset(asset_path_1)
+                .await
+                .unwrap()
+                .body()
+                .unwrap(),
             DATA_1
         );
         assert_eq!(
-            page_2.get_asset(&asset_path_2).await.unwrap().body(),
+            page_2
+                .get_asset(asset_path_2)
+                .await
+                .unwrap()
+                .body()
+                .unwrap(),
             DATA_2
         );
-        assert!(page_1.get_asset(&asset_path_2).await.is_err());
-        assert!(page_2.get_asset(&asset_path_1).await.is_err());
+        assert!(page_1.get_asset(asset_path_2).await.is_err());
+        assert!(page_2.get_asset(asset_path_1).await.is_err());
 
         // Validate incorrect page accessing
         assert!(

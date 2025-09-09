@@ -1,7 +1,7 @@
-use super::PageSource;
+//! Page Source factories offer a way of manipulating the output of a Page Source,
+//! or efficiently instantiating multiple Page Sources.
 
-/// Page Source factories offer a way of manipulating the output of a Page Source,
-/// or efficiently instantiating multiple Page Sources.
+use super::PageSource;
 
 /// Offers an impl-agnostic of creating Page Sources.
 pub trait PageSourceFactory: Clone {
@@ -31,7 +31,7 @@ pub struct PageSourceFactoryLayer<F: PageSourceFactory, L: PageSourceLayer<F::So
     layer: L,
 }
 
-impl<'a, F: PageSourceFactory, L: PageSourceLayer<F::Source>> PageSourceFactory
+impl<F: PageSourceFactory, L: PageSourceLayer<F::Source>> PageSourceFactory
     for PageSourceFactoryLayer<F, L>
 {
     type Source = L::Source;

@@ -10,16 +10,20 @@ use log::{debug, info};
 use minijinja::context;
 
 use crate::{
+    Page, PageSource,
     frontend::{
         routes::{RoutingState, pages::get_page_response},
         templates::{TEMPLATE_ERROR, TEMPLATE_INDEX, TemplateErrorContext, TemplatePageContext},
     },
-    resolver::UrlResolution,
-    {Page, PageSource},
+    resolver::{UrlResolution, UrlResolver},
 };
 
-pub async fn get_index<'a, PS: PageSource>(
-    data: web::Data<RoutingState<'a, PS>>,
+fn resolve_http_request<UR: UrlResolver>(resolver: &UR, req: &HttpRequest) -> UrlResolution {
+    resolver.resolve(req.full_url())
+}
+
+pub async fn get_index<'a, PS: PageSource, UR: UrlResolver>(
+    data: web::Data<RoutingState<'a, PS, UR>>,
     req: HttpRequest,
 ) -> impl Responder {
     debug!(
@@ -30,7 +34,7 @@ pub async fn get_index<'a, PS: PageSource>(
             .to_str()
             .unwrap_or("Unknown Origin")
     );
-    let resolution = data.resolver.resolve_http_request(&req);
+    let resolution = resolve_http_request(&data.resolver, &req);
     match resolution {
         UrlResolution::BuiltIn => {
             info!("Serving Built-In page");
@@ -67,7 +71,7 @@ pub async fn get_index<'a, PS: PageSource>(
                         Some(page.owner()),
                         Some(page.name()),
                         Some(page.branch()),
-                        &file,
+                        file,
                     )
                     .await;
                 }
@@ -79,7 +83,7 @@ pub async fn get_index<'a, PS: PageSource>(
         _ => {}
     };
     let tp = data.jinja.get_template(TEMPLATE_ERROR).unwrap();
-    return HttpResponse::NotFound().content_type("text/html").body(
+    HttpResponse::NotFound().content_type("text/html").body(
         tp.render(context! {
             server => data.config.template_server_context(),
             page => TemplatePageContext {
@@ -93,7 +97,7 @@ pub async fn get_index<'a, PS: PageSource>(
             }
         })
         .unwrap(),
-    );
+    )
 }
 
 #[get("/pages_favicon.webp")]

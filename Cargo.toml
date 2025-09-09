@@ -9,6 +9,8 @@ publish = false
 
 [dependencies]
 forgejo-api = { version = "0.7", optional = true }
+gitlab = { version = "0.1803.0", optional = true }
+
 actix-web = { version = "4.11.0", default-features = false, features = [
     "macros",
     "compress-zstd",
@@ -37,6 +39,8 @@ rand = "0.9"
 [features]
 default = ["redis", "forgejo"]
 forgejo = ["dep:forgejo-api"]
+gitea = []
+gitlab = ["dep:gitlab"]
 redis = ["dep:redis"]
 
 [[bench]]

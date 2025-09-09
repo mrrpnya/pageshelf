@@ -15,10 +15,12 @@ fn bench_access_index(c: &mut Criterion) {
 
     let config = ServerConfig::default();
 
+    let resolver = config.url_resolver();
+
     let func = async || {
         let app = test::init_service(App::new().configure(move |f| {
             let provider = Arc::new(factory.build().unwrap());
-            setup_service_config(f, &config, provider, None);
+            setup_service_config(f, &config, provider, resolver, None);
         }))
         .await;
 
@@ -38,7 +40,7 @@ fn bench_access_index(c: &mut Criterion) {
 fn bench_access_page_index(c: &mut Criterion) {
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
-    let asset = MemoryAsset::from_str("meow");
+    let asset = MemoryAsset::new_from_str("meow");
 
     let mut config = ServerConfig::default();
     config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
@@ -49,10 +51,12 @@ fn bench_access_page_index(c: &mut Criterion) {
 
     let config = ServerConfig::default();
 
+    let resolver = config.url_resolver();
+
     let func = async || {
         let app = test::init_service(App::new().configure(move |f| {
             let provider = Arc::new(factory.build().unwrap());
-            setup_service_config(f, &config, provider, None);
+            setup_service_config(f, &config, provider, resolver, None);
         }))
         .await;
 

@@ -2,7 +2,7 @@
 use std::path::Path;
 
 use forgejo_api::{Forgejo, structs::RepoGetRawFileQuery};
-use log::{error, info, warn};
+use log::{error, info};
 
 use crate::{Asset, AssetError, AssetSource};
 
@@ -14,22 +14,6 @@ pub struct ForgejoDirectReadStorage<'a> {
     repo: String,
     branch: String,
     version: String,
-}
-
-struct EmptyAssetIter {}
-
-impl EmptyAssetIter {
-    fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Iterator for EmptyAssetIter {
-    type Item = MemoryAsset;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        None
-    }
 }
 
 impl<'a> ForgejoDirectReadStorage<'a> {
@@ -82,7 +66,7 @@ impl<'a> AssetSource for ForgejoDirectReadStorage<'a> {
             )
             .await
         {
-            Ok(v) => Ok(MemoryAsset::from_bytes(v)),
+            Ok(v) => Ok(MemoryAsset::new_from_bytes(v)),
             Err(e) => {
                 error!(
                     "Failed to find (raw) data file {} in Forgejo repository {}/{}:{} - {}",
@@ -95,10 +79,5 @@ impl<'a> AssetSource for ForgejoDirectReadStorage<'a> {
                 Err(AssetError::NotFound)
             }
         }
-    }
-
-    fn assets(&self) -> Result<impl Iterator<Item = impl Asset>, AssetError> {
-        warn!("Iteration of Forgejo files is not implemented");
-        Ok(EmptyAssetIter::new())
     }
 }

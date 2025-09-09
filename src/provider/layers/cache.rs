@@ -33,12 +33,12 @@ impl<PS: PageSource, C: Cache> PageSourceLayer<PS> for CacheLayer<C> {
     }
 }
 
-pub struct RedisCachePage<P: Page, C: Cache> {
+pub struct CachePage<P: Page, C: Cache> {
     upstream: P,
     cache: Arc<C>,
 }
 
-impl<P: Page, C: Cache> Page for RedisCachePage<P, C> {
+impl<P: Page, C: Cache> Page for CachePage<P, C> {
     fn name(&self) -> &str {
         self.upstream.name()
     }
@@ -56,30 +56,42 @@ impl<P: Page, C: Cache> Page for RedisCachePage<P, C> {
     }
 }
 
-pub enum RedisCacheAsset<A: Asset> {
-    Hold(String),
+pub enum CacheAsset<A: Asset> {
+    Hold(Vec<u8>),
     Load(A),
 }
 
-impl<A: Asset> Asset for RedisCacheAsset<A> {
-    fn body(&self) -> &str {
+impl<A: Asset> Asset for CacheAsset<A> {
+    fn into_bytes(self) -> Vec<u8> {
         match self {
-            Self::Hold(data) => &data,
-            Self::Load(asset) => asset.body(),
+            Self::Hold(data) => data,
+            Self::Load(asset) => asset.into_bytes(),
+        }
+    }
+    fn bytes(&self) -> &[u8] {
+        match self {
+            Self::Hold(data) => data,
+            Self::Load(asset) => asset.bytes(),
         }
     }
 }
 
-pub enum RedisCacheAssetEither<A: Asset, B: Asset> {
+pub enum CacheAssetEither<A: Asset, B: Asset> {
     A(A),
     B(B),
 }
 
-impl<A: Asset, B: Asset> Asset for RedisCacheAssetEither<A, B> {
-    fn body(&self) -> &str {
+impl<A: Asset, B: Asset> Asset for CacheAssetEither<A, B> {
+    fn into_bytes(self) -> Vec<u8> {
         match self {
-            Self::A(data) => data.body(),
-            Self::B(data) => data.body(),
+            Self::A(data) => data.into_bytes(),
+            Self::B(data) => data.into_bytes(),
+        }
+    }
+    fn bytes(&self) -> &[u8] {
+        match self {
+            Self::A(data) => data.bytes(),
+            Self::B(data) => data.bytes(),
         }
     }
 }
@@ -97,18 +109,18 @@ pub enum RedisCacheAssetIterEither<
 impl<A: Asset, B: Asset, AI: Iterator<Item = A>, BI: Iterator<Item = B>> Iterator
     for RedisCacheAssetIterEither<A, B, AI, BI>
 {
-    type Item = RedisCacheAssetEither<A, B>;
+    type Item = CacheAssetEither<A, B>;
     fn next(&mut self) -> Option<Self::Item> {
         match self {
             Self::A(data) => {
                 if let Some(d) = data.next() {
-                    return Some(RedisCacheAssetEither::<A, B>::A(d));
+                    return Some(CacheAssetEither::<A, B>::A(d));
                 }
                 None
             }
             Self::B(data) => {
                 if let Some(d) = data.next() {
-                    return Some(RedisCacheAssetEither::<A, B>::B(d));
+                    return Some(CacheAssetEither::<A, B>::B(d));
                 }
                 None
             }
@@ -155,31 +167,18 @@ impl<PA: Page, PB: Page> AssetSource for RedisCachePageMerge<PA, PB> {
     async fn get_asset(&self, path: &std::path::Path) -> Result<impl Asset, AssetError> {
         match self {
             Self::A(v) => match v.get_asset(path).await {
-                Ok(v) => Ok(RedisCacheAssetEither::A(v)),
+                Ok(v) => Ok(CacheAssetEither::A(v)),
                 Err(e) => Err(e),
             },
             Self::B(v) => match v.get_asset(path).await {
-                Ok(v) => Ok(RedisCacheAssetEither::B(v)),
-                Err(e) => Err(e),
-            },
-        }
-    }
-
-    fn assets(&self) -> Result<impl Iterator<Item = impl Asset>, AssetError> {
-        match self {
-            Self::A(v) => match v.assets() {
-                Ok(v) => Ok(RedisCacheAssetIterEither::A(v)),
-                Err(e) => Err(e),
-            },
-            Self::B(v) => match v.assets() {
-                Ok(v) => Ok(RedisCacheAssetIterEither::B(v)),
+                Ok(v) => Ok(CacheAssetEither::B(v)),
                 Err(e) => Err(e),
             },
         }
     }
 }
 
-impl<P: Page, C: Cache> AssetSource for RedisCachePage<P, C> {
+impl<P: Page, C: Cache> AssetSource for CachePage<P, C> {
     async fn get_asset(&self, path: &std::path::Path) -> Result<impl Asset, AssetError> {
         let mut conn = match self.cache.connect().await {
             Ok(v) => v,
@@ -199,24 +198,20 @@ impl<P: Page, C: Cache> AssetSource for RedisCachePage<P, C> {
         match conn.get(&key).await {
             Ok(v) => {
                 info!("Cache hit: {:?}", path);
-                Ok(RedisCacheAsset::Hold(v))
+                Ok(CacheAsset::Hold(v))
             }
             Err(e) => {
                 info!("Cache miss (loading from upstream): {:?}", e);
-                match self.upstream.get_asset(&path).await {
+                match self.upstream.get_asset(path).await {
                     Ok(v) => {
                         // TODO: Error reporting
-                        let _ = conn.set(&key, v.body()).await;
-                        Ok(RedisCacheAsset::Load(v))
+                        let _ = conn.set(&key, v.bytes()).await;
+                        Ok(CacheAsset::Load(v))
                     }
                     Err(e) => Err(e),
                 }
             }
         }
-    }
-
-    fn assets(&self) -> Result<impl Iterator<Item = impl Asset>, AssetError> {
-        self.upstream.assets()
     }
 }
 
@@ -249,7 +244,13 @@ impl<PS: PageSource, C: Cache> PageSource for CacheLayerSource<PS, C> {
                 );
                 match conn.get(&version_key).await {
                     Ok(v) => {
-                        if v != page.version() {
+                        let version = std::str::from_utf8(&v);
+                        if version.is_err() {
+                            return Err(PageError::ProviderError);
+                        }
+                        let version = version.unwrap();
+
+                        if version != page.version() {
                             // Invalidate cache
                             info!("Page was updated; Invalidating cache...");
                             let key = format!(
@@ -260,15 +261,15 @@ impl<PS: PageSource, C: Cache> PageSource for CacheLayerSource<PS, C> {
                             );
                             let _ = conn.delete(&key).await;
 
-                            let _ = conn.set(&version_key, page.version()).await;
+                            let _ = conn.set(&version_key, &v).await;
                         }
                     }
                     Err(e) => {
                         debug!("Unable to find page version in cache: {:?}", e);
-                        let _ = conn.set(&version_key, page.version()).await;
+                        let _ = conn.set(&version_key, page.version().as_bytes()).await;
                     }
                 }
-                RedisCachePage {
+                CachePage {
                     upstream: page,
                     cache: self.cache.clone(),
                 }
@@ -293,13 +294,13 @@ impl<PS: PageSource, C: Cache> PageSource for CacheLayerSource<PS, C> {
         for domain in domains {
             let key_o = format!("domain:owner:{}", domain);
             let key_r = format!("domain:name:{}", domain);
-            if let Ok(o) = conn.get(&key_o).await {
-                if let Ok(r) = conn.get(&key_r).await {
+            if let Ok(o) = conn.get_string(&key_o).await {
+                if let Ok(r) = conn.get_string(&key_r).await {
                     if let Ok(upstream) =
                         self.page_at(o, r, self.default_branch().to_string()).await
                     {
                         info!("Cache hit! Found by cached domain.");
-                        return Ok(RedisCachePage {
+                        return Ok(CachePage {
                             upstream: RedisCachePageMerge::A(upstream),
                             cache: self.cache.clone(),
                         });
@@ -316,14 +317,14 @@ impl<PS: PageSource, C: Cache> PageSource for CacheLayerSource<PS, C> {
                     let key_o = format!("domain:{}:owner", domain);
                     let key_r = format!("domain:{}:name", domain);
                     // TODO: Error reporting
-                    let _ = conn.set(&key_o, page.owner()).await;
-                    let _ = conn.set(&key_r, page.name()).await;
+                    let _ = conn.set(&key_o, page.owner().as_bytes()).await;
+                    let _ = conn.set(&key_r, page.name().as_bytes()).await;
                 }
 
-                return Ok(RedisCachePage {
+                Ok(CachePage {
                     upstream: RedisCachePageMerge::B(page),
                     cache: self.cache.clone(),
-                });
+                })
             }
             Err(e) => Err(e),
         }

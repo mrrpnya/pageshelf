@@ -10,10 +10,15 @@ use crate::{PageSource, conf::ServerConfig, resolver::UrlResolver};
 pub mod routes;
 pub mod templates;
 
-pub fn setup_service_config<'a, PS: PageSource + Sync + Send + 'static>(
+pub fn setup_service_config<
+    'a,
+    PS: PageSource + Sync + Send + 'static,
+    UR: UrlResolver + 'static,
+>(
     web_config: &'a mut ServiceConfig,
     server_config: &'a ServerConfig,
     page_source: Arc<PS>,
+    resolver: UR,
     templates: Option<Environment<'static>>,
 ) -> &'a mut ServiceConfig {
     let _pages = server_config.upstream.branches.clone();
@@ -25,17 +30,11 @@ pub fn setup_service_config<'a, PS: PageSource + Sync + Send + 'static>(
             None => templates_from_builtin(),
         },
         config,
-        resolver: UrlResolver::new(
-            server_config.url.clone(),
-            server_config.pages_urls.clone(),
-            "pages".to_string(),
-            "pages".to_string(),
-            server_config.allow_domains,
-        ),
+        resolver,
     }));
     //.wrap(middleware::NormalizePath::trim())
     web_config.configure(|f| {
-        register_routes_to_config::<PS>(f);
+        register_routes_to_config::<PS, UR>(f);
     });
 
     web_config

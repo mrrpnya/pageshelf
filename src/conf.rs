@@ -1,8 +1,10 @@
+//! Configuration schema and utilities for Pageshelf.
+
 use clap::crate_version;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::frontend::templates::TemplateServerContext;
+use crate::{frontend::templates::TemplateServerContext, resolver::DefaultUrlResolver};
 
 /* -------------------------------------------------------------------------- */
 /*                              Config structure                              */
@@ -107,14 +109,21 @@ impl ServerConfig {
         TemplateServerContext {
             name: self.name.to_string(),
             about: self.description.to_string(),
-            url: match &self.url {
-                Some(v) => Some(v.as_str().to_string()),
-                None => None,
-            },
+            url: self.url.as_ref().map(|v| v.as_str().to_string()),
             icon_url: Some("/pages_favicon.webp".to_string()),
             default_branch: self.upstream.default_branch.clone(),
             version: crate_version!(),
         }
+    }
+
+    pub fn url_resolver(&self) -> DefaultUrlResolver {
+        DefaultUrlResolver::new(
+            self.url.clone(),
+            self.pages_urls.clone(),
+            "pages".to_string(),
+            "pages".to_string(),
+            self.allow_domains,
+        )
     }
 }
 

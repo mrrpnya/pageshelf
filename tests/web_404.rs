@@ -21,7 +21,7 @@ async fn page_server_404() {
 
     let app = test::init_service(App::new().configure(move |f| {
         let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, None);
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -44,7 +44,7 @@ async fn page_custom_404() {
     let path_1 = Path::new("/404.html");
     let path_2 = Path::new("/other.html");
 
-    let asset_1 = MemoryAsset::from_str("meow");
+    let asset_1 = MemoryAsset::new_from_str("meow");
 
     let config = ServerConfig::default();
     let factory = create_example_provider_factory()
@@ -78,7 +78,7 @@ async fn page_custom_404() {
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
         let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, None);
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -89,7 +89,7 @@ async fn page_custom_404() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 404);
     let body = test::read_body(resp).await;
-    assert_ne!(body, asset_1.body());
+    assert_ne!(body, asset_1.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/owner_1/name_1/index.html")
@@ -98,7 +98,7 @@ async fn page_custom_404() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 404);
     let body = test::read_body(resp).await;
-    assert_ne!(body, asset_1.body());
+    assert_ne!(body, asset_1.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/owner_1/name_1:with_404")
@@ -107,7 +107,7 @@ async fn page_custom_404() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 404);
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_1.body());
+    assert_eq!(body, asset_1.body().unwrap());
 
     let req = test::TestRequest::get()
         .uri("/owner_1/name_1:with_404/index.html")
@@ -116,5 +116,5 @@ async fn page_custom_404() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 404);
     let body = test::read_body(resp).await;
-    assert_eq!(body, asset_1.body());
+    assert_eq!(body, asset_1.body().unwrap());
 }

@@ -44,14 +44,10 @@ async fn main() -> std::io::Result<()> {
     debug!("If you're seeing this, debug logging is enabled.");
 
     let mut settings_builder = Config::builder();
-    match cmd.get_one::<String>("config") {
-        Some(v) => {
-            settings_builder = settings_builder.add_source(File::with_name(v));
-        }
-        None => {}
+    if let Some(v) = cmd.get_one::<String>("config") {
+        settings_builder = settings_builder.add_source(File::with_name(v));
     }
-    // Add in settings from the environment (with a prefix of APP)
-    // Eg.. `APP_DEBUG=1 ./target/app` would set the `debug` key
+
     settings_builder =
         settings_builder.add_source(config::Environment::with_prefix("page").separator("_"));
 
@@ -78,15 +74,12 @@ async fn main() -> std::io::Result<()> {
                             .unwrap(),
                     );
                     #[cfg(feature = "redis")]
-                    match config.cache.enabled {
-                        true => {
-                            use log::info;
+                    if config.cache.enabled {
+                        use log::info;
 
-                            info!("Redis is enabled");
-                            let factory = factory.wrap(redis);
-                            return run_server(factory.build().unwrap(), config, templates).await;
-                        }
-                        false => {}
+                        info!("Redis is enabled");
+                        let factory = factory.wrap(redis);
+                        return run_server(factory.build().unwrap(), config, templates).await;
                     }
                     run_server(factory.build().unwrap(), config, templates).await
                 }
@@ -126,25 +119,24 @@ fn setup_logger(debug: bool) -> Result<(), fern::InitError> {
     Ok(())
 }
 
-async fn run_server<'a, PS: PageSource + Sync + Send + 'static>(
+async fn run_server<PS: PageSource + Sync + Send + 'static>(
     page_source: PS,
     config: ServerConfig,
     templates: Environment<'static>,
-) -> std::io::Result<()>
-where
-    PS: 'static,
-{
+) -> std::io::Result<()> {
     let page_source = Arc::new(page_source);
     let port = config.port;
+    let resolver = config.url_resolver();
     HttpServer::new(move || {
         let config = config.clone();
         let page_source = page_source.clone();
         let templates = templates.clone();
+        let resolver = resolver.clone();
         App::new()
             .wrap(NormalizePath::trim())
             .wrap(middleware::Compress::default())
             .configure(move |f| {
-                setup_service_config(f, &config, page_source, Some(templates));
+                setup_service_config(f, &config, page_source, resolver, Some(templates));
             })
     })
     .bind(("0.0.0.0", port))?

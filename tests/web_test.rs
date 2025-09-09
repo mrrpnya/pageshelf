@@ -26,7 +26,7 @@ async fn page_server_index() {
 
     let app = test::init_service(App::new().configure(move |f| {
         let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, None);
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -55,7 +55,7 @@ async fn page_access_owner_name_asset() {
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
         let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, None);
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -83,7 +83,7 @@ async fn page_access_index() {
         .try_init();
 
     let path = Path::new("/index.html");
-    let asset = MemoryAsset::from_str("meow");
+    let asset = MemoryAsset::new_from_str("meow");
 
     let config = ServerConfig::default();
     let factory =
@@ -103,7 +103,7 @@ async fn page_access_index() {
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
         let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, None);
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -135,7 +135,7 @@ async fn page_access_no_index() {
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
         let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, None);
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -163,8 +163,8 @@ async fn page_access_branch() {
         .try_init();
 
     let path = Path::new("/index.html");
-    let asset_1 = MemoryAsset::from_str("meow");
-    let asset_2 = MemoryAsset::from_str("nya");
+    let asset_1 = MemoryAsset::new_from_str("meow");
+    let asset_2 = MemoryAsset::new_from_str("nya");
 
     let config = ServerConfig::default();
     let factory = create_example_provider_factory()
@@ -208,7 +208,7 @@ async fn page_access_branch() {
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
         let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, None);
+        setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
 

@@ -9,11 +9,11 @@ pub mod pages;
 pub mod server;
 
 /// This serves as state for the Actix server.
-pub struct RoutingState<'a, PS: PageSource> {
+pub struct RoutingState<'a, PS: PageSource, UR: UrlResolver> {
     pub provider: Arc<PS>,
     pub config: ServerConfig,
     pub jinja: Environment<'a>,
-    pub resolver: UrlResolver,
+    pub resolver: UR,
 }
 
 /* -------------------------------------------------------------------------- */
@@ -21,10 +21,10 @@ pub struct RoutingState<'a, PS: PageSource> {
 /* -------------------------------------------------------------------------- */
 
 /// Register default routes for the server to an Actix configuration.
-pub fn register_routes_to_config<'a, PS: PageSource + 'static>(
-    config: &'a mut ServiceConfig,
-) -> &'a mut ServiceConfig {
+pub fn register_routes_to_config<PS: PageSource + 'static, UR: UrlResolver + 'static>(
+    config: &mut ServiceConfig,
+) -> &mut ServiceConfig {
     config
         .service(server::get_favicon_webp)
-        .route("/{tail:.*}", web::get().to(server::get_index::<PS>))
+        .route("/{tail:.*}", web::get().to(server::get_index::<PS, UR>))
 }

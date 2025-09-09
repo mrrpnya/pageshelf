@@ -1,21 +1,22 @@
+//! Deals with the utilities for loading pages.
+//! Generally, to access something a page, you go through these steps:
+//! PageSource -> Page -> Asset -> [your data]
+
 #[cfg(feature = "forgejo")]
 use crate::{Asset, AssetSource};
 use log::{error, info};
 use std::{fmt::Display, path::Path};
 
-/// Deals with the utilities for loading pages.
-/// Generally, to access something a page, you go through these steps:
-/// PageSource -> Page -> Asset -> [your data]
-
 /* -------------------------------- Constants ------------------------------- */
 
+/// The relative location in which to find page domain configuration
 const FILE_DOMAIN: &str = "/.domain";
 
 /* -------------------------------- Utilities ------------------------------- */
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum PageError {
-    /// The resource wasn't found.
+    /// The desired page wasn't found.
     NotFound,
     /// Something went wrong in the Page Provider.
     ProviderError,
@@ -157,28 +158,19 @@ pub trait PageSource {
                 Ok(v.filter(|page| {
                     // TODO: Consider changing this from simple match to regex?
                     // Owner check
-                    match &query.owner {
-                        Some(v) => {
-                            let owner = page.owner();
-                            return v.iter().any(|f| f == &owner);
-                        }
-                        None => {}
+                    if let Some(v) = &query.owner {
+                        let owner = page.owner();
+                        return v.iter().any(|f| f == &owner);
                     }
                     // Name check
-                    match &query.name {
-                        Some(v) => {
-                            let name = page.name();
-                            return v.iter().any(|f| f == &name);
-                        }
-                        None => {}
+                    if let Some(v) = &query.name {
+                        let name = page.name();
+                        return v.iter().any(|f| f == &name);
                     }
                     // Name check
-                    match &query.branch {
-                        Some(v) => {
-                            let branch = page.name();
-                            return v.iter().any(|f| f == &branch);
-                        }
-                        None => {}
+                    if let Some(v) = &query.branch {
+                        let branch = page.name();
+                        return v.iter().any(|f| f == &branch);
                     }
 
                     true
@@ -236,20 +228,21 @@ pub trait PageSource {
                         page.name(),
                         page.branch()
                     );
-                    let body = asset.body();
+                    let bytes = asset.bytes();
+                    if let Ok(body) = std::str::from_utf8(bytes) {
+                        // Trim lines in the body to avoid whitespace issues
+                        let trimmed_body_lines: Vec<String> = body
+                            .split('\n')
+                            .map(|line| line.trim().to_string())
+                            .collect();
 
-                    // Trim lines in the body to avoid whitespace issues
-                    let trimmed_body_lines: Vec<String> = body
-                        .split('\n')
-                        .map(|line| line.trim().to_string())
-                        .collect();
-
-                    // Check if any domain is in the trimmed body lines
-                    if trimmed_body_lines
-                        .iter()
-                        .any(|line| domains.contains(&line.as_str()))
-                    {
-                        applies = true;
+                        // Check if any domain is in the trimmed body lines
+                        if trimmed_body_lines
+                            .iter()
+                            .any(|line| domains.contains(&line.as_str()))
+                        {
+                            applies = true;
+                        }
                     }
                 }
             }

@@ -22,7 +22,7 @@ impl RedisCache {
         match redis::Client::open(address) {
             Ok(v) => Ok(Self {
                 client: Arc::new(v),
-                ttl: ttl,
+                ttl,
             }),
             Err(e) => {
                 error!("Failed to create Redis cache: {}", e);
@@ -58,7 +58,7 @@ pub struct RedisCacheConnection {
 }
 
 impl CacheConnection for RedisCacheConnection {
-    async fn set(&mut self, key: &str, value: &str) -> Result<(), CacheError> {
+    async fn set(&mut self, key: &str, value: &[u8]) -> Result<(), CacheError> {
         let result = self.conn.set(key, value).await;
 
         match result {
@@ -89,8 +89,8 @@ impl CacheConnection for RedisCacheConnection {
         Ok(())
     }
 
-    async fn get(&mut self, key: &str) -> Result<String, CacheError> {
-        let result = self.conn.get::<&str, String>(key).await;
+    async fn get(&mut self, key: &str) -> Result<Vec<u8>, CacheError> {
+        let result = self.conn.get::<&str, Vec<u8>>(key).await;
 
         match result {
             Ok(v) => Ok(v),
