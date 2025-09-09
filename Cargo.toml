@@ -9,7 +9,6 @@ publish = false
 
 [dependencies]
 forgejo-api = { version = "0.7", optional = true }
-gitlab = { version = "0.1803.0", optional = true }
 
 actix-web = { version = "4.11.0", default-features = false, features = [
     "macros",
@@ -25,7 +24,6 @@ minijinja = { version = "2.12", default-features = true, features = [
 ]}
 serde = "1"
 config = "0.15"
-toml = "0.9"
 mime_guess = "2"
 redis = { version = "0.32", features = ["aio", "tokio-comp"], optional = true }
 tokio = { version = "1", features = ["full"] }
@@ -40,7 +38,7 @@ rand = "0.9"
 default = ["redis", "forgejo"]
 forgejo = ["dep:forgejo-api"]
 gitea = []
-gitlab = ["dep:gitlab"]
+gitlab = []
 redis = ["dep:redis"]
 
 [[bench]]
