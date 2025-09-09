@@ -1,12 +1,12 @@
-use std::path::Path;
+use std::{path::Path, sync::Arc};
 
 use actix_web::{App, http::header::ContentType, middleware::NormalizePath, test};
 use pageshelf::{
-    asset::AssetQueryable,
-    backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    AssetSource,
     conf::ServerConfig,
     frontend::setup_service_config,
-    page::{PageSource, PageSourceFactory},
+    provider::{memory::MemoryAsset, testing::create_example_provider_factory},
+    {PageSource, PageSourceFactory},
 };
 
 /* -------------------------------------------------------------------------- */
@@ -25,7 +25,8 @@ async fn page_server_index() {
     let config = ServerConfig::default();
 
     let app = test::init_service(App::new().configure(move |f| {
-        setup_service_config(f, &config, factory, None);
+        let provider = Arc::new(factory.build().unwrap());
+        setup_service_config(f, &config, provider, None);
     }))
     .await;
 
@@ -53,7 +54,8 @@ async fn page_access_owner_name_asset() {
     let factory = create_example_provider_factory();
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        setup_service_config(f, &config, factory, None);
+        let provider = Arc::new(factory.build().unwrap());
+        setup_service_config(f, &config, provider, None);
     }))
     .await;
 
@@ -100,7 +102,8 @@ async fn page_access_index() {
     );
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        setup_service_config(f, &config, factory, None);
+        let provider = Arc::new(factory.build().unwrap());
+        setup_service_config(f, &config, provider, None);
     }))
     .await;
 
@@ -131,7 +134,8 @@ async fn page_access_no_index() {
     let factory = create_example_provider_factory();
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        setup_service_config(f, &config, factory, None);
+        let provider = Arc::new(factory.build().unwrap());
+        setup_service_config(f, &config, provider, None);
     }))
     .await;
 
@@ -197,13 +201,14 @@ async fn page_access_branch() {
             )
             .await
             .unwrap()
-            .asset_at(&path)
+            .get_asset(&path)
             .await
             .is_ok()
     );
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        setup_service_config(f, &config, factory, None);
+        let provider = Arc::new(factory.build().unwrap());
+        setup_service_config(f, &config, provider, None);
     }))
     .await;
 

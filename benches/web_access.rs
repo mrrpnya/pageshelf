@@ -1,11 +1,12 @@
-use std::{path::Path, str::FromStr};
+use std::{path::Path, str::FromStr, sync::Arc};
 
 use actix_web::{App, http::header::ContentType, test};
 use criterion::{Criterion, async_executor::AsyncStdExecutor, criterion_group, criterion_main};
 use pageshelf::{
-    backend::{memory::MemoryAsset, testing::create_example_provider_factory},
+    PageSourceFactory,
     conf::ServerConfig,
     frontend::setup_service_config,
+    provider::{memory::MemoryAsset, testing::create_example_provider_factory},
 };
 use url::Url;
 
@@ -16,7 +17,8 @@ fn bench_access_index(c: &mut Criterion) {
 
     let func = async || {
         let app = test::init_service(App::new().configure(move |f| {
-            setup_service_config(f, &config, factory, None);
+            let provider = Arc::new(factory.build().unwrap());
+            setup_service_config(f, &config, provider, None);
         }))
         .await;
 
@@ -49,7 +51,8 @@ fn bench_access_page_index(c: &mut Criterion) {
 
     let func = async || {
         let app = test::init_service(App::new().configure(move |f| {
-            setup_service_config(f, &config, factory, None);
+            let provider = Arc::new(factory.build().unwrap());
+            setup_service_config(f, &config, provider, None);
         }))
         .await;
 

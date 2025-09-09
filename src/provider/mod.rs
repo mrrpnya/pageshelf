@@ -1,3 +1,4 @@
+pub mod cache;
 #[cfg(feature = "forgejo")]
 pub mod forgejo;
 pub mod layers;

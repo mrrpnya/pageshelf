@@ -2,9 +2,8 @@ use std::path::Path;
 
 use criterion::{Criterion, async_executor::AsyncStdExecutor, criterion_group, criterion_main};
 use pageshelf::{
-    asset::{Asset, AssetQueryable},
-    backend::{MemoryPageProviderFactory, memory::MemoryAsset},
-    page::{PageSource, PageSourceFactory},
+    provider::{MemoryPageProviderFactory, memory::MemoryAsset},
+    {Asset, AssetSource}, {PageSource, PageSourceFactory},
 };
 use rand::{Rng, distr::Alphanumeric};
 
@@ -26,7 +25,7 @@ pub fn one_page_one_file(c: &mut Criterion) {
             .page_at(owner.to_string(), name.to_string(), branch.to_string())
             .await
             .unwrap();
-        let a = p.asset_at(path).await.unwrap();
+        let a = p.get_asset(path).await.unwrap();
         let b = asset.body();
         assert!(a.body() == b);
     };
@@ -66,7 +65,7 @@ pub fn one_page_many_file(c: &mut Criterion) {
             .page_at(owner.to_string(), name.to_string(), branch.to_string())
             .await
             .unwrap();
-        let a = p.asset_at(path).await.unwrap();
+        let a = p.get_asset(path).await.unwrap();
         let b = asset.body();
         assert!(a.body() == b);
     };

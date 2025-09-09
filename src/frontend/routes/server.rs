@@ -1,7 +1,11 @@
 /// Primary route for accessing Pages (and built-in pages).
 use std::path::Path;
 
-use actix_web::{get, http::header::{CacheControl, CacheDirective, HeaderValue}, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{
+    HttpRequest, HttpResponse, Responder, get,
+    http::header::{CacheControl, CacheDirective, HeaderValue},
+    web,
+};
 use log::{debug, info};
 use minijinja::context;
 
@@ -10,8 +14,8 @@ use crate::{
         routes::{RoutingState, pages::get_page_response},
         templates::{TEMPLATE_ERROR, TEMPLATE_INDEX, TemplateErrorContext, TemplatePageContext},
     },
-    page::{Page, PageSource},
     resolver::UrlResolution,
+    {Page, PageSource},
 };
 
 pub async fn get_index<'a, PS: PageSource>(
@@ -30,7 +34,7 @@ pub async fn get_index<'a, PS: PageSource>(
     match resolution {
         UrlResolution::BuiltIn => {
             info!("Serving Built-In page");
-            return HttpResponse::Ok().body(
+            return HttpResponse::Ok().content_type("text/html").body(
                 data.jinja
                     .get_template(TEMPLATE_INDEX)
                     .unwrap()
@@ -75,7 +79,7 @@ pub async fn get_index<'a, PS: PageSource>(
         _ => {}
     };
     let tp = data.jinja.get_template(TEMPLATE_ERROR).unwrap();
-    return HttpResponse::NotFound().body(
+    return HttpResponse::NotFound().content_type("text/html").body(
         tp.render(context! {
             server => data.config.template_server_context(),
             page => TemplatePageContext {
@@ -95,15 +99,10 @@ pub async fn get_index<'a, PS: PageSource>(
 #[get("/pages_favicon.webp")]
 pub async fn get_favicon_webp() -> impl Responder {
     HttpResponse::Ok()
-        .insert_header(
-            CacheControl(
-                vec![
-                    // Allow caching for 24 hours
-                    CacheDirective::MaxAge(86400u32)
-                ]
-            )
-        )
+        .insert_header(CacheControl(vec![
+            // Allow caching for 24 hours
+            CacheDirective::MaxAge(86400u32),
+        ]))
         .content_type("image/webp")
         .body(std::include_bytes!("../../../branding/pageshelf_logo.webp").as_slice())
-        
 }

@@ -1,12 +1,11 @@
-use std::path::Path;
+use std::{path::Path, sync::Arc};
 
 use actix_web::{App, http::header::ContentType, middleware::NormalizePath, test};
 use pageshelf::{
-    asset::{Asset, AssetQueryable},
-    backend::{memory::MemoryAsset, testing::create_example_provider_factory},
     conf::ServerConfig,
     frontend::setup_service_config,
-    page::{PageSource, PageSourceFactory},
+    provider::{memory::MemoryAsset, testing::create_example_provider_factory},
+    {Asset, AssetSource}, {PageSource, PageSourceFactory},
 };
 
 #[tokio::test]
@@ -21,7 +20,8 @@ async fn page_server_404() {
     let config = ServerConfig::default();
 
     let app = test::init_service(App::new().configure(move |f| {
-        setup_service_config(f, &config, factory, None);
+        let provider = Arc::new(factory.build().unwrap());
+        setup_service_config(f, &config, provider, None);
     }))
     .await;
 
@@ -71,13 +71,14 @@ async fn page_custom_404() {
             )
             .await
             .unwrap()
-            .asset_at(&path_1)
+            .get_asset(&path_1)
             .await
             .is_ok()
     );
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        setup_service_config(f, &config, factory, None);
+        let provider = Arc::new(factory.build().unwrap());
+        setup_service_config(f, &config, provider, None);
     }))
     .await;
 

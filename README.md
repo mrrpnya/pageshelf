@@ -14,6 +14,8 @@ A free and open-source Pages server, written in Rust.
 
 - [x] Forgejo
 
+This project follows a modular design; You can add your own providers, caches, and so on if needed.
+
 ## Features
 
 - [x] Dynamic hosting of sites
@@ -22,9 +24,14 @@ A free and open-source Pages server, written in Rust.
   - [x] Custom domains
 - [x] Integration Tested
   - [x] In-Memory Mock
-- [x] Redis Support
-- [ ] Smart cache invalidation
+- [x] Caching Support
+  - [x] Redis
+- [x] Smart cache invalidation
 - [ ] Metrics
+- [ ] Security
+  - [ ] Whitelist/Blacklist
+  - [ ] Auth-locking specific pages
+  - [ ] Private repo serving
 
 ## License
 

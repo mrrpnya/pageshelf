@@ -7,10 +7,9 @@ use mime_guess::Mime;
 use minijinja::context;
 
 use crate::{
-    RoutingState,
-    asset::{Asset, AssetQueryable},
+    PageSource, RoutingState,
     frontend::templates::{TEMPLATE_ERROR, TemplateErrorContext, TemplatePageContext},
-    page::PageSource,
+    {Asset, AssetSource},
 };
 
 /* -------------------------------------------------------------------------- */
@@ -94,7 +93,7 @@ pub async fn get_page_response_raw<'a, PS: PageSource>(
                 owner, repo, branch, e
             );
             return (
-                HttpResponse::NotFound().body(
+                HttpResponse::NotFound().content_type("text/html").body(
                     tp.render(context! {
                         server => data.config.template_server_context(),
                         page => TemplatePageContext {
@@ -130,7 +129,7 @@ pub async fn get_page_response_raw<'a, PS: PageSource>(
 
     let path = file;
 
-    let asset = match page.asset_at(&path).await {
+    let asset = match page.get_asset(&path).await {
         Ok(v) => v,
         Err(e) => {
             error!(

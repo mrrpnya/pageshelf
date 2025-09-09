@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use actix_web::{
     App, HttpServer, Result,
     middleware::{self, NormalizePath},
@@ -8,17 +10,18 @@ use fern::colors::{Color, ColoredLevelConfig};
 use log::debug;
 use minijinja::Environment;
 use pageshelf::{
-    conf::ServerConfig, frontend::setup_service_config,
-    frontend::templates::templates_from_builtin, page::PageSourceFactory,
+    PageSource, PageSourceFactory,
+    conf::ServerConfig,
+    frontend::{setup_service_config, templates::templates_from_builtin},
 };
 
 #[cfg(feature = "forgejo")]
-use pageshelf::backend::ForgejoProviderFactory;
+use pageshelf::provider::ForgejoProviderFactory;
 
 use pageshelf::conf::ServerConfigUpstreamType;
 
 #[cfg(feature = "redis")]
-use pageshelf::backend::layers::redis::RedisLayer;
+use pageshelf::provider::layers::cache::CacheLayer;
 
 use clap::{arg, crate_authors, crate_description, crate_name, crate_version};
 
@@ -67,30 +70,31 @@ async fn main() -> std::io::Result<()> {
             match ForgejoProviderFactory::from_config(config.clone()) {
                 Ok(factory) => {
                     #[cfg(feature = "redis")]
-                    let redis = RedisLayer::from_config(&config).unwrap();
+                    use pageshelf::provider::cache::RedisCache;
+
                     #[cfg(feature = "redis")]
-                    match config.redis.enabled {
+                    let redis = CacheLayer::from_cache(
+                        RedisCache::new(&config.cache.address, config.cache.port, config.cache.ttl)
+                            .unwrap(),
+                    );
+                    #[cfg(feature = "redis")]
+                    match config.cache.enabled {
                         true => {
                             use log::info;
 
                             info!("Redis is enabled");
                             let factory = factory.wrap(redis);
-                            return run_server(factory, config, templates).await;
+                            return run_server(factory.build().unwrap(), config, templates).await;
                         }
                         false => {}
                     }
-                    run_server(factory, config, templates).await
+                    run_server(factory.build().unwrap(), config, templates).await
                 }
                 Err(_) => {
                     log::error!("Failed to generate Forgejo provider via configs");
                     return Ok(());
                 }
             }
-        }
-        // This will be used as a fallback, should no feature be available.
-        _ => {
-            log::error!("Failed to determine provider to use");
-            return Ok(());
         }
     }
 }
@@ -122,24 +126,25 @@ fn setup_logger(debug: bool) -> Result<(), fern::InitError> {
     Ok(())
 }
 
-async fn run_server<'a, PS: PageSourceFactory + Sync + Send + 'static>(
-    page_factory: PS,
+async fn run_server<'a, PS: PageSource + Sync + Send + 'static>(
+    page_source: PS,
     config: ServerConfig,
     templates: Environment<'static>,
 ) -> std::io::Result<()>
 where
-    <PS as PageSourceFactory>::Source: 'static,
+    PS: 'static,
 {
+    let page_source = Arc::new(page_source);
     let port = config.port;
     HttpServer::new(move || {
         let config = config.clone();
-        let page_factory = page_factory.clone();
+        let page_source = page_source.clone();
         let templates = templates.clone();
         App::new()
             .wrap(NormalizePath::trim())
             .wrap(middleware::Compress::default())
             .configure(move |f| {
-                setup_service_config(f, &config, page_factory, Some(templates));
+                setup_service_config(f, &config, page_source, Some(templates));
             })
     })
     .bind(("0.0.0.0", port))?

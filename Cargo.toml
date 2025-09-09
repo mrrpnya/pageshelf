@@ -18,9 +18,9 @@ clap = { version = "4.5.47", features = ["cargo"] }
 log = "0.4"
 fern = { version = "0.7", features = ["colored"] }
 url = { version = "2.5.7", features = ["serde"] }
-minijinja = { version = "2.12", default-features = false, features = [
-    "multi_template",
-] }
+minijinja = { version = "2.12", default-features = true, features = [
+    "multi_template", "serde"
+]}
 serde = "1"
 config = "0.15"
 toml = "0.9"

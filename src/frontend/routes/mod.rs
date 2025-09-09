@@ -1,14 +1,16 @@
+use std::sync::Arc;
+
 use actix_web::web::{self, ServiceConfig};
 use minijinja::Environment;
 
-use crate::{conf::ServerConfig, page::PageSource, resolver::UrlResolver};
+use crate::{PageSource, conf::ServerConfig, resolver::UrlResolver};
 
 pub mod pages;
 pub mod server;
 
 /// This serves as state for the Actix server.
 pub struct RoutingState<'a, PS: PageSource> {
-    pub provider: PS,
+    pub provider: Arc<PS>,
     pub config: ServerConfig,
     pub jinja: Environment<'a>,
     pub resolver: UrlResolver,

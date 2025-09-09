@@ -1,61 +1,44 @@
-/// A Layer that allows using Redis to cache page info and Assets.
-///
-/// Redis is a high-speed in-memory cache with data durability.
-/// It is useful for reducing queries upstream (especially when deployed off-site).
-/// See: https://redis.io/ for more information about Redis itself.
+/// A Layer that allows using Caches to temporarily store page info and Assets.
 use std::sync::Arc;
 
 use log::{debug, error, info};
-use redis::{AsyncCommands, Client, RedisError};
 
 use crate::{
-    asset::{Asset, AssetError, AssetQueryable},
-    conf::ServerConfig,
-    page::{Page, PageError, PageSource, PageSourceLayer},
+    Asset, AssetError, AssetSource, Cache, CacheConnection, Page, PageError, PageSource,
+    PageSourceLayer,
 };
 
 /// A Layer that caches page info and assets passed through it via Redis.
 #[derive(Clone)]
-pub struct RedisLayer {
-    client: Arc<redis::Client>,
-    ttl: Option<i64>,
+pub struct CacheLayer<C: Cache> {
+    cache: Arc<C>,
 }
 
-impl RedisLayer {
-    pub fn from_config(config: &ServerConfig) -> Result<Self, RedisError> {
-        let address = format!("redis://{}:{}", config.redis.address, config.redis.port);
-        match redis::Client::open(address) {
-            Ok(v) => Ok(Self {
-                client: Arc::new(v),
-                ttl: config.redis.ttl,
-            }),
-            Err(e) => {
-                error!("Failed to set up Redis integration: {}", e);
-                Err(e)
-            }
+impl<C: Cache> CacheLayer<C> {
+    pub fn from_cache(cache: C) -> Self {
+        Self {
+            cache: Arc::new(cache),
         }
     }
 }
 
-impl<PS: PageSource> PageSourceLayer<PS> for RedisLayer {
-    type Source = RedisCacheSource<PS>;
+impl<PS: PageSource, C: Cache> PageSourceLayer<PS> for CacheLayer<C> {
+    type Source = CacheLayerSource<PS, C>;
 
     fn wrap(&self, page_source: PS) -> Self::Source {
         Self::Source {
             upstream: page_source,
-            client: self.client.clone(),
-            ttl: self.ttl,
+            cache: self.cache.clone(),
         }
     }
 }
 
-pub struct RedisCachePage<P: Page> {
+pub struct RedisCachePage<P: Page, C: Cache> {
     upstream: P,
-    client: Arc<Client>,
-    ttl: Option<i64>,
+    cache: Arc<C>,
 }
 
-impl<P: Page> Page for RedisCachePage<P> {
+impl<P: Page, C: Cache> Page for RedisCachePage<P, C> {
     fn name(&self) -> &str {
         self.upstream.name()
     }
@@ -168,14 +151,14 @@ impl<PA: Page, PB: Page> Page for RedisCachePageMerge<PA, PB> {
     }
 }
 
-impl<PA: Page, PB: Page> AssetQueryable for RedisCachePageMerge<PA, PB> {
-    async fn asset_at(&self, path: &std::path::Path) -> Result<impl Asset, AssetError> {
+impl<PA: Page, PB: Page> AssetSource for RedisCachePageMerge<PA, PB> {
+    async fn get_asset(&self, path: &std::path::Path) -> Result<impl Asset, AssetError> {
         match self {
-            Self::A(v) => match v.asset_at(path).await {
+            Self::A(v) => match v.get_asset(path).await {
                 Ok(v) => Ok(RedisCacheAssetEither::A(v)),
                 Err(e) => Err(e),
             },
-            Self::B(v) => match v.asset_at(path).await {
+            Self::B(v) => match v.get_asset(path).await {
                 Ok(v) => Ok(RedisCacheAssetEither::B(v)),
                 Err(e) => Err(e),
             },
@@ -196,16 +179,12 @@ impl<PA: Page, PB: Page> AssetQueryable for RedisCachePageMerge<PA, PB> {
     }
 }
 
-impl<P: Page> AssetQueryable for RedisCachePage<P> {
-    async fn asset_at(
-        &self,
-        path: &std::path::Path,
-    ) -> Result<impl crate::asset::Asset, crate::asset::AssetError> {
-        debug!("Connecting to Redis...");
-        let mut conn = match self.client.get_multiplexed_async_connection().await {
+impl<P: Page, C: Cache> AssetSource for RedisCachePage<P, C> {
+    async fn get_asset(&self, path: &std::path::Path) -> Result<impl Asset, AssetError> {
+        let mut conn = match self.cache.connect().await {
             Ok(v) => v,
             Err(e) => {
-                error!("Failed to create multiplexed async Redis connection: {}", e);
+                error!("Failed to create cache connection: {:?}", e);
                 return Err(AssetError::ProviderError);
             }
         };
@@ -217,22 +196,17 @@ impl<P: Page> AssetQueryable for RedisCachePage<P> {
             path.to_str().unwrap()
         );
         debug!("Checking if asset \"{}\" asset is in cache...", key);
-        match conn.get::<String, String>(key.clone()).await {
+        match conn.get(&key).await {
             Ok(v) => {
                 info!("Cache hit: {:?}", path);
                 Ok(RedisCacheAsset::Hold(v))
             }
             Err(e) => {
-                info!("Cache miss (loading from upstream): {}", e);
-                match self.upstream.asset_at(&path).await {
+                info!("Cache miss (loading from upstream): {:?}", e);
+                match self.upstream.get_asset(&path).await {
                     Ok(v) => {
                         // TODO: Error reporting
-                        let _ = conn
-                            .set::<String, &str, String>(key.clone(), v.body())
-                            .await;
-                        if self.ttl.is_some() {
-                            let _ = conn.expire::<String, String>(key, self.ttl.unwrap()).await;
-                        }
+                        let _ = conn.set(&key, v.body()).await;
                         Ok(RedisCacheAsset::Load(v))
                     }
                     Err(e) => Err(e),
@@ -241,107 +215,93 @@ impl<P: Page> AssetQueryable for RedisCachePage<P> {
         }
     }
 
-    fn assets(
-        &self,
-    ) -> Result<impl Iterator<Item = impl crate::asset::Asset>, crate::asset::AssetError> {
+    fn assets(&self) -> Result<impl Iterator<Item = impl Asset>, AssetError> {
         self.upstream.assets()
     }
 }
 
-pub struct RedisCacheSource<PS: PageSource> {
+pub struct CacheLayerSource<PS: PageSource, C: Cache> {
     upstream: PS,
-    client: Arc<Client>,
-    ttl: Option<i64>,
+    cache: Arc<C>,
 }
 
-impl<PS: PageSource> PageSource for RedisCacheSource<PS> {
+impl<PS: PageSource, C: Cache> PageSource for CacheLayerSource<PS, C> {
     async fn page_at(
         &self,
         owner: String,
         name: String,
         branch: String,
-    ) -> Result<impl Page, crate::page::PageError> {
+    ) -> Result<impl Page, PageError> {
+        let mut conn = match self.cache.connect().await {
+            Ok(v) => v,
+            Err(e) => {
+                error!("Failed to create cache connection: {:?}", e);
+                return Err(PageError::ProviderError);
+            }
+        };
         match self.upstream.page_at(owner, name, branch).await {
             Ok(page) => Ok({
-                let mut conn = match self.client.get_multiplexed_async_connection().await {
-                    Ok(v) => v,
-                    Err(e) => {
-                        error!("Failed to create multiplexed async Redis connection: {}", e);
-                        return Err(PageError::ProviderError);
-                    }
-                };
                 let version_key = format!(
                     "page:{}:{}:{}:version",
                     page.owner(),
                     page.name(),
                     page.branch()
                 );
-                match conn.get::<String, String>(version_key.clone()).await {
+                match conn.get(&version_key).await {
                     Ok(v) => {
                         if v != page.version() {
                             // Invalidate cache
                             info!("Page was updated; Invalidating cache...");
-                            let _ = conn
-                                .del::<String, u32>(format!(
-                                    "page:{}:{}:{}:*",
-                                    page.owner(),
-                                    page.name(),
-                                    page.branch()
-                                ))
-                                .await;
+                            let key = format!(
+                                "page:{}:{}:{}:*",
+                                page.owner(),
+                                page.name(),
+                                page.branch()
+                            );
+                            let _ = conn.delete(&key).await;
 
-                            let _ = conn
-                                .set::<String, String, String>(
-                                    version_key,
-                                    page.version().to_string(),
-                                )
-                                .await;
+                            let _ = conn.set(&version_key, page.version()).await;
                         }
                     }
                     Err(e) => {
-                        let _ = conn
-                            .set::<String, String, String>(version_key, page.version().to_string())
-                            .await;
+                        debug!("Unable to find page version in cache: {:?}", e);
+                        let _ = conn.set(&version_key, page.version()).await;
                     }
                 }
                 RedisCachePage {
                     upstream: page,
-                    client: self.client.clone(),
-                    ttl: self.ttl,
+                    cache: self.cache.clone(),
                 }
             }),
             Err(e) => Err(e),
         }
     }
 
-    async fn pages(
-        &self,
-    ) -> Result<impl Iterator<Item = impl crate::page::Page>, crate::page::PageError> {
+    async fn pages(&self) -> Result<impl Iterator<Item = impl Page>, PageError> {
         self.upstream.pages().await
     }
 
-    async fn find_by_domains(&self, domains: &[&str]) -> Result<impl Page, crate::page::PageError> {
+    async fn find_by_domains(&self, domains: &[&str]) -> Result<impl Page, PageError> {
         debug!("Connecting to Redis to cache search...");
-        let mut conn = match self.client.get_multiplexed_async_connection().await {
+        let mut conn = match self.cache.connect().await {
             Ok(v) => v,
             Err(e) => {
-                error!("Failed to create multiplexed async Redis connection: {}", e);
+                error!("Failed to create cache connection: {:?}", e);
                 return Err(PageError::ProviderError);
             }
         };
         for domain in domains {
             let key_o = format!("domain:owner:{}", domain);
             let key_r = format!("domain:name:{}", domain);
-            if let Ok(o) = conn.get::<String, String>(key_o).await {
-                if let Ok(r) = conn.get::<String, String>(key_r).await {
+            if let Ok(o) = conn.get(&key_o).await {
+                if let Ok(r) = conn.get(&key_r).await {
                     if let Ok(upstream) =
                         self.page_at(o, r, self.default_branch().to_string()).await
                     {
                         info!("Cache hit! Found by cached domain.");
                         return Ok(RedisCachePage {
                             upstream: RedisCachePageMerge::A(upstream),
-                            client: self.client.clone(),
-                            ttl: self.ttl,
+                            cache: self.cache.clone(),
                         });
                     }
                 }
@@ -356,18 +316,13 @@ impl<PS: PageSource> PageSource for RedisCacheSource<PS> {
                     let key_o = format!("domain:{}:owner", domain);
                     let key_r = format!("domain:{}:name", domain);
                     // TODO: Error reporting
-                    let _ = conn
-                        .set::<String, String, String>(key_o, page.owner().to_string())
-                        .await;
-                    let _ = conn
-                        .set::<String, String, String>(key_r, page.name().to_string())
-                        .await;
+                    let _ = conn.set(&key_o, page.owner()).await;
+                    let _ = conn.set(&key_r, page.name()).await;
                 }
 
                 return Ok(RedisCachePage {
                     upstream: RedisCachePageMerge::B(page),
-                    client: self.client.clone(),
-                    ttl: self.ttl,
+                    cache: self.cache.clone(),
                 });
             }
             Err(e) => Err(e),

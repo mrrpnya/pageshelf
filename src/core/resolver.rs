@@ -3,8 +3,8 @@ use log::warn;
 use url::Url;
 
 use crate::{
-    page::{PageAssetLocation, PageLocation},
     util::analyze_url,
+    {PageAssetLocation, PageLocation},
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -189,8 +189,8 @@ pub mod tests {
     use url::Url;
 
     use crate::{
-        page::{PageAssetLocation, PageLocation},
         resolver::UrlResolution,
+        {PageAssetLocation, PageLocation},
     };
 
     use super::UrlResolver;

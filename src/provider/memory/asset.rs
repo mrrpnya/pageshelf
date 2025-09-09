@@ -8,7 +8,7 @@ use std::{
 
 use log::info;
 
-use crate::asset::{Asset, AssetError, AssetQueryable, AssetWritable};
+use crate::{Asset, AssetError, AssetSource, AssetWritable};
 
 /// An Asset that is stored and accessed from memory.
 #[derive(Clone)]
@@ -74,8 +74,8 @@ impl MemoryCache {
     }
 }
 
-impl AssetQueryable for MemoryCache {
-    async fn asset_at(&self, path: &Path) -> Result<impl Asset, AssetError> {
+impl AssetSource for MemoryCache {
+    async fn get_asset(&self, path: &Path) -> Result<impl Asset, AssetError> {
         let buf = std::path::absolute(Path::new("/").join(path.to_path_buf())).unwrap();
         info!("Getting MemoryAsset {:?}...", buf);
         match self.data.get(&buf) {
@@ -98,7 +98,7 @@ impl AssetWritable for MemoryCache {
         }
     }
 
-    fn write_asset(&mut self, path: &Path, asset: &impl Asset) -> Result<(), AssetError> {
+    fn set_asset(&mut self, path: &Path, asset: &impl Asset) -> Result<(), AssetError> {
         self.data.insert(
             path.to_path_buf(),
             MemoryAsset {
@@ -112,7 +112,7 @@ impl AssetWritable for MemoryCache {
 
 #[cfg(test)]
 mod tests {
-    use crate::asset::Asset;
+    use crate::Asset;
 
     use super::MemoryAsset;
 

@@ -15,8 +15,9 @@ pub trait Asset {
 }
 
 /// A trait that allows finding assets.
-pub trait AssetQueryable {
-    async fn asset_at(&self, path: &Path) -> Result<impl Asset, AssetError>;
+pub trait AssetSource {
+    #[allow(async_fn_in_trait)]
+    async fn get_asset(&self, path: &Path) -> Result<impl Asset, AssetError>;
     fn assets(&self) -> Result<impl Iterator<Item = impl Asset>, AssetError>;
     fn total_bytes(&self) -> Option<u32> {
         None
@@ -25,7 +26,7 @@ pub trait AssetQueryable {
 
 /// A trait that enables manipulation of assets on its implementors.
 pub trait AssetWritable {
-    fn write_asset(&mut self, path: &Path, asset: &impl Asset) -> Result<(), AssetError>;
+    fn set_asset(&mut self, path: &Path, asset: &impl Asset) -> Result<(), AssetError>;
     fn delete_asset(&mut self, path: &Path) -> Result<(), AssetError>;
 }
 

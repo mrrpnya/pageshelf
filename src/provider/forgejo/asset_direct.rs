@@ -4,9 +4,9 @@ use std::path::Path;
 use forgejo_api::{Forgejo, structs::RepoGetRawFileQuery};
 use log::{error, info, warn};
 
-use crate::asset::{Asset, AssetError, AssetQueryable};
+use crate::{Asset, AssetError, AssetSource};
 
-use crate::backend::memory::MemoryAsset;
+use crate::provider::memory::MemoryAsset;
 
 pub struct ForgejoDirectReadStorage<'a> {
     forgejo: &'a Forgejo,
@@ -66,8 +66,8 @@ impl<'a> ForgejoDirectReadStorage<'a> {
     }
 }
 
-impl<'a> AssetQueryable for ForgejoDirectReadStorage<'a> {
-    async fn asset_at(&self, path: &Path) -> Result<impl Asset, AssetError> {
+impl<'a> AssetSource for ForgejoDirectReadStorage<'a> {
+    async fn get_asset(&self, path: &Path) -> Result<impl Asset, AssetError> {
         let p = path.to_string_lossy();
         info!("Fetching Forgejo raw data at {}", p);
         match self
