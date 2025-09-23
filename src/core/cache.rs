@@ -3,8 +3,6 @@
 //! Provides easily-implementable abstractions for implementing key-value caches.
 //! Such implementations can then be used to improve performance.
 
-/// Caches allow for fast, local storage of page data.
-/// To leverage certain caches effectively, explicit, scoped connections are used.
 #[derive(Debug, PartialEq, Eq)]
 pub enum CacheError {
     /// A problem occurred when trying to connect to the cache.
@@ -20,7 +18,9 @@ pub enum CacheError {
 /// It is intended as an abstraction over popular caches like Redis or Valkey;
 /// As such, it is expected to be a key-value store, with Regex support.
 pub trait Cache: Clone {
+    /// The connection type for this cache, used to query and mutate it.
     type Connection: CacheConnection;
+
     /// Describe this function.
     ///
     /// # Returns
@@ -47,7 +47,9 @@ pub trait Cache: Clone {
     async fn connect(&self) -> Result<Self::Connection, CacheError>;
 }
 
-/// An active connection to a cache. This allows you to query or modify the cache.
+/// An active connection to a cache. This allows you to query or mutate the cache.
+///
+/// To leverage certain caches effectively, explicit, scoped connections are used.
 pub trait CacheConnection {
     /// Sets a value in the Cache's stored data
     ///

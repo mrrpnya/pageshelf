@@ -20,7 +20,7 @@ async fn page_server_404() {
     let config = ServerConfig::default();
 
     let app = test::init_service(App::new().configure(move |f| {
-        let provider = Arc::new(factory.build().unwrap());
+        let provider = Arc::new(factory.build());
         setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
@@ -44,14 +44,14 @@ async fn page_custom_404() {
     let path_1 = Path::new("/404.html");
     let path_2 = Path::new("/other.html");
 
-    let asset_1 = MemoryAsset::new_from_str("meow");
+    let asset_1 = MemoryAsset::from("meow");
 
     let config = ServerConfig::default();
     let factory = create_example_provider_factory()
-        .with_asset("owner_1", "name_1", "pages", &path_2, asset_1.clone())
-        .with_asset("owner_1", "name_1", "with_404", &path_1, asset_1.clone());
+        .with_asset("owner_1", "name_1", "pages", path_2, asset_1.clone())
+        .with_asset("owner_1", "name_1", "with_404", path_1, asset_1.clone());
 
-    let provider = factory.build().unwrap();
+    let provider = factory.build();
     assert!(
         provider
             .page_at(
@@ -71,13 +71,13 @@ async fn page_custom_404() {
             )
             .await
             .unwrap()
-            .get_asset(&path_1)
+            .get_asset(path_1)
             .await
             .is_ok()
     );
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        let provider = Arc::new(factory.build().unwrap());
+        let provider = Arc::new(factory.build());
         setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;

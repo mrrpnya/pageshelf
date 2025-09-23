@@ -1,4 +1,4 @@
-use std::{path::Path, str::FromStr, sync::Arc};
+use std::{path::Path, sync::Arc};
 
 use actix_web::{App, http::header::ContentType, test};
 use criterion::{Criterion, async_executor::AsyncStdExecutor, criterion_group, criterion_main};
@@ -8,8 +8,6 @@ use pageshelf::{
     frontend::setup_service_config,
     provider::{memory::MemoryAsset, testing::create_example_provider_factory},
 };
-use url::Url;
-
 fn bench_access_index(c: &mut Criterion) {
     let factory = create_example_provider_factory();
 
@@ -19,7 +17,7 @@ fn bench_access_index(c: &mut Criterion) {
 
     let func = async || {
         let app = test::init_service(App::new().configure(move |f| {
-            let provider = Arc::new(factory.build().unwrap());
+            let provider = Arc::new(factory.build());
             setup_service_config(f, &config, provider, resolver, None);
         }))
         .await;
@@ -40,14 +38,12 @@ fn bench_access_index(c: &mut Criterion) {
 fn bench_access_page_index(c: &mut Criterion) {
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
-    let asset = MemoryAsset::new_from_str("meow");
+    let asset = MemoryAsset::from("meow");
 
-    let mut config = ServerConfig::default();
-    config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
     let factory = create_example_provider_factory()
-        .with_asset("owner_1", "pages", "pages", &path, asset.clone())
-        .with_asset("owner_2", "other_thing", "pages", &path, asset.clone())
-        .with_asset("owner_2", "other_thing", "pages", &path_long, asset.clone());
+        .with_asset("owner_1", "pages", "pages", path, asset.clone())
+        .with_asset("owner_2", "other_thing", "pages", path, asset.clone())
+        .with_asset("owner_2", "other_thing", "pages", path_long, asset.clone());
 
     let config = ServerConfig::default();
 
@@ -55,7 +51,7 @@ fn bench_access_page_index(c: &mut Criterion) {
 
     let func = async || {
         let app = test::init_service(App::new().configure(move |f| {
-            let provider = Arc::new(factory.build().unwrap());
+            let provider = Arc::new(factory.build());
             setup_service_config(f, &config, provider, resolver, None);
         }))
         .await;

@@ -1,8 +1,8 @@
-/// A Cache that allows using Redis to cache page info and Assets.
-///
-/// Redis is a high-speed in-memory cache with data durability.
-/// It is useful for reducing queries upstream (especially when deployed off-site).
-/// See: https://redis.io/ for more information about Redis itself.
+//! A Cache that allows using Redis to cache page info and Assets.
+//!
+//! Redis is a high-speed in-memory cache with data durability.
+//! It is useful for reducing queries upstream (especially when deployed off-site).
+//! See <https://redis.io/> for more information about Redis itself.
 use std::sync::Arc;
 
 use log::error;

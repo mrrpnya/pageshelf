@@ -140,8 +140,8 @@ impl MemoryPageProviderFactory {
 impl PageSourceFactory for MemoryPageProviderFactory {
     type Source = MemoryPageProvider;
 
-    fn build(&self) -> Result<Self::Source, ()> {
-        Ok(self.provider.clone())
+    fn build(&self) -> Self::Source {
+        self.provider.clone()
     }
 }
 
@@ -185,8 +185,8 @@ pub mod testing {
         let asset_path_1 = Path::new("/asset_1");
         let asset_path_2 = Path::new("/asset_2");
 
-        let asset_1 = MemoryAsset::new_from_str(DATA_1);
-        let asset_2 = MemoryAsset::new_from_str(DATA_2);
+        let asset_1 = MemoryAsset::from(DATA_1);
+        let asset_2 = MemoryAsset::from(DATA_2);
 
         MemoryPageProviderFactory::new()
             .with_asset(OWNER_1, NAME_1, BRANCH_1, asset_path_1, asset_1)
@@ -194,7 +194,7 @@ pub mod testing {
     }
 
     pub fn create_example_provider() -> MemoryPageProvider {
-        create_example_provider_factory().build().unwrap()
+        create_example_provider_factory().build()
     }
 
     pub async fn test_example_source(p: &MemoryPageProvider) {

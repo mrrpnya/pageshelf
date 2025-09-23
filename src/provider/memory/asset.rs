@@ -17,18 +17,30 @@ pub struct MemoryAsset {
 }
 
 impl MemoryAsset {
-    pub fn new_from_bytes(data: Vec<u8>) -> Self {
-        Self { contents: data }
-    }
-
-    pub fn new_from_str(data: &str) -> Self {
-        Self {
-            contents: data.into(),
-        }
-    }
-
     pub fn empty() -> Self {
         Self { contents: vec![] }
+    }
+}
+
+impl From<Vec<u8>> for MemoryAsset {
+    fn from(value: Vec<u8>) -> Self {
+        Self { contents: value }
+    }
+}
+
+impl From<String> for MemoryAsset {
+    fn from(value: String) -> Self {
+        Self {
+            contents: value.into_bytes(),
+        }
+    }
+}
+
+impl From<&str> for MemoryAsset {
+    fn from(value: &str) -> Self {
+        Self {
+            contents: value.to_string().into_bytes(),
+        }
     }
 }
 
@@ -118,12 +130,30 @@ mod tests {
 
     use super::MemoryAsset;
 
-    /// Can we get the same string back from the asset?
+    /// Can we get the same bytes back from the asset?
     #[test]
-    fn memory_asset_str() {
-        let data: Vec<u8> = vec![b'm', b'e', b'o', b'w'];
-        let asset = MemoryAsset::new_from_bytes(data.clone());
+    fn memory_asset_bytes() {
+        let data: Vec<u8> = vec![1, 2, 3, 4, 1, 2, 3, 4];
+        let asset = MemoryAsset::from(data.clone());
 
         assert_eq!(asset.bytes(), data)
+    }
+
+    /// Can we get the same string back from the asset if it's created by value?
+    #[test]
+    fn memory_asset_string() {
+        let data: String = "Sphinx of black quartz, judge my vow".to_string(); // A pangram
+        let asset = MemoryAsset::from(data.clone());
+
+        assert_eq!(asset.body().unwrap(), data)
+    }
+
+    /// Can we get the same bytes back from the asset if it's created by reference?
+    #[test]
+    fn memory_asset_str() {
+        let data: &str = "Sphinx of black quartz, judge my vow"; // A pangram
+        let asset = MemoryAsset::from(data);
+
+        assert_eq!(asset.body().unwrap(), data)
     }
 }

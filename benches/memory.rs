@@ -13,12 +13,11 @@ pub fn one_page_one_file(c: &mut Criterion) {
     let branch = "unstable";
     let path = Path::new("/neo");
 
-    let asset = MemoryAsset::new_from_str("Big shot");
+    let asset = MemoryAsset::from("Big shot");
 
     let provider = MemoryPageProviderFactory::new()
         .with_asset(owner, name, branch, path, asset.clone())
-        .build()
-        .unwrap();
+        .build();
 
     let func = async || {
         let p = provider
@@ -31,7 +30,7 @@ pub fn one_page_one_file(c: &mut Criterion) {
     };
 
     c.bench_function("Memory Page/Asset: One Page, One File", |b| {
-        b.to_async(AsyncStdExecutor).iter(|| func())
+        b.to_async(AsyncStdExecutor).iter(func)
     });
 }
 
@@ -41,8 +40,8 @@ pub fn one_page_many_file(c: &mut Criterion) {
     let branch = "unstable";
     let path = Path::new("/neo");
 
-    let asset = MemoryAsset::new_from_str("Big shot");
-    let asset_other = MemoryAsset::new_from_str("TV Time");
+    let asset = MemoryAsset::from("Big shot");
+    let asset_other = MemoryAsset::from("TV Time");
 
     let mut factory =
         MemoryPageProviderFactory::new().with_asset(owner, name, branch, path, asset.clone());
@@ -58,7 +57,7 @@ pub fn one_page_many_file(c: &mut Criterion) {
         factory = factory.with_asset(owner, name, branch, file, asset_other.clone())
     }
 
-    let provider = factory.build().unwrap();
+    let provider = factory.build();
 
     let func = async || {
         let p = provider
@@ -71,7 +70,7 @@ pub fn one_page_many_file(c: &mut Criterion) {
     };
 
     c.bench_function("Memory Page/Asset: One Page, Many Files", |b| {
-        b.to_async(AsyncStdExecutor).iter(|| func())
+        b.to_async(AsyncStdExecutor).iter(func)
     });
 }
 

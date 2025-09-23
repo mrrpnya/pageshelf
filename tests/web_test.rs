@@ -25,7 +25,7 @@ async fn page_server_index() {
     let config = ServerConfig::default();
 
     let app = test::init_service(App::new().configure(move |f| {
-        let provider = Arc::new(factory.build().unwrap());
+        let provider = Arc::new(factory.build());
         setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
@@ -54,7 +54,7 @@ async fn page_access_owner_name_asset() {
     let factory = create_example_provider_factory();
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        let provider = Arc::new(factory.build().unwrap());
+        let provider = Arc::new(factory.build());
         setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
@@ -83,13 +83,13 @@ async fn page_access_index() {
         .try_init();
 
     let path = Path::new("/index.html");
-    let asset = MemoryAsset::new_from_str("meow");
+    let asset = MemoryAsset::from("meow");
 
     let config = ServerConfig::default();
     let factory =
-        create_example_provider_factory().with_asset("owner_1", "name_1", "pages", &path, asset);
+        create_example_provider_factory().with_asset("owner_1", "name_1", "pages", path, asset);
 
-    let provider = factory.build().unwrap();
+    let provider = factory.build();
     assert!(
         provider
             .page_at(
@@ -102,7 +102,7 @@ async fn page_access_index() {
     );
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        let provider = Arc::new(factory.build().unwrap());
+        let provider = Arc::new(factory.build());
         setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
@@ -134,7 +134,7 @@ async fn page_access_no_index() {
     let factory = create_example_provider_factory();
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        let provider = Arc::new(factory.build().unwrap());
+        let provider = Arc::new(factory.build());
         setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
@@ -163,15 +163,15 @@ async fn page_access_branch() {
         .try_init();
 
     let path = Path::new("/index.html");
-    let asset_1 = MemoryAsset::new_from_str("meow");
-    let asset_2 = MemoryAsset::new_from_str("nya");
+    let asset_1 = MemoryAsset::from("meow");
+    let asset_2 = MemoryAsset::from("nya");
 
     let config = ServerConfig::default();
     let factory = create_example_provider_factory()
-        .with_asset("owner_1", "name_1", "pages", &path, asset_1)
-        .with_asset("owner_1", "name_1", "second", &path, asset_2);
+        .with_asset("owner_1", "name_1", "pages", path, asset_1)
+        .with_asset("owner_1", "name_1", "second", path, asset_2);
 
-    let provider = factory.build().unwrap();
+    let provider = factory.build();
     assert!(
         provider
             .page_at(
@@ -201,13 +201,13 @@ async fn page_access_branch() {
             )
             .await
             .unwrap()
-            .get_asset(&path)
+            .get_asset(path)
             .await
             .is_ok()
     );
 
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        let provider = Arc::new(factory.build().unwrap());
+        let provider = Arc::new(factory.build());
         setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;

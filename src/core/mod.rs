@@ -1,7 +1,6 @@
 //! The core components of Pageshelf.
 //!
-//! These provide the framework for implementing sources, caches, and resolving URLs,
-//! then using these to make a Pages server.
+//! These provide the framework for implementing sources, caches, and resolving URLs.
 
 mod page_factory;
 pub mod resolver;

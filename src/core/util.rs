@@ -8,6 +8,22 @@ pub struct UrlAnalysis {
     pub asset: String,
 }
 
+// TODO: Consider removing native subdomain resolution in favor of using an external proxy?
+// ? Would be simple enough to have a redirect on proxy --> server transit:
+// ? mypage.pages.server --> pages.server/page/mypage
+// ? And then there'd be less surface area in the server.
+
+/// Analyze a URL to determine what page it refers to,
+/// assuming it's either a subdirectory or subdomain.
+///
+/// # Arguments
+///
+/// - `url` (`&Url`) - The URL to analyze.
+/// - `base_domain` (`Option<&str>`) - The base domain to determine subdirectory requests.
+///
+/// # Returns
+///
+/// - `Option<UrlAnalysis>` - The URL analysis if successful, otherwise nothing.
 pub fn analyze_url(url: &Url, base_domain: Option<&str>) -> Option<UrlAnalysis> {
     // Assume pages_url is example.domain;
     // (If none is returned, assume it's not valid)
@@ -34,6 +50,7 @@ pub fn analyze_url(url: &Url, base_domain: Option<&str>) -> Option<UrlAnalysis> 
         Some(_) => url.host_str().unwrap(),
         None => "no.host",
     };
+    // Trim off "www." if present
     let h_start = match host.starts_with("www.") {
         true => host.find('.').unwrap() + 1,
         false => 0,
@@ -118,6 +135,7 @@ mod tests {
 
     use super::{UrlAnalysis, analyze_url};
 
+    /// Ensure subdirectory queries are correctly recognized by the default URL analyzer
     #[test]
     fn test_analyze_url_all_subdirectory() {
         let domain = "example.domain";
@@ -166,7 +184,7 @@ mod tests {
         for param in params {
             let url_str = format!("http://{}", param.0);
             let url = Url::from_str(url_str.as_str()).unwrap();
-            let a = analyze_url(&url, Some(&domain));
+            let a = analyze_url(&url, Some(domain));
             assert_eq!(a, param.1, "Analyzing {}", param.0)
         }
     }
@@ -219,7 +237,7 @@ mod tests {
         for param in params {
             let url_str = format!("http://{}", param.0);
             let url = Url::from_str(url_str.as_str()).unwrap();
-            let a = analyze_url(&url, Some(&domain));
+            let a = analyze_url(&url, Some(domain));
             assert_eq!(a, param.1, "Analyzing {}", param.0)
         }
     }
@@ -285,7 +303,7 @@ mod tests {
         for param in params {
             let url_str = format!("http://{}", param.0);
             let url = Url::from_str(url_str.as_str()).unwrap();
-            let a = analyze_url(&url, Some(&domain));
+            let a = analyze_url(&url, Some(domain));
             assert_eq!(a, param.1, "Analyzing {}", param.0)
         }
     }

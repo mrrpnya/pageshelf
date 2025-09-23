@@ -4,10 +4,11 @@ use actix_web::{
     App, HttpServer, Result,
     middleware::{self, NormalizePath},
 };
+use chrono::{Datelike, Local};
 use clap::Command;
 use config::{Config, File};
 use fern::colors::{Color, ColoredLevelConfig};
-use log::debug;
+use log::{Level, debug, error, info, warn};
 use minijinja::Environment;
 use pageshelf::{
     PageSource, PageSourceFactory,
@@ -31,6 +32,13 @@ use clap::{arg, crate_authors, crate_description, crate_name, crate_version};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    println!("{} v{}", crate_name!(), crate_version!());
+    println!("Copyright {}", crate_authors!());
+    println!("Licensed under the MIT License");
+    println!("------------------------------\n");
+
+    print_seasonal_message();
+
     let cmd = Command::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!(","))
@@ -40,18 +48,30 @@ async fn main() -> std::io::Result<()> {
         //.arg(arg!(-l --log_level "Sets the logging level").required(false))
         .get_matches();
 
-    let _ = setup_logger(cmd.get_flag("debug"));
-    debug!("If you're seeing this, debug logging is enabled.");
+    if let Err(e) = setup_logger(cmd.get_flag("debug")) {
+        eprintln!("Failed to initialize logger: {}", e);
+        return Ok(()); // TODO: Use Err()
+    }
+
+    debug!("Debug logging is enabled.");
 
     let mut settings_builder = Config::builder();
     if let Some(v) = cmd.get_one::<String>("config") {
         settings_builder = settings_builder.add_source(File::with_name(v));
+    } else {
+        warn!("No configuration file was specified; Only environment variables will be used.")
     }
 
     settings_builder =
         settings_builder.add_source(config::Environment::with_prefix("page").separator("_"));
 
-    let settings = settings_builder.build().unwrap();
+    let settings = match settings_builder.build() {
+        Ok(v) => v,
+        Err(e) => {
+            error!("Failed to build config: {}", e);
+            return Ok(()); // TODO: Use Err()
+        }
+    };
 
     let config = match settings.try_deserialize::<ServerConfig>() {
         Ok(v) => v,
@@ -64,7 +84,7 @@ async fn main() -> std::io::Result<()> {
         #[cfg(feature = "forgejo")]
         ServerConfigUpstreamType::Forgejo => {
             match ForgejoProviderFactory::from_config(config.clone()) {
-                Ok(factory) => {
+                Some(factory) => {
                     #[cfg(feature = "redis")]
                     use pageshelf::provider::cache::RedisCache;
 
@@ -79,12 +99,12 @@ async fn main() -> std::io::Result<()> {
 
                         info!("Redis is enabled");
                         let factory = factory.wrap(redis);
-                        return run_server(factory.build().unwrap(), config, templates).await;
+                        return run_server(factory.build(), config, templates).await;
                     }
-                    run_server(factory.build().unwrap(), config, templates).await
+                    run_server(factory.build(), config, templates).await
                 }
-                Err(_) => {
-                    log::error!("Failed to generate Forgejo provider via configs");
+                None => {
+                    log::error!("The configuration failed to provide a valid Forgejo provider.");
                     return Ok(());
                 }
             }
@@ -97,16 +117,36 @@ async fn main() -> std::io::Result<()> {
 /* -------------------------------------------------------------------------- */
 
 fn setup_logger(debug: bool) -> Result<(), fern::InitError> {
+    let colors = ColoredLevelConfig::new()
+        .info(Color::BrightGreen)
+        .error(Color::BrightRed)
+        .warn(Color::BrightYellow)
+        .debug(Color::Magenta);
+
+    let bold_code = "\x1b[1m";
+    let reset_code = "\x1b[0m";
+
     fern::Dispatch::new()
-        .format(|out, message, record| {
-            let colors = ColoredLevelConfig::new()
-                .info(Color::BrightGreen)
-                .error(Color::BrightRed)
-                .warn(Color::BrightYellow)
-                .debug(Color::Magenta);
+        .format(move |out, message, record| {
             out.finish(format_args!(
-                "[{}] {}",
+                "[{}][{}{}{}]{} - {}",
+                Local::now().format("%H:%M:%S"),
+                if record.level() <= Level::Warn {
+                    bold_code
+                } else {
+                    ""
+                },
                 colors.color(record.level()),
+                if record.level() <= Level::Warn {
+                    reset_code
+                } else {
+                    ""
+                },
+                if debug && let Some(file) = record.file_static() {
+                    format!("[{}:{}]", file, record.line().unwrap_or(0),)
+                } else {
+                    "".to_string()
+                },
                 message
             ))
         })
@@ -142,4 +182,26 @@ async fn run_server<PS: PageSource + Sync + Send + 'static>(
     .bind(("0.0.0.0", port))?
     .run()
     .await
+}
+
+// A little seasonal message, because why not
+fn print_seasonal_message() {
+    let now = Local::now();
+
+    match (now.month(), now.day()) {
+        (3, 17) => {
+            println!("🍀 Happy Saint Patrick's Day!")
+        }
+        (5, _) => {
+            println!("🌈 Happy Pride Month!");
+            println!("❤️🧡💛💚💙💜🩷🤍🩵🖤🤎");
+        }
+        (10, 31) => {
+            println!("🎃 Happy Halloween!")
+        }
+        (12, 25) => {
+            println!("❄️ Merry Christmas!")
+        }
+        _ => {}
+    }
 }
