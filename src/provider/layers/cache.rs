@@ -300,18 +300,15 @@ impl<PS: PageSource, C: Cache> PageSource for CacheLayerSource<PS, C> {
         for domain in domains {
             let key_o = format!("domain:owner:{}", domain);
             let key_r = format!("domain:name:{}", domain);
-            if let Ok(o) = conn.get_string(&key_o).await {
-                if let Ok(r) = conn.get_string(&key_r).await {
-                    if let Ok(upstream) =
-                        self.page_at(o, r, self.default_branch().to_string()).await
-                    {
-                        info!("Cache hit! Found by cached domain.");
-                        return Ok(CachePage {
-                            upstream: RedisCachePageMerge::A(upstream),
-                            cache: self.cache.clone(),
-                        });
-                    }
-                }
+            if let Ok(o) = conn.get_string(&key_o).await
+                && let Ok(r) = conn.get_string(&key_r).await
+                && let Ok(upstream) = self.page_at(o, r, self.default_branch().to_string()).await
+            {
+                info!("Cache hit! Found by cached domain.");
+                return Ok(CachePage {
+                    upstream: RedisCachePageMerge::A(upstream),
+                    cache: self.cache.clone(),
+                });
             }
         }
         info!("Cache miss! Finding by domain...");

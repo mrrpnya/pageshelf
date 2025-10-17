@@ -10,28 +10,18 @@ use crate::{frontend::templates::TemplateServerContext, resolver::DefaultUrlReso
 /*                              Config structure                              */
 /* -------------------------------------------------------------------------- */
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum ServerConfigUpstreamType {
     #[serde(rename = "forgejo")]
+    #[default]
     Forgejo,
 }
 
-impl Default for ServerConfigUpstreamType {
-    fn default() -> Self {
-        Self::Forgejo
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum ServerConfigUpstreamMethod {
     #[serde(rename = "direct")]
+    #[default]
     Direct,
-}
-
-impl Default for ServerConfigUpstreamMethod {
-    fn default() -> Self {
-        Self::Direct
-    }
 }
 
 /// Upstream configuration for the server.

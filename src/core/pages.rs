@@ -9,8 +9,10 @@ use std::{fmt::Display, path::Path};
 
 /* -------------------------------- Constants ------------------------------- */
 
-/// The relative location in which to find page domain configuration
-const FILE_DOMAIN: &str = "/.domain";
+// TODO: Allow changing behavior regarding handing of domain files
+
+/// The relative location in which to find page domain configuration.
+pub const DOMAIN_FILE_PATH: &str = "/.domain";
 
 /* -------------------------------- Utilities ------------------------------- */
 
@@ -49,7 +51,7 @@ pub struct PageAssetLocation {
     pub asset: String,
 }
 
-/// A Page represents a site to be hosted.
+/// A Page represents a specific site to be hosted.
 pub trait Page: AssetSource {
     fn name(&self) -> &str;
     /// Branch of the Page - This allows pages to have variants.
@@ -219,7 +221,7 @@ pub trait PageSource {
                     page.branch(),
                     domains
                 );
-                let asset = page.get_asset(Path::new(FILE_DOMAIN)).await;
+                let asset = page.get_asset(Path::new(DOMAIN_FILE_PATH)).await;
 
                 if let Ok(asset) = asset {
                     info!(

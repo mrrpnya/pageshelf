@@ -14,7 +14,7 @@ pub trait PageSourceFactory: Clone {
         }
     }
 
-    fn build(&self) -> Result<Self::Source, ()>;
+    fn build(&self) -> Self::Source;
 }
 
 /// Layers over a Page Source and can modify it.
@@ -36,14 +36,9 @@ impl<F: PageSourceFactory, L: PageSourceLayer<F::Source>> PageSourceFactory
 {
     type Source = L::Source;
 
-    fn build(&self) -> Result<Self::Source, ()> {
-        let built = match self.parent.build() {
-            Ok(v) => v,
-            Err(_) => {
-                return Err(());
-            }
-        };
+    fn build(&self) -> Self::Source {
+        let built = self.parent.build();
 
-        Ok(self.layer.wrap(built))
+        self.layer.wrap(built)
     }
 }

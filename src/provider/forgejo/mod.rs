@@ -131,12 +131,12 @@ pub struct ForgejoProviderFactory {
 }
 
 impl ForgejoProviderFactory {
-    pub fn from_config(config: ServerConfig) -> Result<Self, ()> {
+    pub fn from_config(config: ServerConfig) -> Option<Self> {
         let url = match url::Url::from_str(&config.upstream.url) {
             Ok(v) => v,
             Err(e) => {
                 error!("Failed to parse Forgejo URL: {}", e);
-                return Err(());
+                return None;
             }
         };
 
@@ -144,7 +144,7 @@ impl ForgejoProviderFactory {
             Ok(v) => v,
             Err(e) => {
                 error!("Failed to create Forgejo authentication: {}", e);
-                return Err(());
+                return None;
             }
         });
 
@@ -153,7 +153,7 @@ impl ForgejoProviderFactory {
             branches.push("pages".to_string());
         }
 
-        Ok(Self {
+        Some(Self {
             forgejo: fj.clone(),
             analyzer: Arc::new(ForgejoScanner::start(
                 fj,
@@ -167,10 +167,7 @@ impl ForgejoProviderFactory {
 impl PageSourceFactory for ForgejoProviderFactory {
     type Source = ForgejoProvider;
 
-    fn build(&self) -> Result<Self::Source, ()> {
-        Ok(ForgejoProvider::new(
-            self.forgejo.clone(),
-            self.analyzer.clone(),
-        ))
+    fn build(&self) -> Self::Source {
+        ForgejoProvider::new(self.forgejo.clone(), self.analyzer.clone())
     }
 }

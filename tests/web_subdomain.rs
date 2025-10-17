@@ -16,8 +16,10 @@ async fn page_subdomain_default_user() {
         .filter_level(log::LevelFilter::Debug)
         .try_init();
 
-    let mut config = ServerConfig::default();
-    config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
+    let mut config = ServerConfig {
+        pages_urls: Some(vec![Url::from_str("https://example.domain").unwrap()]),
+        ..ServerConfig::default()
+    };
     exec_subdomain_default_user(&config).await;
     config.url = Some(Url::from_str("https://root.domain").unwrap());
     exec_subdomain_default_user(&config).await;
@@ -27,36 +29,24 @@ async fn exec_subdomain_default_user(config: &ServerConfig) {
     let path_index = Path::new("/index.html");
     let path_other = Path::new("/other.html");
     let path_long = Path::new("/my/long/path/index.html");
-    let asset_index = MemoryAsset::new_from_str("meow");
-    let asset_other = MemoryAsset::new_from_str("nya");
+    let asset_index = MemoryAsset::from("meow");
+    let asset_other = MemoryAsset::from("nya");
 
     let factory = create_example_provider_factory()
-        .with_asset(
-            "owner_1",
-            "pages",
-            "pages",
-            &path_index,
-            asset_index.clone(),
-        )
-        .with_asset(
-            "owner_1",
-            "pages",
-            "pages",
-            &path_other,
-            asset_other.clone(),
-        )
+        .with_asset("owner_1", "pages", "pages", path_index, asset_index.clone())
+        .with_asset("owner_1", "pages", "pages", path_other, asset_other.clone())
         .with_asset(
             "owner_2",
             "other_thing",
             "pages",
-            &path_index,
+            path_index,
             asset_index.clone(),
         )
-        .with_asset("owner_1", "pages", "pages", &path_long, asset_index.clone());
+        .with_asset("owner_1", "pages", "pages", path_long, asset_index.clone());
 
     let app = test::init_service(App::new().configure(move |f| {
-        let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, config.url_resolver(), None);
+        let provider = Arc::new(factory.build());
+        setup_service_config(f, config, provider, config.url_resolver(), None);
     }))
     .await;
 
@@ -130,24 +120,26 @@ async fn page_subdomain_specific() {
 
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
-    let asset_1 = MemoryAsset::new_from_str("meow");
-    let asset_2 = MemoryAsset::new_from_str("meow");
+    let asset_1 = MemoryAsset::from("meow");
+    let asset_2 = MemoryAsset::from("meow");
 
-    let mut config = ServerConfig::default();
-    config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
+    let config = ServerConfig {
+        pages_urls: Some(vec![Url::from_str("https://example.domain").unwrap()]),
+        ..ServerConfig::default()
+    };
     let factory = create_example_provider_factory()
-        .with_asset("owner_1", "pages", "pages", &path, asset_1.clone())
-        .with_asset("owner_2", "other_thing", "pages", &path, asset_2.clone())
+        .with_asset("owner_1", "pages", "pages", path, asset_1.clone())
+        .with_asset("owner_2", "other_thing", "pages", path, asset_2.clone())
         .with_asset(
             "owner_2",
             "other_thing",
             "pages",
-            &path_long,
+            path_long,
             asset_2.clone(),
         );
 
     let app = test::init_service(App::new().configure(move |f| {
-        let provider = Arc::new(factory.build().unwrap());
+        let provider = Arc::new(factory.build());
         setup_service_config(f, &config, provider, config.url_resolver(), None);
     }))
     .await;
@@ -210,10 +202,13 @@ async fn page_base_priority() {
         .filter_level(log::LevelFilter::Debug)
         .try_init();
 
-    let mut config = ServerConfig::default();
-    config.default_user = "user".to_string();
-    config.url = Some(Url::from_str("https://example.domain").unwrap());
-    config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
+    let config = ServerConfig {
+        default_user: "user".to_string(),
+        url: Some(Url::from_str("https://example.domain").unwrap()),
+        pages_urls: Some(vec![Url::from_str("https://example.domain").unwrap()]),
+        ..ServerConfig::default()
+    };
+
     exec_base_priority(&config).await;
 }
 
@@ -225,15 +220,15 @@ async fn exec_base_priority(config: &ServerConfig) {
 
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
-    let asset = MemoryAsset::new_from_str("meow");
+    let asset = MemoryAsset::from("meow");
 
     let factory = create_example_provider_factory()
-        .with_asset("user", "pages", "pages", &path, asset.clone())
-        .with_asset("user", "pages", "pages", &path_long, asset.clone());
+        .with_asset("user", "pages", "pages", path, asset.clone())
+        .with_asset("user", "pages", "pages", path_long, asset.clone());
 
     let app = test::init_service(App::new().configure(move |f| {
-        let provider = Arc::new(factory.build().unwrap());
-        setup_service_config(f, &config, provider, config.url_resolver(), None);
+        let provider = Arc::new(factory.build());
+        setup_service_config(f, config, provider, config.url_resolver(), None);
     }))
     .await;
 
