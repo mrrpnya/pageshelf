@@ -1,10 +1,17 @@
 //! Configuration schema and utilities for Pageshelf.
 
-use clap::crate_version;
+use color_eyre::{
+    Section,
+    eyre::{self, Context},
+};
+use config::Config;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::{frontend::templates::TemplateServerContext, resolver::DefaultUrlResolver};
+use crate::resolver::DefaultUrlResolver;
+
+// TODO: Should all configuration be done in this master file?
+// ? It seems like a potentially better idea to move configuration to where it's needed.
 
 /* -------------------------------------------------------------------------- */
 /*                              Config structure                              */
@@ -79,8 +86,8 @@ pub struct ServerConfig {
     pub description: String,
     #[serde(default = "default_port")]
     pub port: u16,
-    pub url: Option<Url>,
-    pub pages_urls: Option<Vec<Url>>,
+    pub domain: Option<Url>,
+    pub pages_domains: Option<Vec<Url>>,
     #[serde(default = "default_user")]
     pub default_user: String,
     #[serde(default = "default_domains_allowed")]
@@ -95,21 +102,17 @@ pub struct ServerConfig {
 }
 
 impl ServerConfig {
-    pub fn template_server_context(&self) -> TemplateServerContext {
-        TemplateServerContext {
-            name: self.name.to_string(),
-            about: self.description.to_string(),
-            url: self.url.as_ref().map(|v| v.as_str().to_string()),
-            icon_url: Some("/pages_favicon.webp".to_string()),
-            default_branch: self.upstream.default_branch.clone(),
-            version: crate_version!(),
-        }
+    pub fn from_config(config: &Config) -> Result<Self, eyre::Report> {
+        config
+            .clone()
+            .try_deserialize::<ServerConfig>()
+            .wrap_err("Failed to deserialize configuration")
+            .suggestion("Check your configuration file and/or environment variables")
     }
-
     pub fn url_resolver(&self) -> DefaultUrlResolver {
         DefaultUrlResolver::new(
-            self.url.clone(),
-            self.pages_urls.clone(),
+            self.domain.clone(),
+            self.pages_domains.clone(),
             "pages".to_string(),
             "pages".to_string(),
             self.allow_domains,
@@ -129,8 +132,8 @@ impl Default for ServerConfig {
             // General
             name: default_name(),
             description: default_description(),
-            url: None,
-            pages_urls: None,
+            domain: None,
+            pages_domains: None,
             port: default_port(),
             default_user: default_user(),
             allow_domains: default_domains_allowed(),

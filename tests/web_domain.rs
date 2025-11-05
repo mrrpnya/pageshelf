@@ -1,11 +1,13 @@
 use std::{path::Path, str::FromStr, sync::Arc};
 
-use actix_web::{App, http::header::ContentType, test};
+use actix_web::{App, http::header::ContentType, middleware::NormalizePath, test};
 use pageshelf::{
-    Asset, PageSourceFactory,
+    Asset,
     conf::ServerConfig,
-    frontend::setup_service_config,
-    provider::{memory::MemoryAsset, testing::create_example_provider_factory},
+    frontend::{DefaultFrontend, renderer::jinja::JinjaFrontendRenderer},
+    log::setup_logger,
+    provider::{memory::MemoryAsset, testing::create_example_provider},
+    server::actix::setup_service_config,
 };
 use url::Url;
 
@@ -15,17 +17,14 @@ async fn page_domain_custom() {
         allow_domains: true,
         ..ServerConfig::default()
     };
-    config.pages_urls = Some(vec![Url::from_str("https://example.domain").unwrap()]);
+    config.pages_domains = Some(vec![Url::from_str("https://example.domain").unwrap()]);
     exec_domain_custom(&config).await;
-    config.url = Some(Url::from_str("https://root.domain").unwrap());
+    config.domain = Some(Url::from_str("https://root.domain").unwrap());
     exec_domain_custom(&config).await;
 }
 
 async fn exec_domain_custom(config: &ServerConfig) {
-    let _ = env_logger::builder()
-        .is_test(true)
-        .filter_level(log::LevelFilter::Debug)
-        .try_init();
+    setup_logger(tracing::Level::DEBUG, true);
 
     let path_domains = Path::new("/.domain");
     let path_index = Path::new("/index.html");
@@ -35,7 +34,7 @@ async fn exec_domain_custom(config: &ServerConfig) {
     let asset_index = MemoryAsset::from("meow");
     let asset_other = MemoryAsset::from("meow");
 
-    let factory = create_example_provider_factory()
+    let provider = create_example_provider()
         .with_asset(
             "owner_1",
             "pages",
@@ -61,9 +60,17 @@ async fn exec_domain_custom(config: &ServerConfig) {
             asset_index.clone(),
         );
 
-    let app = test::init_service(App::new().configure(move |f| {
-        let provider = Arc::new(factory.build());
-        setup_service_config(f, config, provider, config.url_resolver(), None);
+    let resolver = config.url_resolver();
+
+    let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
+        setup_service_config(
+            f,
+            Arc::new(DefaultFrontend::new(
+                JinjaFrontendRenderer::default(),
+                resolver,
+                provider,
+            )),
+        );
     }))
     .await;
 

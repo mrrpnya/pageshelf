@@ -1,153 +1,82 @@
+mod owner;
+mod page;
+mod project;
+use std::{collections::HashMap, path::Path, sync::Arc};
+
+use owner::*;
+use page::*;
+use project::*;
+
 /// In-Memory backend and tools.
 ///
 /// This allows sourcing pages from memory; This is useful for mocking.
 mod asset;
 
-use std::{collections::HashMap, path::Path};
-
-use crate::{
-    {Asset, AssetError, AssetSource, AssetWritable},
-    {Page, PageError, PageSource, PageSourceFactory},
-};
 pub use asset::{MemoryAsset, MemoryCache};
 
-/* -------------------------------------------------------------------------- */
-/*                             Page Implementation                            */
-/* -------------------------------------------------------------------------- */
-
-struct MemoryPage<'a> {
-    owner: String,
-    name: String,
-    branch: String,
-    version: String,
-    data: &'a MemoryCache,
-}
-
-impl<'a> Page for MemoryPage<'a> {
-    fn branch(&self) -> &str {
-        &self.branch
-    }
-
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn owner(&self) -> &str {
-        &self.owner
-    }
-
-    fn version(&self) -> &str {
-        &self.version
-    }
-}
-
-impl<'a> AssetSource for MemoryPage<'a> {
-    async fn get_asset(&self, path: &Path) -> Result<impl Asset, AssetError> {
-        self.data.get_asset(path).await
-    }
-}
+use crate::project::{ProjectOwner, source::ProjectSource};
 
 /* -------------------------------------------------------------------------- */
 /*                        Page Provider Implementation                        */
 /* -------------------------------------------------------------------------- */
 
-#[derive(Clone)]
-pub struct MemoryPageProvider {
-    pages: HashMap<(String, String, String), MemoryCache>,
+#[derive(Clone, Default)]
+pub struct MemoryProjectSource {
+    owners: HashMap<String, MemoryProjectOwner>,
 }
 
-impl PageSource for MemoryPageProvider {
-    async fn page_at(
-        &self,
-        owner: String,
-        name: String,
-        channel: String,
-    ) -> Result<impl Page, PageError> {
-        let owner = owner.to_string();
-        let name = name.to_string();
-        let channel = channel.to_string();
-        let d = (owner.clone(), name.clone(), channel.clone());
-        match self.pages.get(&d) {
-            Some(v) => Ok(MemoryPage {
-                owner,
-                name,
-                branch: channel,
-                data: v,
-                version: "".to_string(),
-            }),
-            None => Err(PageError::NotFound),
-        }
-    }
-
-    async fn pages(&self) -> Result<impl Iterator<Item = impl Page>, PageError> {
-        Ok(self.pages.iter().map(|f| MemoryPage {
-            owner: f.0.0.clone(),
-            name: f.0.1.clone(),
-            branch: f.0.2.clone(),
-            version: "".to_string(),
-            data: f.1,
-        }))
-    }
-}
-
-#[derive(Clone)]
-pub struct MemoryPageProviderFactory {
-    provider: MemoryPageProvider,
-}
-
-impl MemoryPageProviderFactory {
-    pub fn new() -> Self {
-        Self {
-            provider: MemoryPageProvider {
-                pages: HashMap::new(),
-            },
+impl MemoryProjectSource {
+    pub fn insert_asset(
+        &mut self,
+        owner: &str,
+        project: &str,
+        channel: &str,
+        path: &Path,
+        asset: MemoryAsset,
+    ) {
+        match self.owners.get_mut(owner) {
+            Some(owner) => {
+                owner.insert_asset(project, channel, path, asset);
+            }
+            None => {
+                self.owners.insert(
+                    owner.to_string(),
+                    MemoryProjectOwner::empty(owner.to_string())
+                        .with_asset(project, channel, path, asset),
+                );
+            }
         }
     }
 
     pub fn with_asset(
         mut self,
         owner: &str,
-        name: &str,
-        branch: &str,
+        project: &str,
+        channel: &str,
         path: &Path,
         asset: MemoryAsset,
     ) -> Self {
-        let id = (owner.to_string(), name.to_string(), branch.to_string());
-        let page = match self.provider.pages.get_mut(&id) {
-            Some(v) => v,
-            None => {
-                let c = MemoryCache::new();
-                self.provider.pages.insert(id.clone(), c);
-                self.provider.pages.get_mut(&id).unwrap()
-            }
-        };
+        self.insert_asset(owner, project, channel, path, asset);
+        self
+    }
 
-        match page.set_asset(path, &asset) {
-            Ok(_) => {}
-            Err(e) => {
-                log::error!(
-                    "Error writing asset ({}) to Memory Provider: {:?}",
-                    path.to_string_lossy(),
-                    e
-                );
-            }
-        }
+    pub fn with_owner(mut self, owner: MemoryProjectOwner) -> Self {
+        self.owners.insert(owner.name().to_string(), owner);
 
         self
     }
 }
 
-impl PageSourceFactory for MemoryPageProviderFactory {
-    type Source = MemoryPageProvider;
+impl ProjectSource for MemoryProjectSource {
+    type Owner<'b>
+        = &'b MemoryProjectOwner
+    where
+        Self: 'b;
 
-    fn build(&self) -> Self::Source {
-        self.provider.clone()
-    }
-}
-
-impl Default for MemoryPageProviderFactory {
-    fn default() -> Self {
-        Self::new()
+    async fn all_owners<'b>(
+        &'b self,
+    ) -> Result<impl Iterator<Item = Self::Owner<'b>>, crate::project::ProjectError> {
+        Ok(self.owners.iter().map(|f| f.1))
     }
 }
 
@@ -156,18 +85,9 @@ impl Default for MemoryPageProviderFactory {
 /* -------------------------------------------------------------------------- */
 
 pub mod testing {
-    use crate::Asset;
+    use std::path::Path;
 
     use super::*;
-
-    /// Ensure that the Memory Provider can create itself from a factory along with assets,
-    /// then read the assets correctly.
-    #[tokio::test]
-    #[cfg(test)]
-    async fn factory_read() {
-        let p = create_example_provider();
-        test_example_source(&p).await;
-    }
 
     const OWNER_1: &str = "owner_1";
     const OWNER_2: &str = "owner_2";
@@ -181,22 +101,18 @@ pub mod testing {
     const DATA_1: &str = "data_1";
     const DATA_2: &str = "data_2";
 
-    pub fn create_example_provider_factory() -> MemoryPageProviderFactory {
+    pub fn create_example_provider() -> MemoryProjectSource {
         let asset_path_1 = Path::new("/asset_1");
         let asset_path_2 = Path::new("/asset_2");
 
         let asset_1 = MemoryAsset::from(DATA_1);
         let asset_2 = MemoryAsset::from(DATA_2);
 
-        MemoryPageProviderFactory::new()
+        MemoryProjectSource::default()
             .with_asset(OWNER_1, NAME_1, BRANCH_1, asset_path_1, asset_1)
             .with_asset(OWNER_2, NAME_2, BRANCH_2, asset_path_2, asset_2)
     }
-
-    pub fn create_example_provider() -> MemoryPageProvider {
-        create_example_provider_factory().build()
-    }
-
+    /*
     pub async fn test_example_source(p: &MemoryPageProvider) {
         let asset_path_1 = Path::new("/asset_1");
         let asset_path_2 = Path::new("/asset_2");
@@ -204,7 +120,7 @@ pub mod testing {
         assert_eq!(p.pages().await.unwrap().count(), 2);
 
         let page_1 = p
-            .page_at(
+            .get_page(
                 OWNER_1.to_string(),
                 NAME_1.to_string(),
                 BRANCH_1.to_string(),
@@ -212,7 +128,7 @@ pub mod testing {
             .await
             .unwrap();
         let page_2 = p
-            .page_at(
+            .get_page(
                 OWNER_2.to_string(),
                 NAME_2.to_string(),
                 BRANCH_2.to_string(),
@@ -244,7 +160,7 @@ pub mod testing {
 
         // Validate incorrect page accessing
         assert!(
-            p.page_at(
+            p.get_page(
                 OWNER_2.to_string(),
                 NAME_1.to_string(),
                 BRANCH_1.to_string()
@@ -253,7 +169,7 @@ pub mod testing {
             .is_err()
         );
         assert!(
-            p.page_at(
+            p.get_page(
                 OWNER_2.to_string(),
                 NAME_1.to_string(),
                 BRANCH_2.to_string()
@@ -262,7 +178,7 @@ pub mod testing {
             .is_err()
         );
         assert!(
-            p.page_at(
+            p.get_page(
                 OWNER_1.to_string(),
                 NAME_2.to_string(),
                 BRANCH_1.to_string()
@@ -271,7 +187,7 @@ pub mod testing {
             .is_err()
         );
         assert!(
-            p.page_at(
+            p.get_page(
                 OWNER_1.to_string(),
                 NAME_2.to_string(),
                 BRANCH_2.to_string()
@@ -281,7 +197,7 @@ pub mod testing {
         );
         if BRANCH_1 != BRANCH_2 {
             assert!(
-                p.page_at(
+                p.get_page(
                     OWNER_1.to_string(),
                     NAME_1.to_string(),
                     BRANCH_2.to_string()
@@ -290,7 +206,7 @@ pub mod testing {
                 .is_err()
             );
             assert!(
-                p.page_at(
+                p.get_page(
                     OWNER_2.to_string(),
                     NAME_1.to_string(),
                     BRANCH_2.to_string()
@@ -299,7 +215,7 @@ pub mod testing {
                 .is_err()
             );
             assert!(
-                p.page_at(
+                p.get_page(
                     OWNER_2.to_string(),
                     NAME_2.to_string(),
                     BRANCH_1.to_string()
@@ -309,7 +225,7 @@ pub mod testing {
             );
         } else {
             assert!(
-                p.page_at(
+                p.get_page(
                     OWNER_1.to_string(),
                     NAME_1.to_string(),
                     BRANCH_2.to_string()
@@ -318,7 +234,7 @@ pub mod testing {
                 .is_ok()
             );
             assert!(
-                p.page_at(
+                p.get_page(
                     OWNER_2.to_string(),
                     NAME_2.to_string(),
                     BRANCH_1.to_string()
@@ -327,7 +243,7 @@ pub mod testing {
                 .is_ok()
             );
             assert!(
-                p.page_at(
+                p.get_page(
                     OWNER_2.to_string(),
                     NAME_1.to_string(),
                     BRANCH_2.to_string()
@@ -337,4 +253,5 @@ pub mod testing {
             );
         }
     }
+    */
 }

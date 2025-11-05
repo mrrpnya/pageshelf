@@ -1,14 +1,13 @@
 use std::{
-    collections::HashMap,
     sync::{Arc, atomic::AtomicBool},
     time::{Duration, Instant},
 };
 
 use forgejo_api::{Forgejo, structs::RepoSearchQuery};
-use log::info;
 use tokio::{sync::RwLock, task::JoinHandle};
+use tracing::{Level, debug, error, info, span};
 
-use crate::provider::scanner::{ProviderScannedRepoData, ProviderScannerData, RepoMap};
+use crate::provider::scanner::{ChannelData, OwnerData, ProjectData, ProviderScannerData, RepoMap};
 
 /// Analysis on the current state of a Forgejo instance
 pub struct ForgejoScanner {
@@ -28,7 +27,7 @@ impl Drop for ForgejoScanner {
 
 impl ForgejoScanner {
     pub fn start(forgejo: Arc<Forgejo>, target_branches: Vec<String>, poll_interval: u64) -> Self {
-        let repos = Arc::new(RwLock::new(HashMap::new()));
+        let repos = Arc::new(RwLock::new(RepoMap::new()));
         let auto_scan = Arc::new(AtomicBool::new(true));
         Self {
             data: ProviderScannerData {
@@ -53,22 +52,27 @@ impl ForgejoScanner {
         repo_storage: Arc<RwLock<RepoMap>>,
         target_branches: Vec<String>,
     ) {
+        let span = span!(Level::DEBUG, "auto_scan", poll.interval = poll_interval);
+        let _span_guard = span.enter();
+
         let interval_duration = Duration::from_secs(poll_interval);
         let start = tokio::time::Instant::now() + interval_duration;
         let mut interval = tokio::time::interval_at(start, interval_duration);
 
         loop {
             if !run.load(std::sync::atomic::Ordering::SeqCst) {
-                // Loop break
                 return;
             }
 
-            println!(
-                "Forgejo auto scan initiated at: {:?}",
-                tokio::time::Instant::now()
-            );
-
             Self::update(&forgejo, repo_storage.clone(), &target_branches).await;
+            let page_count: usize;
+            {
+                let r = repo_storage.read().await;
+
+                page_count = r.page_count();
+            }
+
+            info!(page.count = page_count, "Performed automated Forgejo scan");
 
             interval.tick().await;
         }
@@ -105,7 +109,7 @@ impl ForgejoScanner {
             .await;
 
         if upstream_repos.is_err() {
-            log::error!(
+            error!(
                 "Failed to update Forgejo analysis: {}",
                 upstream_repos.unwrap_err()
             );
@@ -148,25 +152,22 @@ impl ForgejoScanner {
                 }
 
                 let version = commit.id.unwrap();
-                repos.insert(
-                    (
-                        login.to_string(),
-                        repo_name.to_string(),
-                        branch_name.to_string(),
-                    ),
-                    ProviderScannedRepoData {
+                repos.insert_owner(login.to_string(), OwnerData {});
+                repos.insert_project(&login.to_string(), repo_name.to_string(), ProjectData {});
+                repos.insert_channel(
+                    &login.to_string(),
+                    &repo_name.to_string(),
+                    branch_name.to_string(),
+                    ChannelData {
                         version: version.clone(),
                     },
                 );
 
                 update_count += 1;
 
-                log::debug!(
+                debug!(
                     "Analyzed {}/{}:{} (version {})",
-                    login,
-                    repo_name,
-                    branch_name,
-                    version
+                    login, repo_name, branch_name, version
                 )
             }
         }

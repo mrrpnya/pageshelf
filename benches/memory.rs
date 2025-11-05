@@ -2,27 +2,36 @@ use std::path::Path;
 
 use criterion::{Criterion, async_executor::AsyncStdExecutor, criterion_group, criterion_main};
 use pageshelf::{
-    provider::{MemoryPageProviderFactory, memory::MemoryAsset},
-    {Asset, AssetSource}, {PageSource, PageSourceFactory},
+    Asset, AssetSource,
+    project::{Project, ProjectOwner, source::ProjectSource},
+    provider::memory::{MemoryAsset, MemoryProjectSource},
 };
 use rand::{Rng, distr::Alphanumeric};
 
 pub fn one_page_one_file(c: &mut Criterion) {
     let owner = "spamton";
     let name = "shop";
-    let branch = "unstable";
+    let channel = "unstable";
     let path = Path::new("/neo");
 
     let asset = MemoryAsset::from("Big shot");
 
-    let provider = MemoryPageProviderFactory::new()
-        .with_asset(owner, name, branch, path, asset.clone())
-        .build();
+    let provider =
+        MemoryProjectSource::default().with_asset(owner, name, channel, path, asset.clone());
 
     let func = async || {
         let p = provider
-            .page_at(owner.to_string(), name.to_string(), branch.to_string())
+            .get_owner(owner)
             .await
+            .unwrap()
+            .unwrap()
+            .get_project(name)
+            .await
+            .unwrap()
+            .unwrap()
+            .get_channel(channel)
+            .await
+            .unwrap()
             .unwrap();
         let a = p.get_asset(path).await.unwrap();
         let b = asset.body();
@@ -37,14 +46,14 @@ pub fn one_page_one_file(c: &mut Criterion) {
 pub fn one_page_many_file(c: &mut Criterion) {
     let owner = "spamton";
     let name = "shop";
-    let branch = "unstable";
+    let channel = "unstable";
     let path = Path::new("/neo");
 
     let asset = MemoryAsset::from("Big shot");
     let asset_other = MemoryAsset::from("TV Time");
 
-    let mut factory =
-        MemoryPageProviderFactory::new().with_asset(owner, name, branch, path, asset.clone());
+    let mut provider =
+        MemoryProjectSource::default().with_asset(owner, name, channel, path, asset.clone());
 
     for _ in 0..2048 {
         let file: String = rand::rng()
@@ -54,15 +63,22 @@ pub fn one_page_many_file(c: &mut Criterion) {
             .collect();
         let file = Path::new(&file);
 
-        factory = factory.with_asset(owner, name, branch, file, asset_other.clone())
+        provider = provider.with_asset(owner, name, channel, file, asset_other.clone())
     }
-
-    let provider = factory.build();
 
     let func = async || {
         let p = provider
-            .page_at(owner.to_string(), name.to_string(), branch.to_string())
+            .get_owner(owner)
             .await
+            .unwrap()
+            .unwrap()
+            .get_project(name)
+            .await
+            .unwrap()
+            .unwrap()
+            .get_channel(channel)
+            .await
+            .unwrap()
             .unwrap();
         let a = p.get_asset(path).await.unwrap();
         let b = asset.body();

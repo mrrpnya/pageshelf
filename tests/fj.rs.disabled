@@ -1,0 +1,381 @@
+use actix_web::{
+    App,
+    http::header::ContentType,
+    middleware::NormalizePath,
+    test::{self},
+};
+use forgejo_api::{
+    Forgejo,
+    structs::{
+        CreateBranchRepoOption, CreateFileOptions, CreateRepoOption, CreateUserOption, Identity,
+        RepoGetRawFileQuery, RepoListBranchesQuery, UserSearchQuery,
+    },
+};
+use futures::{
+    StreamExt,
+    stream::{self, FuturesUnordered},
+};
+use pageshelf::{
+    Asset,
+    conf::ServerConfig,
+    ext::Normalizable,
+    frontend::{DefaultFrontend, renderer::jinja::JinjaFrontendRenderer},
+    project::layer::ProjectSourceBuilder,
+    provider::{
+        ForgejoProvider, ForgejoProviderFactory, memory::MemoryAsset,
+        testing::create_example_provider,
+    },
+    server::actix::setup_service_config,
+};
+use pageshelf::{
+    AssetSource,
+    project::{Page, Project, ProjectOwner, source::ProjectSource},
+};
+use reqwest::Client;
+use serde_json::json;
+use std::{
+    io::{self, Write},
+    path::Path,
+    str::FromStr,
+    sync::Arc,
+    thread,
+    time::Duration,
+};
+use testcontainers::{
+    ContainerAsync, GenericImage, Healthcheck, ImageExt,
+    core::{ExecCommand, IntoContainerPort, WaitFor},
+    runners::AsyncRunner,
+};
+use tokio::io::AsyncReadExt;
+use url::Url;
+
+pub struct ForgejoContainer {
+    container: ContainerAsync<GenericImage>,
+    token: String,
+    port: u16,
+}
+
+impl ForgejoContainer {
+    pub async fn with_tag(tag: &str) -> Result<Self, Box<dyn std::error::Error>> {
+        let forgejo_image = GenericImage::new("codeberg.org/forgejo/forgejo", "13")
+            .with_exposed_port(3000.tcp())
+            .with_wait_for(WaitFor::message_on_stdout("Starting new Web server"))
+            .with_env_var("FORGEJO__server__ROOT_URL", "http://0.0.0.0:3000/")
+            .with_env_var("FORGEJO__security__INSTALL_LOCK", "true")
+            .with_env_var(
+                "FORGEJO__service__ALLOW_ONLY_EXTERNAL_REGISTRATION",
+                "false",
+            );
+
+        let container = forgejo_image.start().await?;
+        let port = container.get_host_port_ipv4(3000).await?;
+        let mut exec_result = container
+        .exec(ExecCommand::new(vec![
+            "su",
+            "-c",
+            "forgejo admin user create --admin --username testuser --password testtest --email test@example.com --access-token",
+            "git"
+        ]))
+        .await?;
+
+        let mut stdout_buf = exec_result.stdout_to_vec().await?;
+        let stdout_str = String::from_utf8_lossy(&stdout_buf);
+        io::stdout().write_all(&stdout_buf)?;
+
+        let mut stderr_buf = exec_result.stderr_to_vec().await?;
+        io::stderr().write_all(&stderr_buf)?;
+
+        // Extract the access token from stdout
+        let token_line = stdout_str
+            .lines()
+            .find(|line| line.contains("Access token was successfully created"))
+            .expect("Failed to find access token line");
+
+        let token = token_line
+            .split("...")
+            .nth(1)
+            .expect("Failed to extract token")
+            .trim()
+            .to_string();
+
+        println!("Intercepted Forgejo token");
+        Ok(Self {
+            container,
+            port,
+            token,
+        })
+    }
+    pub async fn api(&self) -> Forgejo {
+        let addr = format!("http://{}:{}", "localhost", self.port);
+        let addr = Url::from_str(&addr).unwrap();
+        Forgejo::new(forgejo_api::Auth::Token(&self.token), addr).unwrap()
+    }
+
+    pub async fn write_project_source<PS: ProjectSource + 'static>(
+        &self,
+        ps: &PS,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let api = Arc::new(self.api().await);
+        let ps = Arc::new(ps);
+
+        // Step 1: Get all owners and convert to owned Vec
+        let owners = ps.all_owners().await?.collect::<Vec<_>>();
+
+        // Create a stream over owners
+        stream::iter(owners)
+            .for_each(|owner| {
+                let api = api.clone();
+                async move {
+                    let owner_name = owner.name().to_string();
+
+                    if api.user_get(&owner_name).await.is_err() {
+                        api.admin_create_user(CreateUserOption {
+                            created_at: None,
+                            email: format!("{}@example.com", &owner_name),
+                            full_name: None,
+                            login_name: Some(owner_name.clone()),
+                            must_change_password: None,
+                            password: Some("giasfclfebrehber".to_string()),
+                            restricted: None,
+                            send_notify: None,
+                            source_id: None,
+                            username: owner_name.clone(),
+                            visibility: None,
+                        })
+                        .await
+                        .unwrap();
+                    }
+
+                    // Collect projects to own them
+                    let projects = match owner.projects().await {
+                        Ok(p) => p.collect::<Vec<_>>(),
+                        Err(_) => return, // handle error as needed
+                    };
+
+                    // Stream over projects
+                    stream::iter(projects)
+                        .for_each(|project| {
+                            let api = api.clone();
+                            let owner_name = owner_name.clone();
+                            async move {
+                                let project_name = project.name().to_string();
+
+                                // Check if repo exists
+                                if api.repo_get(&owner_name, &project_name).await.is_err() {
+                                    api.create_current_user_repo(CreateRepoOption {
+                                        name: project_name.clone(),
+                                        description: Some(
+                                            "Imported from ProjectSource".to_string(),
+                                        ),
+                                        private: Some(false),
+                                        auto_init: None,
+                                        default_branch: None,
+                                        gitignores: None,
+                                        issue_labels: None,
+                                        license: None,
+                                        object_format_name: None,
+                                        readme: None,
+                                        template: None,
+                                        trust_model: None,
+                                    })
+                                    .await
+                                    .unwrap();
+                                }
+
+                                // Collect channels to own them
+                                let channels = match project.channels().await {
+                                    Ok(c) => c.collect::<Vec<_>>(),
+                                    Err(_) => return,
+                                };
+
+                                // Stream over channels
+                                stream::iter(channels)
+                                    .for_each(|channel| {
+                                        let api = api.clone();
+                                        let owner_name = owner_name.clone();
+                                        let project_name = project_name.clone();
+                                        async move {
+                                            let branch_name = channel.name().to_string();
+
+                                            if api
+                                                .repo_get_branch(
+                                                    &owner_name,
+                                                    &project_name,
+                                                    &branch_name,
+                                                )
+                                                .await
+                                                .is_err()
+                                            {
+                                                api.repo_create_branch(
+                                                    &owner_name,
+                                                    &project_name,
+                                                    CreateBranchRepoOption {
+                                                        new_branch_name: branch_name.clone(),
+                                                        old_branch_name: None,
+                                                        old_ref_name: None,
+                                                    },
+                                                )
+                                                .await
+                                                .unwrap(); // API ERR: Target couldn't be found?
+                                            }
+
+                                            if let Ok(asset_paths) = channel.asset_keys().await {
+                                                for path in asset_paths {
+                                                    if let Ok(asset) =
+                                                        channel.get_asset(Path::new(&path)).await
+                                                    {
+                                                        let path =
+                                                            Path::new(&path).normalized_relative();
+                                                        let content = asset.bytes();
+                                                        let path = path.to_str().unwrap();
+                                                        let _ = api
+                                                            .repo_create_file(
+                                                                &owner_name,
+                                                                &project_name,
+                                                                path,
+                                                                CreateFileOptions {
+                                                                    branch: Some(
+                                                                        branch_name.clone(),
+                                                                    ),
+                                                                    content: base64::encode(
+                                                                        content,
+                                                                    ),
+                                                                    message: Some(format!(
+                                                                        "Add asset {:?}",
+                                                                        path
+                                                                    )),
+                                                                    author: Some(Identity {
+                                                                        email: Some(format!(
+                                                                            "{}@example.com",
+                                                                            owner_name
+                                                                        )),
+                                                                        name: Some(
+                                                                            owner_name.clone(),
+                                                                        ),
+                                                                    }),
+                                                                    committer: None,
+                                                                    dates: None,
+                                                                    new_branch: None,
+                                                                    signoff: None,
+                                                                },
+                                                            )
+                                                            .await
+                                                            .unwrap();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    })
+                                    .await;
+                            }
+                        })
+                        .await;
+                }
+            })
+            .await;
+
+        Ok(())
+    }
+}
+
+#[tokio::test]
+async fn test_forgejo_project_and_files() -> Result<(), Box<dyn std::error::Error>> {
+    let container = ForgejoContainer::with_tag("13").await?;
+
+    let api = Arc::new(container.api().await);
+
+    let users = api
+        .user_search(UserSearchQuery {
+            page: None,
+            q: None,
+            uid: None,
+            limit: Some(9999),
+        })
+        .await
+        .unwrap();
+
+    println!(
+        "Users: {:?}",
+        users
+            .data
+            .unwrap()
+            .iter()
+            .map(|f| f.login.clone().unwrap_or("Unknown".to_string()))
+            .collect::<Vec<String>>()
+    );
+
+    let path_1 = Path::new("./404.html");
+
+    tracing::info!("test 404 path: {:?}", path_1.normalized());
+    let path_2 = Path::new("./other.html");
+
+    let asset_1 = MemoryAsset::from("meow");
+    let path = Path::new("/index.html");
+    let asset_1 = MemoryAsset::from("meow");
+    let asset_2 = MemoryAsset::from("nya");
+
+    let provider = create_example_provider()
+        .with_asset("owner_1", "name_1", "pages", path, asset_1)
+        .with_asset("owner_1", "name_1", "second", path, asset_2);
+
+    container.write_project_source(&provider).await;
+    let config = ServerConfig::default();
+    let resolver = config.url_resolver();
+
+    let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
+        setup_service_config(
+            f,
+            Arc::new(DefaultFrontend::new(
+                JinjaFrontendRenderer::default(),
+                resolver,
+                ForgejoProviderFactory::from_config_and_api(&config, api)
+                    .unwrap()
+                    .build(),
+            )),
+        );
+    }))
+    .await;
+
+    let req = test::TestRequest::get()
+        .uri("/owner_1/name_1/index.html")
+        .insert_header(ContentType::plaintext())
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status().as_u16(), 200);
+
+    let req = test::TestRequest::get()
+        .uri("/owner_1/name_1:second/index.html")
+        .insert_header(ContentType::plaintext())
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status().as_u16(), 200);
+
+    let req = test::TestRequest::get()
+        .uri("/owner_1/name_1:third/index.html")
+        .insert_header(ContentType::plaintext())
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status().as_u16(), 404);
+
+    let req = test::TestRequest::get()
+        .uri("/owner_1/name_1")
+        .insert_header(ContentType::plaintext())
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status().as_u16(), 200);
+
+    let req = test::TestRequest::get()
+        .uri("/owner_1/name_1:second")
+        .insert_header(ContentType::plaintext())
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status().as_u16(), 200);
+
+    let req = test::TestRequest::get()
+        .uri("/owner_1/name_1:third")
+        .insert_header(ContentType::plaintext())
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status().as_u16(), 404);
+    Ok(())
+}

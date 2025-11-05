@@ -1,9 +1,10 @@
 version: '3'
 services:
   pages:
+    # If 
     build: ./
     #image: ghcr.io/mrrpnya/pageshelf:canary
-    command: "pageshelf -c /config.toml"
+    command: "pageshelf serve -c /config.toml"
     restart: always
     environment:
       # Supports overriding config via environment variables:

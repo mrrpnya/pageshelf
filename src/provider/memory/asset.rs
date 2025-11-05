@@ -6,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use log::info;
+use tracing::info;
 
 use crate::{Asset, AssetError, AssetSource, AssetWritable};
 
@@ -47,6 +47,15 @@ impl From<&str> for MemoryAsset {
 impl Asset for MemoryAsset {
     fn into_bytes(self) -> Vec<u8> {
         self.contents
+    }
+    fn bytes(&self) -> &[u8] {
+        &self.contents
+    }
+}
+
+impl Asset for &MemoryAsset {
+    fn into_bytes(self) -> Vec<u8> {
+        self.contents.clone()
     }
     fn bytes(&self) -> &[u8] {
         &self.contents
@@ -100,6 +109,14 @@ impl AssetSource for MemoryCache {
             Some(v) => Ok(AssetRef::new(v)),
             None => Err(AssetError::NotFound),
         }
+    }
+
+    async fn asset_keys(&self) -> Result<impl Iterator<Item = String>, AssetError> {
+        Ok(self
+            .data
+            .keys()
+            .into_iter()
+            .map(|f| f.to_string_lossy().to_string()))
     }
 }
 

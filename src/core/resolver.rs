@@ -1,25 +1,31 @@
-use log::warn;
+use tracing::warn;
 use url::Url;
-
-use crate::{PageAssetLocation, PageLocation};
 
 use super::util::analyze_url;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum UrlResolution {
-    /// The URL pointed to a page at this location.
-    Page(PageAssetLocation),
-    // TODO: Rethink this? Should probably override the URL resolver entirely.
-    /// The URL is a built-in page.
-    BuiltIn,
-    /// The URL points to a domain.
-    External(Url),
-    /// The URL is invalid.
-    Malformed(String),
+pub enum UrlResolutionError {
+    MalformedUrl,
+    Unauthorized,
 }
 
-pub trait UrlResolver {
-    fn resolve(&self, url: Url) -> UrlResolution;
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum UrlResolution {
+    Domain {
+        domain: String,
+        asset: String,
+    },
+    Page {
+        owner: String,
+        name: String,
+        branch: String,
+        asset: String,
+    },
+    Index,
+}
+
+pub trait UrlResolver: Clone + Send + Sync {
+    fn resolve(&self, url: &Url) -> Result<UrlResolution, UrlResolutionError>;
 }
 
 #[derive(Clone)]
@@ -85,7 +91,7 @@ impl DefaultUrlResolver {
 }
 
 impl UrlResolver for DefaultUrlResolver {
-    fn resolve(&self, url: Url) -> UrlResolution {
+    fn resolve(&self, url: &Url) -> Result<UrlResolution, UrlResolutionError> {
         let host = url.host_str();
 
         let is_root = (self.page_domains.iter().count() == 0 && !self.external_enabled)
@@ -111,19 +117,17 @@ impl UrlResolver for DefaultUrlResolver {
             };
 
         match is_root {
-            true => match analyze_url(&url, None) {
+            true => match analyze_url(url, None) {
                 Some(a) => match a.owner {
-                    Some(owner) => UrlResolution::Page(PageAssetLocation {
-                        page: PageLocation {
-                            owner,
-                            name: a.repo.unwrap_or(self.default_repo.clone()),
-                            branch: a.branch.unwrap_or(self.default_branch.clone()),
-                        },
+                    Some(owner) => Ok(UrlResolution::Page {
+                        owner,
+                        name: a.repo.unwrap_or(self.default_repo.clone()),
+                        branch: a.branch.unwrap_or(self.default_branch.clone()),
                         asset: a.asset,
                     }),
-                    None => UrlResolution::BuiltIn,
+                    None => Ok(UrlResolution::Index),
                 },
-                None => UrlResolution::BuiltIn,
+                None => Err(UrlResolutionError::MalformedUrl),
             },
             false => {
                 let host = host.unwrap();
@@ -131,47 +135,46 @@ impl UrlResolver for DefaultUrlResolver {
                     Some(pds) => {
                         for pd in pds {
                             if is_in_url(pd, host) {
-                                match analyze_url(&url, Some(pd)) {
+                                match analyze_url(url, Some(pd)) {
                                     Some(a) => match a.owner {
                                         Some(owner) => {
-                                            return UrlResolution::Page(PageAssetLocation {
-                                                page: PageLocation {
-                                                    owner,
-                                                    name: a
-                                                        .repo
-                                                        .unwrap_or(self.default_repo.clone()),
-                                                    branch: a
-                                                        .branch
-                                                        .unwrap_or(self.default_branch.clone()),
-                                                },
+                                            return Ok(UrlResolution::Page {
+                                                owner,
+                                                name: a.repo.unwrap_or(self.default_repo.clone()),
+                                                branch: a
+                                                    .branch
+                                                    .unwrap_or(self.default_branch.clone()),
                                                 asset: a.asset,
                                             });
                                         }
-                                        None => {
-                                            if self.external_enabled {
-                                                return UrlResolution::External(url.clone());
-                                            } else {
-                                                drop(UrlResolution::BuiltIn);
-                                            }
-                                        }
+                                        None => return Err(UrlResolutionError::MalformedUrl),
                                     },
                                     None => {
                                         continue;
                                     }
                                 }
                             }
+                            if pd == host {
+                                return Ok(UrlResolution::Index);
+                            }
                         }
                         if self.external_enabled {
-                            UrlResolution::External(url)
+                            Ok(UrlResolution::Domain {
+                                domain: host.to_string(),
+                                asset: url.path().to_string(),
+                            })
                         } else {
-                            UrlResolution::BuiltIn
+                            Err(UrlResolutionError::Unauthorized)
                         }
                     }
                     None => {
                         if self.external_enabled {
-                            UrlResolution::External(url)
+                            Ok(UrlResolution::Domain {
+                                domain: host.to_string(),
+                                asset: url.path().to_string(),
+                            })
                         } else {
-                            UrlResolution::BuiltIn
+                            Err(UrlResolutionError::Unauthorized)
                         }
                     }
                 }
@@ -185,7 +188,6 @@ impl UrlResolver for DefaultUrlResolver {
 /* -------------------------------------------------------------------------- */
 
 fn is_in_url(url_base: &str, url: &str) -> bool {
-    log::debug!("Checking if {} ends in {}...", url, url_base);
     let s = format!(".{}", url_base);
     url.ends_with(&s)
 }
@@ -200,10 +202,7 @@ pub mod tests {
 
     use url::Url;
 
-    use crate::{
-        PageAssetLocation, PageLocation,
-        resolver::{DefaultUrlResolver, UrlResolution},
-    };
+    use crate::resolver::{DefaultUrlResolver, UrlResolution, UrlResolutionError};
 
     use super::UrlResolver;
 
@@ -218,23 +217,23 @@ pub mod tests {
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://home.domain").unwrap()),
-            UrlResolution::BuiltIn
+            r.resolve(&Url::from_str("http://home.domain").unwrap()),
+            Ok(UrlResolution::Index)
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://home.domain/").unwrap()),
-            UrlResolution::BuiltIn
+            r.resolve(&Url::from_str("http://home.domain/").unwrap()),
+            Ok(UrlResolution::Index)
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://other.domain").unwrap()),
-            UrlResolution::BuiltIn
+            r.resolve(&Url::from_str("http://other.domain").unwrap()),
+            Err(UrlResolutionError::Unauthorized)
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://pages.domain").unwrap()),
-            UrlResolution::BuiltIn
+            r.resolve(&Url::from_str("http://pages.domain").unwrap()),
+            Ok(UrlResolution::Index)
         );
 
         let r = DefaultUrlResolver::new(
@@ -246,18 +245,21 @@ pub mod tests {
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://home.domain").unwrap()),
-            UrlResolution::BuiltIn
-        );
-
-        assert_ne!(
-            r.resolve(Url::from_str("http://other.domain").unwrap()),
-            UrlResolution::BuiltIn
+            r.resolve(&Url::from_str("http://home.domain").unwrap()),
+            Ok(UrlResolution::Index)
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://pages.domain").unwrap()),
-            UrlResolution::External(Url::from_str("http://pages.domain").unwrap())
+            r.resolve(&Url::from_str("http://other.domain").unwrap()),
+            Ok(UrlResolution::Domain {
+                domain: "other.domain".to_string(),
+                asset: "/".to_string()
+            })
+        );
+
+        assert_eq!(
+            r.resolve(&Url::from_str("http://pages.domain").unwrap()),
+            Ok(UrlResolution::Index)
         );
     }
 
@@ -273,20 +275,18 @@ pub mod tests {
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://home.domain/nya").unwrap()),
-            UrlResolution::Page(PageAssetLocation {
-                page: PageLocation {
-                    owner: "nya".to_string(),
-                    name: "pages".to_string(),
-                    branch: "pages".to_string()
-                },
+            r.resolve(&Url::from_str("http://home.domain/nya").unwrap()),
+            Ok(UrlResolution::Page {
+                owner: "nya".to_string(),
+                name: "pages".to_string(),
+                branch: "pages".to_string(),
                 asset: "/".to_string()
             })
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://other.domain/nya").unwrap()),
-            UrlResolution::BuiltIn
+            r.resolve(&Url::from_str("http://other.domain/nya").unwrap()),
+            Err(crate::resolver::UrlResolutionError::Unauthorized)
         );
     }
 
@@ -296,25 +296,21 @@ pub mod tests {
             DefaultUrlResolver::new(None, None, "pages".to_string(), "pages".to_string(), false);
 
         assert_eq!(
-            r.resolve(Url::from_str("http://home.domain/nya").unwrap()),
-            UrlResolution::Page(PageAssetLocation {
-                page: PageLocation {
-                    owner: "nya".to_string(),
-                    name: "pages".to_string(),
-                    branch: "pages".to_string()
-                },
+            r.resolve(&Url::from_str("http://home.domain/nya").unwrap()),
+            Ok(UrlResolution::Page {
+                owner: "nya".to_string(),
+                name: "pages".to_string(),
+                branch: "pages".to_string(),
                 asset: "/".to_string()
             })
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://other.domain/nya").unwrap()),
-            UrlResolution::Page(PageAssetLocation {
-                page: PageLocation {
-                    owner: "nya".to_string(),
-                    name: "pages".to_string(),
-                    branch: "pages".to_string()
-                },
+            r.resolve(&Url::from_str("http://other.domain/nya").unwrap()),
+            Ok(UrlResolution::Page {
+                owner: "nya".to_string(),
+                name: "pages".to_string(),
+                branch: "pages".to_string(),
                 asset: "/".to_string()
             })
         );
@@ -331,20 +327,18 @@ pub mod tests {
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://nya.home.domain").unwrap()),
-            UrlResolution::Page(PageAssetLocation {
-                page: PageLocation {
-                    owner: "nya".to_string(),
-                    name: "pages".to_string(),
-                    branch: "pages".to_string()
-                },
+            r.resolve(&Url::from_str("http://nya.home.domain").unwrap()),
+            Ok(UrlResolution::Page {
+                owner: "nya".to_string(),
+                name: "pages".to_string(),
+                branch: "pages".to_string(),
                 asset: "/".to_string()
             })
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://home.domain").unwrap()),
-            UrlResolution::BuiltIn
+            r.resolve(&Url::from_str("http://home.domain").unwrap()),
+            Ok(UrlResolution::Index)
         );
     }
 
@@ -359,13 +353,16 @@ pub mod tests {
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://home.domain").unwrap()),
-            UrlResolution::External(Url::from_str("http://home.domain").unwrap())
+            r.resolve(&Url::from_str("http://home.domain").unwrap()),
+            Ok(UrlResolution::Index)
         );
 
         assert_eq!(
-            r.resolve(Url::from_str("http://other.domain").unwrap()),
-            UrlResolution::External(Url::from_str("http://other.domain").unwrap())
+            r.resolve(&Url::from_str("http://other.domain").unwrap()),
+            Ok(UrlResolution::Domain {
+                domain: "other.domain".to_string(),
+                asset: "/".to_string()
+            })
         );
     }
 }

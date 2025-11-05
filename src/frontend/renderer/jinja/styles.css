@@ -1,10 +1,78 @@
-body, html {
+body,
+html {
     background-color: #171e26;
     margin: 0;
     margin-top: 0;
 }
 
-a, p, h1, h2, h3, h4, h5, h6 {
+.error-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    text-align: center;
+    min-height: 60vh;
+    padding: 2rem 1rem;
+}
+
+.error-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.error-title {
+    font-family: monospace;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.error-code {
+    font-weight: bold;
+}
+
+.error-details {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    color: #AAA;
+}
+
+/* Error info sections */
+.error-note,
+.error-suggestion {
+    text-align: left;
+    margin: 1.5rem auto;
+    background-color: #00000033;
+    color: white;
+    border-left: 4px solid #40e0d0;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.error-note h2,
+.error-suggestion h2 {
+    margin-top: 0;
+    color: #008b8b;
+    font-size: 1.1rem;
+}
+
+
+@media (max-width: 600px) {
+    .error-title {
+        font-size: 1.5rem;
+    }
+
+    .error-content {
+        padding: 0 0.5rem;
+    }
+}
+
+a,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     color: white;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: 400;

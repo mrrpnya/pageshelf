@@ -1,27 +1,26 @@
 use std::{path::Path, str::FromStr, sync::Arc};
 
-use actix_web::{App, http::header::ContentType, test};
+use actix_web::{App, http::header::ContentType, middleware::NormalizePath, test};
 use pageshelf::{
-    Asset, PageSourceFactory,
+    Asset,
     conf::ServerConfig,
-    frontend::setup_service_config,
-    provider::{memory::MemoryAsset, testing::create_example_provider_factory},
+    frontend::{DefaultFrontend, renderer::jinja::JinjaFrontendRenderer},
+    log::setup_logger,
+    provider::{memory::MemoryAsset, testing::create_example_provider},
+    server::actix::setup_service_config,
 };
 use url::Url;
 
 #[tokio::test]
 async fn page_subdomain_default_user() {
-    let _ = env_logger::builder()
-        .is_test(true)
-        .filter_level(log::LevelFilter::Debug)
-        .try_init();
+    setup_logger(tracing::Level::DEBUG, true);
 
     let mut config = ServerConfig {
-        pages_urls: Some(vec![Url::from_str("https://example.domain").unwrap()]),
+        pages_domains: Some(vec![Url::from_str("https://example.domain").unwrap()]),
         ..ServerConfig::default()
     };
     exec_subdomain_default_user(&config).await;
-    config.url = Some(Url::from_str("https://root.domain").unwrap());
+    config.domain = Some(Url::from_str("https://root.domain").unwrap());
     exec_subdomain_default_user(&config).await;
 }
 
@@ -32,7 +31,7 @@ async fn exec_subdomain_default_user(config: &ServerConfig) {
     let asset_index = MemoryAsset::from("meow");
     let asset_other = MemoryAsset::from("nya");
 
-    let factory = create_example_provider_factory()
+    let provider = create_example_provider()
         .with_asset("owner_1", "pages", "pages", path_index, asset_index.clone())
         .with_asset("owner_1", "pages", "pages", path_other, asset_other.clone())
         .with_asset(
@@ -44,9 +43,17 @@ async fn exec_subdomain_default_user(config: &ServerConfig) {
         )
         .with_asset("owner_1", "pages", "pages", path_long, asset_index.clone());
 
-    let app = test::init_service(App::new().configure(move |f| {
-        let provider = Arc::new(factory.build());
-        setup_service_config(f, config, provider, config.url_resolver(), None);
+    let resolver = config.url_resolver();
+
+    let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
+        setup_service_config(
+            f,
+            Arc::new(DefaultFrontend::new(
+                JinjaFrontendRenderer::default(),
+                resolver,
+                provider,
+            )),
+        );
     }))
     .await;
 
@@ -113,10 +120,7 @@ async fn exec_subdomain_default_user(config: &ServerConfig) {
 
 #[tokio::test]
 async fn page_subdomain_specific() {
-    let _ = env_logger::builder()
-        .is_test(true)
-        .filter_level(log::LevelFilter::Debug)
-        .try_init();
+    setup_logger(tracing::Level::DEBUG, true);
 
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
@@ -124,10 +128,10 @@ async fn page_subdomain_specific() {
     let asset_2 = MemoryAsset::from("meow");
 
     let config = ServerConfig {
-        pages_urls: Some(vec![Url::from_str("https://example.domain").unwrap()]),
+        pages_domains: Some(vec![Url::from_str("https://example.domain").unwrap()]),
         ..ServerConfig::default()
     };
-    let factory = create_example_provider_factory()
+    let provider = create_example_provider()
         .with_asset("owner_1", "pages", "pages", path, asset_1.clone())
         .with_asset("owner_2", "other_thing", "pages", path, asset_2.clone())
         .with_asset(
@@ -138,9 +142,17 @@ async fn page_subdomain_specific() {
             asset_2.clone(),
         );
 
-    let app = test::init_service(App::new().configure(move |f| {
-        let provider = Arc::new(factory.build());
-        setup_service_config(f, &config, provider, config.url_resolver(), None);
+    let resolver = config.url_resolver();
+
+    let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
+        setup_service_config(
+            f,
+            Arc::new(DefaultFrontend::new(
+                JinjaFrontendRenderer::default(),
+                resolver,
+                provider,
+            )),
+        );
     }))
     .await;
 
@@ -197,15 +209,12 @@ async fn page_subdomain_specific() {
 
 #[tokio::test]
 async fn page_base_priority() {
-    let _ = env_logger::builder()
-        .is_test(true)
-        .filter_level(log::LevelFilter::Debug)
-        .try_init();
+    setup_logger(tracing::Level::DEBUG, true);
 
     let config = ServerConfig {
         default_user: "user".to_string(),
-        url: Some(Url::from_str("https://example.domain").unwrap()),
-        pages_urls: Some(vec![Url::from_str("https://example.domain").unwrap()]),
+        domain: Some(Url::from_str("https://example.domain").unwrap()),
+        pages_domains: Some(vec![Url::from_str("https://example.domain").unwrap()]),
         ..ServerConfig::default()
     };
 
@@ -213,22 +222,27 @@ async fn page_base_priority() {
 }
 
 async fn exec_base_priority(config: &ServerConfig) {
-    let _ = env_logger::builder()
-        .is_test(true)
-        .filter_level(log::LevelFilter::Debug)
-        .try_init();
+    setup_logger(tracing::Level::DEBUG, true);
 
     let path = Path::new("/index.html");
     let path_long = Path::new("/my/long/path/index.html");
     let asset = MemoryAsset::from("meow");
 
-    let factory = create_example_provider_factory()
+    let provider = create_example_provider()
         .with_asset("user", "pages", "pages", path, asset.clone())
         .with_asset("user", "pages", "pages", path_long, asset.clone());
 
-    let app = test::init_service(App::new().configure(move |f| {
-        let provider = Arc::new(factory.build());
-        setup_service_config(f, config, provider, config.url_resolver(), None);
+    let resolver = config.url_resolver();
+
+    let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
+        setup_service_config(
+            f,
+            Arc::new(DefaultFrontend::new(
+                JinjaFrontendRenderer::default(),
+                resolver,
+                provider,
+            )),
+        );
     }))
     .await;
 

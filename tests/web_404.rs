@@ -1,27 +1,37 @@
 use std::{path::Path, sync::Arc};
 
 use actix_web::{App, http::header::ContentType, middleware::NormalizePath, test};
+use pageshelf::ext::Normalizable;
 use pageshelf::{
+    Asset, AssetSource,
     conf::ServerConfig,
-    frontend::setup_service_config,
-    provider::{memory::MemoryAsset, testing::create_example_provider_factory},
-    {Asset, AssetSource}, {PageSource, PageSourceFactory},
+    frontend::{DefaultFrontend, renderer::jinja::JinjaFrontendRenderer},
+    log::setup_logger,
+    project::source::ProjectSource,
+    provider::memory::{MemoryAsset, testing::create_example_provider},
+    server::actix::setup_service_config,
 };
+use tracing::info;
 
 #[tokio::test]
 async fn page_server_404() {
-    let _ = env_logger::builder()
-        .is_test(true)
-        .filter_level(log::LevelFilter::Debug)
-        .try_init();
+    setup_logger(tracing::Level::DEBUG, true);
 
-    let factory = create_example_provider_factory();
+    let factory = create_example_provider();
 
     let config = ServerConfig::default();
+    let resolver = config.url_resolver();
 
     let app = test::init_service(App::new().configure(move |f| {
-        let provider = Arc::new(factory.build());
-        setup_service_config(f, &config, provider, config.url_resolver(), None);
+        let provider = factory;
+        setup_service_config(
+            f,
+            Arc::new(DefaultFrontend::new(
+                JinjaFrontendRenderer::default(),
+                resolver,
+                provider,
+            )),
+        );
     }))
     .await;
 
@@ -36,49 +46,30 @@ async fn page_server_404() {
 /// Verify that custom 404s work
 #[tokio::test]
 async fn page_custom_404() {
-    let _ = env_logger::builder()
-        .is_test(true)
-        .filter_level(log::LevelFilter::Debug)
-        .try_init();
+    setup_logger(tracing::Level::DEBUG, true);
 
-    let path_1 = Path::new("/404.html");
-    let path_2 = Path::new("/other.html");
+    let path_1 = Path::new("./404.html");
+
+    info!("test 404 path: {:?}", path_1.normalized());
+    let path_2 = Path::new("./other.html");
 
     let asset_1 = MemoryAsset::from("meow");
 
     let config = ServerConfig::default();
-    let factory = create_example_provider_factory()
+    let resolver = config.url_resolver();
+    let provider = create_example_provider()
         .with_asset("owner_1", "name_1", "pages", path_2, asset_1.clone())
         .with_asset("owner_1", "name_1", "with_404", path_1, asset_1.clone());
 
-    let provider = factory.build();
-    assert!(
-        provider
-            .page_at(
-                "owner_1".to_string(),
-                "name_1".to_string(),
-                "pages".to_string()
-            )
-            .await
-            .is_ok()
-    );
-    assert!(
-        provider
-            .page_at(
-                "owner_1".to_string(),
-                "name_1".to_string(),
-                "with_404".to_string()
-            )
-            .await
-            .unwrap()
-            .get_asset(path_1)
-            .await
-            .is_ok()
-    );
-
     let app = test::init_service(App::new().wrap(NormalizePath::trim()).configure(move |f| {
-        let provider = Arc::new(factory.build());
-        setup_service_config(f, &config, provider, config.url_resolver(), None);
+        setup_service_config(
+            f,
+            Arc::new(DefaultFrontend::new(
+                JinjaFrontendRenderer::default(),
+                resolver,
+                provider,
+            )),
+        );
     }))
     .await;
 

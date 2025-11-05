@@ -1,49 +1,28 @@
-mod asset_direct;
+//! Forgejo provider module; Allows integration with Forgejo instances.
+//! For more information about Forgejo, see: https://forgejo.org/
+
+mod owner;
+mod page;
+mod project;
 mod scanner;
 
-use std::{path::Path, str::FromStr, sync::Arc};
+use std::{collections::HashMap, path::Path, str::FromStr, sync::Arc};
 
 use crate::{
+    Asset, AssetError, AssetSource,
     conf::ServerConfig,
-    {Asset, AssetError, AssetSource}, {Page, PageError, PageSource, PageSourceFactory},
+    project::{
+        Page, ProjectError, ProjectOwner, layer::ProjectSourceBuilder, source::ProjectSource,
+    },
+    provider::forgejo::{owner::ForgejoProjectOwner, project::ForgejoProject},
 };
 use forgejo_api::{Auth, Forgejo};
-use log::{error, warn};
 use scanner::ForgejoScanner;
-
-use asset_direct::ForgejoDirectReadStorage;
+use tracing::{error, warn};
 
 pub struct ForgejoProvider {
     forgejo: Arc<Forgejo>,
     analyzer: Arc<ForgejoScanner>,
-}
-
-struct ForgejoPage<'a> {
-    storage: ForgejoDirectReadStorage<'a>,
-}
-
-impl<'a> Page for ForgejoPage<'a> {
-    fn name(&self) -> &str {
-        self.storage.repo()
-    }
-
-    fn branch(&self) -> &str {
-        self.storage.branch()
-    }
-
-    fn owner(&self) -> &str {
-        self.storage.owner()
-    }
-
-    fn version(&self) -> &str {
-        self.storage.version()
-    }
-}
-
-impl<'a> AssetSource for ForgejoPage<'a> {
-    async fn get_asset(&self, path: &Path) -> Result<impl Asset, AssetError> {
-        self.storage.get_asset(path).await
-    }
 }
 
 impl ForgejoProvider {
@@ -52,71 +31,44 @@ impl ForgejoProvider {
     }
 }
 
-impl PageSource for ForgejoProvider {
-    async fn page_at(
-        &self,
-        owner: String,
-        name: String,
-        channel: String,
-    ) -> Result<impl Page, PageError> {
-        if !self
-            .analyzer
-            .data
-            .target_branches
-            .iter()
-            .any(|f| f == &channel)
+impl ProjectSource for ForgejoProvider {
+    type Owner<'a> = ForgejoProjectOwner;
+
+    async fn all_owners<'a>(
+        &'a self,
+    ) -> Result<impl Iterator<Item = Self::Owner<'a>>, ProjectError> {
+        let mut owners: HashMap<String, ()> = HashMap::new();
+
         {
-            warn!(
-                "Failed to access a Forgejo page: The branch {} is not in the list of accepted branches",
-                channel
-            );
-            warn!(
-                "Accepted branches are [{}]",
-                self.analyzer.data.target_branches.join(", ")
-            );
-            return Err(PageError::NotFound);
-        }
+            let repos = self.analyzer.data.repos.read().await;
 
-        let repos = self.analyzer.data.repos.read().await;
-
-        match repos.get(&(owner.clone(), name.clone(), channel.clone())) {
-            Some(v) => Ok(ForgejoPage {
-                storage: ForgejoDirectReadStorage::new(
-                    &self.forgejo,
-                    owner.to_string(),
-                    name.to_string(),
-                    channel.to_string(),
-                    v.version.clone(),
-                ),
-            }),
-            None => {
-                error!(
-                    "Failed to find Forgejo repository at {}/{}:{}",
-                    owner, name, channel
-                );
-                Err::<ForgejoPage, PageError>(PageError::ProviderError)
+            for k in repos.owners.keys() {
+                owners.insert(k.to_string(), ());
             }
         }
+
+        let owners = owners.into_keys();
+
+        Ok(owners.map(|f| {
+            ForgejoProjectOwner::new(f.to_string(), self.forgejo.clone(), self.analyzer.clone())
+        }))
     }
 
-    async fn pages(&self) -> Result<impl Iterator<Item = impl Page>, PageError> {
-        let repos = self.analyzer.data.repos.read().await;
-
-        let mut pages: Vec<ForgejoPage> = vec![];
-
-        for repo in repos.keys() {
-            pages.push(ForgejoPage {
-                storage: ForgejoDirectReadStorage::new(
-                    &self.forgejo,
-                    repo.0.to_string(),
-                    repo.1.to_string(),
-                    repo.2.to_string(),
-                    repos[repo].version.clone(),
-                ),
-            });
+    async fn get_owner<'a>(&'a self, name: &str) -> Result<Option<Self::Owner<'a>>, ProjectError> {
+        let owner: bool;
+        {
+            let repos = self.analyzer.data.repos.read().await;
+            owner = repos.contains_owner(name);
         }
 
-        Ok(pages.into_iter())
+        match owner {
+            true => Ok(Some(ForgejoProjectOwner::new(
+                name.to_string(),
+                self.forgejo.clone(),
+                self.analyzer.clone(),
+            ))),
+            false => Ok(None),
+        }
     }
 }
 
@@ -131,7 +83,7 @@ pub struct ForgejoProviderFactory {
 }
 
 impl ForgejoProviderFactory {
-    pub fn from_config(config: ServerConfig) -> Option<Self> {
+    pub fn from_config(config: &ServerConfig) -> Option<Self> {
         let url = match url::Url::from_str(&config.upstream.url) {
             Ok(v) => v,
             Err(e) => {
@@ -139,8 +91,7 @@ impl ForgejoProviderFactory {
                 return None;
             }
         };
-
-        let fj = Arc::new(match Forgejo::new(Auth::None, url.clone()) {
+        let forgejo = Arc::new(match Forgejo::new(Auth::None, url.clone()) {
             Ok(v) => v,
             Err(e) => {
                 error!("Failed to create Forgejo authentication: {}", e);
@@ -148,15 +99,19 @@ impl ForgejoProviderFactory {
             }
         });
 
+        Self::from_config_and_api(config, forgejo)
+    }
+
+    pub fn from_config_and_api(config: &ServerConfig, forgejo: Arc<Forgejo>) -> Option<Self> {
         let mut branches = config.upstream.branches.clone();
         if branches.is_empty() {
             branches.push("pages".to_string());
         }
 
         Some(Self {
-            forgejo: fj.clone(),
+            forgejo: forgejo.clone(),
             analyzer: Arc::new(ForgejoScanner::start(
-                fj,
+                forgejo,
                 branches,
                 config.upstream.poll_interval.unwrap_or(240),
             )),
@@ -164,7 +119,7 @@ impl ForgejoProviderFactory {
     }
 }
 
-impl PageSourceFactory for ForgejoProviderFactory {
+impl ProjectSourceBuilder for ForgejoProviderFactory {
     type Source = ForgejoProvider;
 
     fn build(&self) -> Self::Source {

@@ -1,14 +1,17 @@
 //! Page Source factories offer a way of manipulating the output of a Page Source,
 //! or efficiently instantiating multiple Page Sources.
 
-use super::PageSource;
+use crate::project::source::ProjectSource;
 
 /// Offers an impl-agnostic of creating Page Sources.
-pub trait PageSourceFactory: Clone {
-    type Source: PageSource;
+pub trait ProjectSourceBuilder: Clone {
+    type Source: ProjectSource;
 
-    fn wrap<L: PageSourceLayer<Self::Source>>(self, layer: L) -> PageSourceFactoryLayer<Self, L> {
-        PageSourceFactoryLayer {
+    fn wrap<L: ProjectSourceLayer<Self::Source>>(
+        self,
+        layer: L,
+    ) -> ProjectSourceBuilderLayer<Self, L> {
+        ProjectSourceBuilderLayer {
             parent: self,
             layer,
         }
@@ -19,20 +22,20 @@ pub trait PageSourceFactory: Clone {
 
 /// Layers over a Page Source and can modify it.
 /// You could, for instance, create a blacklist that won't accept certain queries.
-pub trait PageSourceLayer<PS: PageSource>: Clone {
-    type Source: PageSource;
+pub trait ProjectSourceLayer<PS: ProjectSource>: Clone {
+    type Source: ProjectSource;
 
     fn wrap(&self, page_source: PS) -> Self::Source;
 }
 
 #[derive(Clone)]
-pub struct PageSourceFactoryLayer<F: PageSourceFactory, L: PageSourceLayer<F::Source>> {
+pub struct ProjectSourceBuilderLayer<F: ProjectSourceBuilder, L: ProjectSourceLayer<F::Source>> {
     parent: F,
     layer: L,
 }
 
-impl<F: PageSourceFactory, L: PageSourceLayer<F::Source>> PageSourceFactory
-    for PageSourceFactoryLayer<F, L>
+impl<F: ProjectSourceBuilder, L: ProjectSourceLayer<F::Source>> ProjectSourceBuilder
+    for ProjectSourceBuilderLayer<F, L>
 {
     type Source = L::Source;
 

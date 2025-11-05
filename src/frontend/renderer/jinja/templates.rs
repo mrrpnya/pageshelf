@@ -1,7 +1,7 @@
-/// Utilities for handling [MiniJinja](https://docs.rs/minijinja/latest/minijinja/) templates.
-use log::{error, info};
 use minijinja::Environment;
 use serde::{Deserialize, Serialize};
+/// Utilities for handling [MiniJinja](https://docs.rs/minijinja/latest/minijinja/) templates.
+use tracing::{debug, error};
 
 /* -------------------------------------------------------------------------- */
 /*                           Known page identifiers                           */
@@ -16,27 +16,29 @@ pub const TEMPLATE_INDEX: &str = "index.html";
 /*                             Rendering contexts                             */
 /* -------------------------------------------------------------------------- */
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct TemplateServerContext {
     pub name: String,
     pub about: String,
-    pub url: Option<String>,
+    pub domain: Option<String>,
     pub icon_url: Option<String>,
     pub default_branch: String,
     pub version: &'static str,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct TemplatePageContext {
-    pub owner: String,
-    pub repo: String,
+pub struct TemplatePageContext<'a> {
+    pub owner: &'a str,
+    pub repo: &'a str,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct TemplateErrorContext {
-    pub code: u16,
-    pub message: String,
-    pub about: String,
+pub struct TemplateErrorContext<'a> {
+    pub code: Option<u16>,
+    pub summary: Option<&'a str>,
+    pub details: Option<&'a str>,
+    pub suggestions: Option<Vec<&'a str>>,
+    pub notes: Option<Vec<&'a str>>,
 }
 
 /* -------------------------------------------------------------------------- */
@@ -48,7 +50,7 @@ pub struct TemplateErrorContext {
 fn checked_add_template<'a>(env: &mut Environment<'a>, entry: &'a str, data: &'a str) {
     match env.add_template(entry, data) {
         Ok(_) => {
-            info!("Added template {}", entry)
+            debug!("Added template {}", entry)
         }
         Err(e) => {
             error!("Error adding template for \"{}\": {}", entry, e)
@@ -58,7 +60,7 @@ fn checked_add_template<'a>(env: &mut Environment<'a>, entry: &'a str, data: &'a
 
 /// Generates a MiniJinja environment from built-in resources.
 /// This will include various pages off the bat.
-pub fn templates_from_builtin<'a>() -> Environment<'a> {
+pub fn env_from_builtin() -> Environment<'static> {
     let mut env = Environment::new();
 
     // Styles

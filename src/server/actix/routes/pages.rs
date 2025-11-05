@@ -4,12 +4,16 @@ use std::{path::Path, str::FromStr};
 use actix_web::{HttpResponse, http::StatusCode, web};
 use log::{debug, error, info};
 use mime_guess::Mime;
-use minijinja::context;
 
 use crate::{
-    Asset, AssetSource, PageSource, RoutingState,
-    frontend::templates::{TEMPLATE_ERROR, TemplateErrorContext, TemplatePageContext},
+    Asset, AssetSource,
+    frontend::{
+        Frontend,
+        renderer::{FrontendErrorInfo, FrontendRenderer},
+    },
+    page::source::PageSource,
     resolver::UrlResolver,
+    server::actix::routes::RoutingState,
 };
 
 /* -------------------------------------------------------------------------- */
@@ -19,39 +23,31 @@ use crate::{
 /// Attempts to get a Page, given parameters.
 ///
 /// Will result in a 200 OK response if successful, otherwise will check for index or 404.
-pub async fn get_page_response<'a, PS: PageSource, UR: UrlResolver>(
-    data: &web::Data<RoutingState<'a, PS, UR>>,
-    owner: Option<&str>,
-    repo: Option<&str>,
-    channel: Option<&str>,
+pub async fn get_page_response<PS: PageSource, UR: UrlResolver, RD: FrontendRenderer>(
+    data: &web::Data<RoutingState<PS, UR, RD>>,
+    owner: &str,
+    repo: &str,
+    branch: &str,
     file: &Path,
 ) -> HttpResponse {
-    let owner = owner.unwrap_or(data.config.default_user.as_str());
-    let repo = repo.unwrap_or("pages");
-
-    match channel {
-        Some(v) => info!("Accessing page {}/{} (Branch \"{}\")...", owner, repo, v),
-        None => info!("Accessing page {}/{} (No specified branch)...", owner, repo),
-    }
-
     let primary = match file.is_dir() {
         false => {
             let buf = file;
-            get_page_response_raw(data, owner, repo, channel, buf, 200).await
+            get_page_response_raw(data, owner, repo, branch, buf, 200).await
         }
         true => {
             let file = file.join("index.html");
-            get_page_response_raw(data, owner, repo, channel, &file, 200).await
+            get_page_response_raw(data, owner, repo, branch, &file, 200).await
         }
     };
     if primary.1 == 404 {
         let p = file.join("./index.html");
         debug!("404'd, trying to see if there's an index here...");
-        let secondary = get_page_response_raw(data, owner, repo, channel, &p, 200).await;
+        let secondary = get_page_response_raw(data, owner, repo, branch, &p, 200).await;
 
         if secondary.1 == 404 {
             debug!("404'd, trying to see if there's a custom 404 here...");
-            return get_page_response_raw(data, owner, repo, channel, Path::new("./404.html"), 404)
+            return get_page_response_raw(data, owner, repo, branch, Path::new("./404.html"), 404)
                 .await
                 .0;
         }
@@ -63,21 +59,14 @@ pub async fn get_page_response<'a, PS: PageSource, UR: UrlResolver>(
 /// Get a page directly as a response, without checking for fallbacks.
 ///
 /// Also returns the status as a u16.
-pub async fn get_page_response_raw<'a, PS: PageSource, UR: UrlResolver>(
-    data: &web::Data<RoutingState<'a, PS, UR>>,
+pub async fn get_page_response_raw<F: Frontend>(
+    data: &web::Data<RoutingState<F>>,
     owner: &str,
     repo: &str,
-    channel: Option<&str>,
+    branch: &str,
     file: &Path,
     ok_code: u16,
 ) -> (HttpResponse, u16) {
-    /* ---------------------------- Input Processing ---------------------------- */
-
-    let branch = match channel {
-        Some(v) => v,
-        None => &data.config.upstream.default_branch,
-    };
-
     /* ------------------------------- Page Query ------------------------------- */
 
     let page = match data
@@ -87,29 +76,16 @@ pub async fn get_page_response_raw<'a, PS: PageSource, UR: UrlResolver>(
     {
         Ok(v) => v,
         Err(e) => {
-            let tp = data.jinja.get_template(TEMPLATE_ERROR).unwrap();
             error!(
                 "Failed to find page (owner: {}, name: {}, branch: {}): {}",
                 owner, repo, branch, e
             );
-            return (
-                HttpResponse::NotFound().content_type("text/html").body(
-                    tp.render(context! {
-                        server => data.config.template_server_context(),
-                        page => TemplatePageContext {
-                            owner: repo.to_string(),
-                            repo: owner.to_string()
-                        },
-                        error => TemplateErrorContext {
-                            code: 404,
-                            message: format!("Page not found - {:?}", e),
-                            about: "Failed to find the page you were looking for.".to_string()
-                        }
-                    })
-                    .unwrap(),
-                ),
-                404,
-            );
+            let info = FrontendErrorInfo::page_error(&e)
+                .with_owner(owner)
+                .with_repo(repo)
+                .with_branch(branch);
+            let render = data.renderer.render_error::<HttpResponse>(&info);
+            return (render, 404);
         }
     };
 

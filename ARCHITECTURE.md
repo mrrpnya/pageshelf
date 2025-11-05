@@ -1,5 +1,7 @@
 # Architecture
 
+Needs an update.
+
 ## Table of Contents
 
 - [Architecture](#architecture)
@@ -12,6 +14,8 @@
     - [`src/frontend`](#srcfrontend)
 
 ## Terminology
+
+<!-- TODO: Refine this -->
 
 - Owner: A user, who is able to create Pages.
 - Page: A user-created site, composed of Assets that can be queried.

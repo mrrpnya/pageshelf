@@ -10,6 +10,7 @@ pub enum AssetError {
     ProviderError,
     /// Unable to interpret the data of an asset in the desired manner
     CannotInterpret,
+    NotImplemented,
 }
 
 /// Represents a file that can be found in a page.
@@ -104,10 +105,27 @@ pub trait Asset {
     }
 }
 
-/// A trait that allows finding assets.
+/// A trait that allows finding assets
 pub trait AssetSource {
     #[allow(async_fn_in_trait)]
     async fn get_asset(&self, path: &Path) -> Result<impl Asset, AssetError>;
+    async fn get_first_asset_in(&self, paths: &[&Path]) -> Result<(usize, impl Asset), AssetError> {
+        let mut idx = 0;
+        for path in paths {
+            match self.get_asset(path).await {
+                Ok(v) => return Ok((idx, v)),
+                Err(AssetError::NotFound) => {
+                    idx += 1;
+                }
+                Err(e) => {
+                    return Err(e);
+                }
+            }
+        }
+
+        Err(AssetError::NotFound)
+    }
+    async fn asset_keys(&self) -> Result<impl Iterator<Item = String>, AssetError>;
     /// Returns the total number of bytes taken by all assets in this source.
     ///
     /// # Returns

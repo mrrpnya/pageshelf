@@ -3,13 +3,13 @@ use std::{path::Path, sync::Arc};
 use actix_web::{App, http::header::ContentType, test};
 use criterion::{Criterion, async_executor::AsyncStdExecutor, criterion_group, criterion_main};
 use pageshelf::{
-    PageSourceFactory,
     conf::ServerConfig,
-    frontend::setup_service_config,
-    provider::{memory::MemoryAsset, testing::create_example_provider_factory},
+    frontend::{DefaultFrontend, renderer::jinja::JinjaFrontendRenderer},
+    provider::{memory::MemoryAsset, testing::create_example_provider},
+    server::actix::setup_service_config,
 };
 fn bench_access_index(c: &mut Criterion) {
-    let factory = create_example_provider_factory();
+    let factory = create_example_provider();
 
     let config = ServerConfig::default();
 
@@ -17,8 +17,15 @@ fn bench_access_index(c: &mut Criterion) {
 
     let func = async || {
         let app = test::init_service(App::new().configure(move |f| {
-            let provider = Arc::new(factory.build());
-            setup_service_config(f, &config, provider, resolver, None);
+            let provider = factory;
+            setup_service_config(
+                f,
+                Arc::new(DefaultFrontend::new(
+                    JinjaFrontendRenderer::default(),
+                    resolver,
+                    provider,
+                )),
+            );
         }))
         .await;
 
@@ -40,7 +47,7 @@ fn bench_access_page_index(c: &mut Criterion) {
     let path_long = Path::new("/my/long/path/index.html");
     let asset = MemoryAsset::from("meow");
 
-    let factory = create_example_provider_factory()
+    let factory = create_example_provider()
         .with_asset("owner_1", "pages", "pages", path, asset.clone())
         .with_asset("owner_2", "other_thing", "pages", path, asset.clone())
         .with_asset("owner_2", "other_thing", "pages", path_long, asset.clone());
@@ -51,8 +58,15 @@ fn bench_access_page_index(c: &mut Criterion) {
 
     let func = async || {
         let app = test::init_service(App::new().configure(move |f| {
-            let provider = Arc::new(factory.build());
-            setup_service_config(f, &config, provider, resolver, None);
+            let provider = factory;
+            setup_service_config(
+                f,
+                Arc::new(DefaultFrontend::new(
+                    JinjaFrontendRenderer::default(),
+                    resolver,
+                    provider,
+                )),
+            );
         }))
         .await;
 
