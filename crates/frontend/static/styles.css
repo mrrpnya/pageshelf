@@ -1,0 +1,425 @@
+/* ---------------------------------- Base ---------------------------------- */
+:root {
+	--bg-color: #171e26;
+	--bg-dark: #10161d;
+	--accent: #40e0d0;
+	--accent-dark: #314bbb;
+	--text-color: #fff;
+}
+
+html,
+body {
+	height: 100%;
+	margin: 0;
+	background: var(--bg-color);
+	overflow-x: hidden;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+/* -------------------------------- Structure ------------------------------- */
+
+main {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+/* ------------------------------- Typography ------------------------------- */
+
+/* Reset */
+small,
+a,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+dt,
+dd,
+ul,
+ol {
+	color: white;
+	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+	font-weight: 400;
+}
+
+a {
+	text-decoration: none;
+}
+
+h1 {
+	font-size: xx-large;
+}
+
+h2 {
+	font-size: x-large;
+}
+
+h3 {
+	font-size: large;
+}
+
+small {
+	font-size: small;
+}
+
+/* Lists */
+li::marker {
+	opacity: 0.95;
+}
+
+/* Fonts */
+.font-monospace {
+	font-family: "Courier New", Courier, monospace;
+}
+
+/* Font styles */
+.bold {
+	font-weight: bold;
+}
+
+.bolder {
+	font-weight: bolder;
+}
+
+.italic {
+	font-style: italic;
+}
+
+/* --------------------------------- Layout --------------------------------- */
+
+/* Margin */
+.m-0 {
+	margin: 0;
+}
+
+.m-sm {
+	margin: 5px;
+}
+
+.m-md {
+	margin: 15px;
+}
+
+.m-lg {
+	margin: 25px;
+}
+
+/* Padding */
+.p-sm {
+	padding: 5px;
+}
+
+.pt-sm {
+	padding-top: 5px;
+}
+
+.p-md {
+	padding-top: 15px;
+}
+
+.pt-md {
+	padding: 15px;
+}
+
+.p-lg {
+	padding: 25px;
+}
+
+/* Size */
+.w-full {
+	width: 100%;
+}
+
+.w-screen {
+	width: screen;
+}
+
+.h-full {
+	height: 100%;
+}
+
+.h-screen {
+	height: screen;
+}
+
+/* Alignment */
+.text-center {
+	text-align: center;
+}
+
+.align-center {
+	margin: auto;
+}
+
+/* -------------------------------- Panelling ------------------------------- */
+
+.panel {
+	position: relative;
+	background: #10161d;
+	z-index: 3;
+}
+
+.container {
+	padding: 10px;
+	border-radius: 10px;
+}
+
+.box-shadow {
+	box-shadow: 6px 6px rgba(0, 0, 0, 0.2);
+}
+
+.top-line {
+	border-top: 2px solid linear-gradient(to right, #40e0d0, #7fffd4);
+	box-shadow: 0 -4px 10px rgba(64, 224, 208, 0.6);
+}
+
+.bottom-line {
+	border-bottom: 1px solid turquoise;
+}
+
+.inline {
+	display: inline;
+}
+
+.inline-block {
+	display: inline-block;
+}
+
+.block {
+	display: block;
+}
+
+.table {
+	display: table;
+}
+
+.flex {
+	display: flex;
+}
+
+.justify-center {
+	justify-content: center;
+}
+
+.float-left {
+	float: left;
+}
+
+.align-vertical>* {
+	vertical-align: middle;
+}
+
+/* Space at the bottom so fixed footer doesn't overlap main content */
+.bottom-info {
+	padding-bottom: 0.5rem;
+}
+
+.card-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 30px;
+	margin-top: 32px;
+}
+
+.main-container {
+	flex: 1;
+	padding-top: 2rem;
+	padding-left: 1rem;
+	padding-right: 1rem;
+	margin-top: 2rem;
+	margin-left: 0;
+	margin-right: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+}
+
+.card {
+	flex: 1 1 300px;
+	padding: 1em;
+	width: 300px;
+	text-align: center;
+	border-radius: 8px;
+	background: #171e26;
+
+	position: relative;
+	transition: all 0.3s ease-in-out;
+}
+
+/* Glow pseudo-elements */
+.card::before,
+.card::after {
+	content: "";
+	position: absolute;
+	border-radius: 10px;
+	z-index: -1;
+	inset: -2px;
+	width: 100%;
+	height: 100%;
+	padding: 3px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: conic-gradient(from var(--angle), #40e0d0, #314bbb, #40e0d0);
+	transition: all 0.3s ease;
+	pointer-events: none;
+}
+
+/* Soft blur glow */
+.card::before {
+	filter: blur(1rem);
+	opacity: 0.3;
+}
+
+.card::after {
+	opacity: 0.7;
+}
+
+/* Hover effects */
+.card:hover {
+	box-shadow: 0 0 2rem #40e0d0aa;
+}
+
+.card:hover::before,
+.card:hover::after {
+	animation: spin 3s ease-in-out infinite;
+	opacity: 0.8;
+}
+
+/* Animate the conic gradient via a CSS variable */
+@keyframes spin {
+	from {
+		--angle: 0deg;
+	}
+
+	to {
+		--angle: 360deg;
+	}
+}
+
+@property --angle {
+	syntax: "<angle>";
+	initial-value: 0deg;
+	inherits: false;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.card-container {
+		flex-direction: column;
+		align-items: center;
+	}
+}
+
+.bottom-info {
+	padding-bottom: 0.5rem;
+}
+
+/* ----------------------------- Text alignment ----------------------------- */
+
+.text-align-left {
+	text-align: left;
+}
+
+.text-align-right {
+	text-align: right;
+}
+
+/* --------------------------------- Footer --------------------------------- */
+
+.footer {
+	width: 100%;
+	padding: 0.5rem 1rem;
+	border-top: 1px solid #444;
+	background-color: #10161d;
+	height: 48px;
+}
+
+.footer-flex {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+}
+
+.footer-text {
+	display: flex;
+	flex-direction: column;
+	color: white;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.footer-link {
+	color: turquoise;
+}
+
+/* ------------------------------- Error page ------------------------------- */
+
+.error-container {
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	text-align: center;
+	padding: 2rem 1rem;
+}
+
+.error-content {
+	max-width: 600px;
+	margin: 0 auto;
+}
+
+.error-title {
+	font-family: monospace;
+	font-size: 2rem;
+	margin-bottom: 1rem;
+}
+
+.error-code {
+	font-weight: bold;
+}
+
+.error-details {
+	font-size: 1rem;
+	margin-bottom: 1.5rem;
+	color: #aaa;
+}
+
+/* Error info sections */
+.error-note,
+.error-suggestion {
+	text-align: left;
+	margin: 1.5rem auto;
+	background-color: #00000033;
+	color: white;
+	border-left: 4px solid #40e0d0;
+	padding: 0.5rem;
+	border-radius: 4px;
+}
+
+.error-note h2,
+.error-suggestion h2 {
+	margin-top: 0;
+	color: #008b8b;
+	font-size: 1.1rem;
+}
+
+@media (max-width: 600px) {
+	.error-title {
+		font-size: 1.5rem;
+	}
+
+	.error-content {
+		padding: 0 0.5rem;
+	}
+}

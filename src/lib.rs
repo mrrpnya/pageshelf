@@ -13,12 +13,11 @@
 //! </div>
 #![forbid(unsafe_code)]
 
-mod core;
-pub use core::*;
+pub use pageshelf_core::*;
+pub use pageshelf_frontend::*;
+pub use pageshelf_web::*;
 
 pub mod conf;
-pub mod ext;
-pub mod frontend;
+
+pub mod cache_combiner;
 pub mod log;
-pub mod provider;
-pub mod server;

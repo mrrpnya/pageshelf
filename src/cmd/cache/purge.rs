@@ -1,11 +1,13 @@
 use clap::Parser;
 use color_eyre::eyre::{self, Context};
-use pageshelf::{Cache, CacheConnection, provider::cache::cache_from_config, test_cache};
+use pageshelf::{
+    cache::{Cache, CacheConnection},
+    cache_combiner::cache_from_config,
+};
 use std::{
     io::{self, Write},
     time::Instant,
 };
-use tracing::{error, info, warn};
 
 use crate::cmd::Cli;
 

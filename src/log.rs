@@ -7,7 +7,6 @@ use tracing_subscriber::{
 };
 
 pub fn setup_logger(level: Level, pretty: bool) {
-    // Define time format and offset
     let time_format = parse("[year]-[month]-[day]T[hour]:[minute]:[second].[subsecond digits:2]")
         .expect("format string should be valid");
 
@@ -30,7 +29,6 @@ pub fn setup_logger(level: Level, pretty: bool) {
     match result {
         Ok(_) => tracing::info!("Tracing subscriber initialized"),
         Err(_) => {
-            // Optionally log a warning or just ignore
             tracing::warn!("Tracing subscriber was already initialized, skipping reinit");
         }
     }

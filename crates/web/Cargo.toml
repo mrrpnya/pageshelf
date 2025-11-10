@@ -1,0 +1,28 @@
+[package]
+name = "pageshelf-web"
+description = "A free and open source Pages server, written in Rust - Web server components"
+authors = ["V. D. <nyamrrp@proton.me>"]
+version = "0.2.0"
+license = "MIT License"
+edition = "2024"
+publish = false
+
+[dependencies]
+pageshelf-core = { path = "../core" }
+pageshelf-frontend = { path = "../frontend" }
+color-eyre = { version = "0.6", default-features = false }
+actix-web = { version = "4.11.0", default-features = false, features = [
+    "compress-zstd"
+], optional = true}
+tracing = { version = "0.1", features = [], default-features = false }
+url = { version = "2.5.7" }
+
+[dev-dependencies]
+pageshelf-test-utils = { path = "../test-utils" }
+tokio = { version = "1", features = ["full"] }
+reqwest = "0.12"
+rstest = "0.26.1"
+
+[features]
+default = ["actix"]
+actix = ["dep:actix-web"]

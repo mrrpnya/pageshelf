@@ -21,6 +21,16 @@ use crate::cmd::styles::get_styles;
 pub struct Cli {
     #[arg(short, long, help = "", global = true)]
     pub config: Option<PathBuf>,
+    /// Suppress the startup banner (ignores quiet)
+    #[arg(long, global = true, help = "Suppress the startup banner output")]
+    pub no_banner: bool,
+    /// Explicit log level (trace|debug|info|warn|error). Overrides --debug/--quiet when present.
+    #[arg(
+        long,
+        global = true,
+        help = "Set explicit logging level (trace|debug|info|warn|error)"
+    )]
+    pub log_level: Option<String>,
     #[arg(
         short,
         long,

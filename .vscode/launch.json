@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug",
+      "program": "${workspaceFolder}/target/debug/pageshelf",
+      "args": ["-c", "${workspaceRoot}/config.toml", "serve"],
+      "cwd": "${workspaceRoot}",
+      "sourceLanguages": ["rust"]
+    }
+  ]
+}

@@ -1,3 +1,14 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/core", 
+    "crates/frontend", 
+    "crates/web", 
+    "crates/test-utils",
+    "crates/providers/upstream-forgejo", 
+    "crates/providers/cache-redis"
+]
+
 [package]
 name = "pageshelf"
 description = "A free and open source Pages server, written in Rust"
@@ -5,58 +16,43 @@ authors = ["V. D. <nyamrrp@proton.me>"]
 version = "0.2.0"
 license = "MIT License"
 edition = "2024"
+keywords = ["pages", "forgejo"]
 publish = false
 
 [dependencies]
 futures = "0.3"
-forgejo-api = { version = "0.7", optional = true }
-actix-web = { version = "4.11.0", default-features = false, features = [
-    "macros",
-    "compress-zstd",
-    "compress-gzip",
-] }
-lz4 = "1.28.1"
 time = { version = "0.3", features = ["local-offset"] }
 clap = { version = "4.5.47", features = ["cargo", "derive", "unicode"] }
 tracing-subscriber = { version = "0.3", features = ["fmt", "time", "json"] }
 tracing = { version = "0.1", features = ["attributes"] }
 color-eyre = "0.6"
 url = { version = "2.5.7", features = ["serde"] }
-minijinja = { version = "2.12", default-features = true, features = [
-    "multi_template", "serde"
-]}
-miette = "7.6.0"
-serde = "1"
 config = "0.15"
-mime_guess = "2"
-redis = { version = "0.32", features = ["aio", "tokio-comp"], optional = true }
 tokio = { version = "1", features = ["full"] }
 anstyle = "1.0"
+pageshelf-core = { path = "crates/core" }
+pageshelf-frontend = { path = "crates/frontend" }
+pageshelf-web = { path = "crates/web" }
+serde = "1"
+serde_json = "1"
+pageshelf-provider-upstream-forgejo = { path = "crates/providers/upstream-forgejo", optional = true}
+pageshelf-provider-cache-redis = { path = "crates/providers/cache-redis", optional = true}
+
 
 [dev-dependencies]
 tokio = { version = "1.47", features = ["macros"] }
 env_logger = "0.11"
-criterion = { version = "0.7", features = ["html_reports", "async_std"] }
 rand = "0.9"
 testcontainers = "0.25"
 reqwest = "0.12"
 serde_json = "1"
-base64 = "0.22"
 
 [features]
 default = ["redis", "forgejo"]
-forgejo = ["dep:forgejo-api"]
+forgejo = ["dep:pageshelf-provider-upstream-forgejo"]
 gitea = []
 gitlab = []
-redis = ["dep:redis"]
-
-[[bench]]
-name = "web_access"
-harness = false
-
-[[bench]]
-name = "memory"
-harness = false
+redis = ["dep:pageshelf-provider-cache-redis"]
 
 [profile.release]
 opt-level = 3

@@ -1,0 +1,53 @@
+{% extends "base.jinja" %}
+{% block title %}
+	{{ error.summary or "Error" }}
+{% endblock %}
+{% block main %}
+	{#  TODO: Visual improvements #}
+	<div role="main" class="error-container">
+		<section class="error-content" aria-labelledby="error-heading">
+			{# Title #}
+			<h1 id="error-heading" class="error-title">
+				<span class="error-code">{{ error.code or 'Error' }}</span> 
+				{{ error.summary or 'An unexpected error occurred' }}
+			</h1>
+
+			{# Details #}
+			<p class="error-details">
+				{{ error.details or 'No additional details provided.' }}
+			</p>
+
+			{# Suggestions #}
+			{% if error.suggestions %}
+				<div class="error-suggestion">
+					<h2>Suggestions</h2>
+					{% if error.suggestions is string %}
+						<p>{{ error.suggestions }}</p>
+					{% else %}
+						<ul>
+								{% for tip in error.suggestions %}
+										<li>{{ tip }}</li>
+								{% endfor %}
+						</ul>
+					{% endif %}
+				</div>
+			{% endif %}
+
+			{# Notes #}
+			{% if error.notes %}
+				<div class="error-note">
+					<h2>Notes</h2>
+					{% if error.notes is string %}
+						<p>{{ error.notes }}</p>
+					{% else %}
+						<ul>
+							{% for note in error.notes %}
+								<li>{{ note }}</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+				</div>
+			{% endif %}
+		</section>
+	</div>
+{% endblock %}

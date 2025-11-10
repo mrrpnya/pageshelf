@@ -6,7 +6,7 @@
 
 A free and open-source Pages server, written in **safe Rust.**
 
-***Overhaul in progress***
+***Overhaul in progress - Full functionality not guaranteed at this time***
 
 ![GitHub branch check runs](https://img.shields.io/github/check-runs/mrrpnya/pageshelf/main)
 ![GitHub License](https://img.shields.io/github/license/mrrpnya/pageshelf)
@@ -36,8 +36,8 @@ A free and open-source Pages server, written in **safe Rust.**
 | Metrics | ⬜ | Coming soon |
 | Whitelist/Blacklist | ⬜ | Coming soon |
 | Private repos | ⬜ | |
-| Authentication locking | ⬜ | |
 | Plugin system | ⬜ | |
+| Authentication locking | ⬜ | |
 
 ## Supported software
 

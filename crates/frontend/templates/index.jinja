@@ -1,0 +1,56 @@
+{% extends "base.jinja" %}
+<!DOCTYPE html>
+{% block title %}
+	Home
+{% endblock %}
+{% block main %}
+	<div class="text-center">
+		{# Title #}
+		<div class="p-lg">
+			<h1 class="font-monospace bold">{{ server.name }}</h1>
+			<p>{{ server.about }}</p>
+		</div>
+		{# Overview #}
+		<div class="panel w-screen main-container">
+			<div class="card-container">
+				<div class="card">
+					<h3 class="font-monospace italic bold">Getting Started</h3>
+					<p>Create a <span class="font-monospace bold">{{ server.default_branch }}</span> branch in your repo and push — Pageshelf will serve pages from it automatically.</p>
+					<ul class="text-align-left m-sm" style="text-align:left; margin:0.5rem 0 0 1rem;">
+						<li>Add a <code>index.html</code> (or valid pages entry) to the branch</li>
+						<li>Use <span class="font-monospace">/user/repo(:branch)</span> or a mapped domain</li>
+					</ul>
+				</div>
+
+				<div class="card">
+						<h3 class="font-monospace italic bold">Made in Rust</h3>
+						<p>Pageshelf is implemented in Rust for performance and memory safety.</p>
+						<small>No JavaScript runtime required — the server renders static pages directly.</small>
+				</div>
+
+				<div class="card">
+					<h3 class="font-monospace italic bold">Open Source & Customizable</h3>
+					<p>Released under the MIT License. Extend storage, caching, and upstream providers by way of a modular architecture.</p>
+					<p style="font-size:small; opacity:0.9;"><a class="footer-link" href="https://github.com/mrrpnya/pageshelf">Contribute or report issues</a></p>
+				</div>
+			</div>
+			{# Access instructions and links #}
+			<div class="w-full p-md bottom-info text-align-left">
+				<h3 class="font-monospace italic bold">Accessing your site(s)</h3>
+				<p>Pageshelf supports multiple hosting styles, which these being the default; Replace the placeholders below with your values.</p>
+				<dl style="margin-left:1rem;" class="text-align-left">
+					<dt><strong>Subdirectory (default)</strong></dt>
+					<dd><code>{{ server.url }}/&lt;user&gt;/&lt;repo&gt;(:branch)</code></dd>
+
+					{# TODO: Adapt this to variables #}
+					<dt><strong>Subdomain</strong></dt>
+					<dd><code>((branch).repo).user.example.com</code> — replace <em>example.com</em> with your Pageshelf host/domain.</dd>
+
+					<dt><strong>Custom domain</strong></dt>
+					<dd>Point your domain to this instance and add it in your Pageshelf configuration (see example config).</dd>
+				</dl>
+				<p>By default Pageshelf serves the <span class="bold font-monospace">{{ server.default_branch }}</span> branch for repositories.</p>
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+[package]
+name = "pageshelf-provider-upstream-forgejo"
+description = "A free and open source Pages server, written in Rust - Provider for Forgejo"
+authors = ["V. D. <nyamrrp@proton.me>"]
+version = "0.2.0"
+license = "MIT License"
+edition = "2024"
+publish = false
+
+[dependencies]
+pageshelf-core = { path = "../../core" }
+tracing = { version = "0.1", features = [], default-features = false }
+forgejo-api = { version = "0.7" }
+url = { version = "2.5.7", features = ["serde"] }
+serde = "1"
+color-eyre = { version = "0.6", default-features = false }
+tokio = { version = "1", features = ["sync"] }
+futures = "0.3"
+hashbrown = { version = "0.16", features = ["default-hasher"] }
+
+[dev-dependencies]
+pageshelf-test-utils = { path = "../../test-utils" }
+criterion = { version = "0.7", features = ["html_reports", "async_tokio"] }
+rand = "0.9"
+
+[[bench]]
+name = "scanner_data"
+harness = false

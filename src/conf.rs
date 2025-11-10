@@ -8,8 +8,6 @@ use config::Config;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::resolver::DefaultUrlResolver;
-
 // TODO: Should all configuration be done in this master file?
 // ? It seems like a potentially better idea to move configuration to where it's needed.
 
@@ -41,8 +39,7 @@ pub struct ServerConfigUpstream {
     /// How to get data from that platform
     #[serde(default)]
     pub method: ServerConfigUpstreamMethod,
-    #[serde(default = "default_upstream_url")]
-    pub url: String,
+    pub url: Url,
     #[serde(default = "default_branch")]
     pub default_branch: String,
     #[serde(default = "default_branches_allowed")]
@@ -88,8 +85,6 @@ pub struct ServerConfig {
     pub port: u16,
     pub domain: Option<Url>,
     pub pages_domains: Option<Vec<Url>>,
-    #[serde(default = "default_user")]
-    pub default_user: String,
     #[serde(default = "default_domains_allowed")]
     pub allow_domains: bool,
 
@@ -109,15 +104,6 @@ impl ServerConfig {
             .wrap_err("Failed to deserialize configuration")
             .suggestion("Check your configuration file and/or environment variables")
     }
-    pub fn url_resolver(&self) -> DefaultUrlResolver {
-        DefaultUrlResolver::new(
-            self.domain.clone(),
-            self.pages_domains.clone(),
-            "pages".to_string(),
-            "pages".to_string(),
-            self.allow_domains,
-        )
-    }
 }
 
 /* ---------------------------------- Serde --------------------------------- */
@@ -125,38 +111,6 @@ impl ServerConfig {
 /* -------------------------------------------------------------------------- */
 /*                            Default initializers                            */
 /* -------------------------------------------------------------------------- */
-
-impl Default for ServerConfig {
-    fn default() -> Self {
-        Self {
-            // General
-            name: default_name(),
-            description: default_description(),
-            domain: None,
-            pages_domains: None,
-            port: default_port(),
-            default_user: default_user(),
-            allow_domains: default_domains_allowed(),
-
-            // Specialized
-            security: ServerConfigSecurity {
-                whitelist: None,
-                blacklist: None,
-                show_private: default_security_show_private(),
-            },
-            upstream: ServerConfigUpstream {
-                r#type: ServerConfigUpstreamType::Forgejo,
-                method: ServerConfigUpstreamMethod::Direct,
-                poll_interval: None,
-                url: "".to_string(),
-                default_branch: default_branch(),
-                branches: Vec::new(),
-                token: None,
-            },
-            cache: default_cache(),
-        }
-    }
-}
 
 fn default_port() -> u16 {
     8080
@@ -168,10 +122,6 @@ fn default_name() -> String {
 
 fn default_description() -> String {
     "A free and open source Pages server, written in Rust".to_string()
-}
-
-fn default_upstream_url() -> String {
-    "https://codeberg.org".to_string()
 }
 
 fn default_branch() -> String {
@@ -192,10 +142,6 @@ fn default_security() -> ServerConfigSecurity {
 
 fn default_security_show_private() -> bool {
     false
-}
-
-fn default_user() -> String {
-    "admin".to_string()
 }
 
 fn default_cache() -> ServerConfigCache {

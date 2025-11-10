@@ -47,13 +47,13 @@ fn print_banner(lines: &[String]) {
 /*                                    Main                                    */
 /* -------------------------------------------------------------------------- */
 
-#[actix_web::main]
 #[instrument]
+#[tokio::main]
 async fn main() -> Result<(), Report> {
     HookBuilder::default().theme(Theme::dark()).install()?;
     let cli = Cli::parse();
 
-    if !cli.quiet {
+    if !cli.quiet && !cli.no_banner {
         let banner = vec![
             format!("{} v{}", crate_name!(), crate_version!()),
             format!("Copyright (c) {}", crate_authors!()),
@@ -74,12 +74,33 @@ async fn main() -> Result<(), Report> {
         println!("Preparing to set up environment:");
     }
 
-    let level = match cli.quiet {
-        false => match cli.debug {
-            true => Level::DEBUG,
-            false => Level::INFO,
-        },
-        true => Level::WARN,
+    // Determine logging level: explicit flag takes precedence
+    let level = if let Some(ref lvl) = cli.log_level {
+        match lvl.to_lowercase().as_str() {
+            "trace" => Level::TRACE,
+            "debug" => Level::DEBUG,
+            "info" => Level::INFO,
+            "warn" | "warning" => Level::WARN,
+            "error" => Level::ERROR,
+            _ => {
+                eprintln!("Invalid log level '{}', falling back to default", lvl);
+                match cli.quiet {
+                    false => match cli.debug {
+                        true => Level::DEBUG,
+                        false => Level::INFO,
+                    },
+                    true => Level::WARN,
+                }
+            }
+        }
+    } else {
+        match cli.quiet {
+            false => match cli.debug {
+                true => Level::DEBUG,
+                false => Level::INFO,
+            },
+            true => Level::WARN,
+        }
     };
 
     if cli.debug {

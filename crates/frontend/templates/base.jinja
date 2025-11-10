@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+{# Message to appear in#}
+<!-- Pageshelf: An open source static page hosting server, written in Rust -->
+<html lang="en">
+{% block head %}
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+	<title>
+			{% block title %}{{ server.name }}{% endblock %} | {{ server.name or "Pageshelf" }}
+	</title>
+	<link rel="icon" href="{{ server.icon_url }}">
+	
+	{# SEO/Metadata #}
+	<meta name="description" content="{{ server.about }}">
+	<meta name="theme-color" content="#40e0d0" data-react-helmet="true"/>
+
+	{# OpenGraph #}
+	<meta property="og:type" content="website">
+	<meta name="og:site_name" content="{{ server.name }}">
+	<meta property="og:title" content="{{ server.name }}">
+	<meta property="og:description" content="{{ server.about }}">
+	<meta property="og:image" content="{{ server.icon_url }}">
+	<meta property="og:url" content="{{ server.url }}">
+
+	{# Twitter Cards #}
+	{#
+	NOTE: Other services can use these, not just Twitter.
+	If it was just Twitter, I probably wouldn't have this.
+	#}
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="{{ server.name }}">
+	<meta name="twitter:image" content="{{ server.icon_url }}">
+	<meta name="twitter:description" content="">
+	<link rel="stylesheet" href="/_jinja_static/styles.css" type="text/css" />
+{% endblock %}
+{% block body %}
+<body>
+	<header>
+		{% block header %}{% include "header.jinja" %}{% endblock %}
+	</header>
+	<main>
+	{% block main %}{% endblock %}
+	</main>
+	<footer>
+	{% block footer %}{% include "footer.jinja" %}{% endblock %}
+	</footer>
+</body>
+{% endblock %}
+</html>

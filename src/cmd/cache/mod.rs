@@ -1,17 +1,11 @@
 use clap::{Parser, Subcommand};
-use color_eyre::eyre::{self, Context, ContextCompat};
-use pageshelf::{conf::ServerConfig, provider::cache::cache_from_config, test_cache};
-use std::fmt;
-use tracing::{Level, error, info, instrument, span, warn};
+use color_eyre::eyre::{self};
 pub mod check;
 pub mod purge;
 
-use crate::{
-    app::PageshelfApp,
-    cmd::{
-        Cli,
-        cache::{check::CmdCacheCheckArgs, purge::CmdCachePurgeArgs},
-    },
+use crate::cmd::{
+    Cli,
+    cache::{check::CmdCacheCheckArgs, purge::CmdCachePurgeArgs},
 };
 
 #[derive(Parser, Debug)]

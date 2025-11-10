@@ -1,0 +1,87 @@
+use std::{path::Path, sync::Arc};
+
+use actix_web::{App, http::header::ContentType, test};
+use criterion::{Criterion, async_executor::AsyncStdExecutor, criterion_group, criterion_main};
+use pageshelf::{
+    conf::ServerConfig,
+    frontend::{DefaultFrontend, renderer::jinja::JinjaFrontendRenderer},
+    server::actix::setup_service_config,
+};
+use pageshelf_core::project::mock::MockProjectSource;
+fn bench_access_index(c: &mut Criterion) {
+    let factory = MockProjectSource::default();
+
+    let config = ServerConfig::default();
+
+    let resolver = config.url_resolver();
+
+    let func = async || {
+        let app = test::init_service(App::new().configure(move |f| {
+            let provider = factory;
+            setup_service_config(
+                f,
+                Arc::new(DefaultFrontend::new(
+                    JinjaFrontendRenderer::default(),
+                    resolver,
+                    provider,
+                )),
+            );
+        }))
+        .await;
+
+        let req = test::TestRequest::get()
+            .uri("/")
+            .insert_header(ContentType::plaintext())
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(resp.status().is_success())
+    };
+
+    c.bench_function("Access Server Index Page", |b| {
+        b.to_async(AsyncStdExecutor).iter(|| func.clone()())
+    });
+}
+
+fn bench_access_page_index(c: &mut Criterion) {
+    let path = Path::new("/index.html");
+    let path_long = Path::new("/my/long/path/index.html");
+    let asset = MemoryAsset::from("meow");
+
+    let factory = create_example_provider()
+        .with_asset("owner_1", "pages", "pages", path, asset.clone())
+        .with_asset("owner_2", "other_thing", "pages", path, asset.clone())
+        .with_asset("owner_2", "other_thing", "pages", path_long, asset.clone());
+
+    let config = ServerConfig::default();
+
+    let resolver = config.url_resolver();
+
+    let func = async || {
+        let app = test::init_service(App::new().configure(move |f| {
+            let provider = factory;
+            setup_service_config(
+                f,
+                Arc::new(DefaultFrontend::new(
+                    JinjaFrontendRenderer::default(),
+                    resolver,
+                    provider,
+                )),
+            );
+        }))
+        .await;
+
+        let req = test::TestRequest::get()
+            .uri("/owner_1/pages")
+            .insert_header(ContentType::plaintext())
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(resp.status().is_success())
+    };
+
+    c.bench_function("Access Page's Index Page", |b| {
+        b.to_async(AsyncStdExecutor).iter(|| func.clone()())
+    });
+}
+
+criterion_group!(basic_access, bench_access_index, bench_access_page_index);
+criterion_main!(basic_access);

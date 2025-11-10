@@ -1,21 +1,24 @@
 {
-    "nixEnvSelector.nixFile": "${workspaceFolder}/flake.nix",
-    "cSpell.words": [
-        "Actix",
-        "Forgejo",
-        "gitea",
-        "Jemalloc",
-        "minijinja",
-        "pageshelf",
-        "rsplitn",
-        "serde",
-        "Valkey"
-    ],
-    "rust-analyzer.checkOnSave": true,
-    "rust-analyzer.check.extraArgs": [
-        "--target-dir",
-        "${workspaceFolder}/target/check"
-    ],
-    "editor.defaultFormatter": "rust-lang.rust-analyzer",
-    "editor.formatOnSave": true,
+  "nixEnvSelector.nixFile": "${workspaceFolder}/flake.nix",
+  "cSpell.words": [
+    "Actix",
+    "Forgejo",
+    "gitea",
+    "Jemalloc",
+    "minijinja",
+    "pageshelf",
+    "rsplitn",
+    "serde",
+    "Valkey"
+  ],
+  "rust-analyzer.checkOnSave": true,
+  "rust-analyzer.check.extraArgs": [
+    "--target-dir",
+    "${workspaceFolder}/target/check"
+  ],
+  "editor.defaultFormatter": "rust-lang.rust-analyzer",
+  "editor.formatOnSave": true,
+  "[jinja-html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  }
 }
