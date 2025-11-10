@@ -142,6 +142,7 @@ impl<U: Upstream + 'static> UpstreamPageDomainResolver<U> {
         event_bus.subscribe(move |event| {
             let data = data.clone();
             let upstream = upstream.clone();
+            // TODO: Make this shared functionality with refresh? Duplication...
             match event {
                 Event::PageAvailable {
                     owner,
@@ -238,6 +239,8 @@ impl<U: Upstream> PageDomainResolver for UpstreamPageDomainResolver<U> {
             None => Err(PageDomainError::NotFound),
         }
     }
+
+    // TODO: Break down refresh into smaller functions
 
     async fn refresh(&self) -> Result<(), PageDomainError> {
         let owners = self.upstream.list_owners().await.map_err(|e| {
