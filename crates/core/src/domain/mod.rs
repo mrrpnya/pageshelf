@@ -10,6 +10,7 @@ use std::{
     sync::Arc,
 };
 
+use metrics::gauge;
 use tokio::sync::RwLock;
 use url::Url;
 
@@ -17,7 +18,7 @@ use crate::{
     event::{Event, EventBus},
     ext::Normalizable,
     resolution::{PageResolver, ResolutionError},
-    upstream::{AssetLocation, PageLocation, Upstream},
+    upstream::{AssetLocation, PageLocation, Upstream, source::PageListSource},
 };
 
 /* -------------------------------------------------------------------------- */
@@ -116,12 +117,12 @@ struct ResolverData {
 }
 
 /// Finds pages by their domains via reading from an upstream
-pub struct UpstreamPageDomainResolver<U: Upstream + 'static> {
+pub struct UpstreamPageDomainResolver<U: Upstream + PageListSource + 'static> {
     upstream: Arc<U>,
     data: Arc<RwLock<ResolverData>>,
 }
 
-impl<U: Upstream + 'static> UpstreamPageDomainResolver<U> {
+impl<U: Upstream + PageListSource + 'static> UpstreamPageDomainResolver<U> {
     /// Creates a new UpstreamPageDomainResolver.
     ///
     /// The Upstream provided will be read from in order to determine pages and their domains.
@@ -144,7 +145,7 @@ impl<U: Upstream + 'static> UpstreamPageDomainResolver<U> {
             let upstream = upstream.clone();
             // TODO: Make this shared functionality with refresh? Duplication...
             match event {
-                Event::PageAvailable {
+                Event::PageDiscovered {
                     owner,
                     project,
                     channel,
@@ -196,7 +197,7 @@ impl<U: Upstream + 'static> UpstreamPageDomainResolver<U> {
                     });
                 }
 
-                Event::PageDeleted {
+                Event::PageRemoved {
                     owner,
                     project,
                     channel,
@@ -227,7 +228,7 @@ impl<U: Upstream + 'static> UpstreamPageDomainResolver<U> {
     }
 }
 
-impl<U: Upstream> PageDomainResolver for UpstreamPageDomainResolver<U> {
+impl<U: Upstream + PageListSource> PageDomainResolver for UpstreamPageDomainResolver<U> {
     async fn resolve_domain(&self, domain: &str) -> Result<Arc<dyn PageLocation>, PageDomainError> {
         let r = self.data.read().await;
         if let Some(count) = r.colliding_domains.get(domain) {
@@ -243,89 +244,65 @@ impl<U: Upstream> PageDomainResolver for UpstreamPageDomainResolver<U> {
     // TODO: Break down refresh into smaller functions
 
     async fn refresh(&self) -> Result<(), PageDomainError> {
-        let owners = self.upstream.list_owners().await.map_err(|e| {
-            tracing::error!("Failed to list owners: {:?}", e);
+        let pages = self.upstream.list_pages().await.map_err(|e| {
+            tracing::error!("Failed to list pages: {:?}", e);
             PageDomainError::ProviderError
         })?;
 
         let mut data = self.data.write().await;
 
         let mut new_domain_versions = HashMap::new();
-
         let mut domain_locations_map: HashMap<String, Vec<Arc<DomainPageLocation>>> =
             HashMap::new();
 
-        for owner in owners.iter() {
-            let projects = match self.upstream.list_projects(owner).await {
-                Ok(p) => p,
+        let (owners, projects, channels) = &*pages;
+
+        for ((owner, project), channel) in owners.iter().zip(projects.iter()).zip(channels.iter()) {
+            let version = match self
+                .upstream
+                .get_page_version(owner, project, channel)
+                .await
+            {
+                Ok(v) => v,
                 Err(e) => {
-                    tracing::error!("Failed to list projects for {}: {:?}", owner, e);
+                    tracing::error!(
+                        "Failed to get version for {}/{}/{}: {:?}",
+                        owner,
+                        project,
+                        channel,
+                        e
+                    );
                     continue;
                 }
             };
 
-            for project in projects.iter() {
-                let channels = match self.upstream.list_channels(owner, project).await {
-                    Ok(c) => c,
-                    Err(e) => {
-                        tracing::error!(
-                            "Failed to list channels for {}/{}: {:?}",
-                            owner,
-                            project,
-                            e
-                        );
-                        continue;
-                    }
-                };
+            let version_key = format!("{}/{}/{}", owner, project, channel);
+            new_domain_versions.insert(version_key.clone(), version.clone());
 
-                for channel in channels.iter() {
-                    let version = match self
-                        .upstream
-                        .get_page_version(owner, project, channel)
-                        .await
-                    {
-                        Ok(v) => v,
-                        Err(e) => {
-                            tracing::error!(
-                                "Failed to get version for {}/{}/{}: {:?}",
-                                owner,
-                                project,
-                                channel,
-                                e
-                            );
-                            continue;
-                        }
-                    };
+            // Always fetch domains
+            let bytes = match self
+                .upstream
+                .get_asset_bytes(owner, project, channel, Path::new("/.domain"))
+                .await
+            {
+                Ok(b) => b,
+                Err(_) => continue,
+            };
+            let body = match std::str::from_utf8(&bytes) {
+                Ok(s) => s,
+                Err(_) => continue,
+            };
 
-                    let version_key = format!("{}/{}/{}", owner, project, channel);
-                    new_domain_versions.insert(version_key.clone(), version.clone());
-
-                    // Always fetch domains, even if the version hasn't changed
-                    let bytes = match self
-                        .upstream
-                        .get_asset_bytes(owner, project, channel, Path::new("/.domain"))
-                        .await
-                    {
-                        Ok(b) => b,
-                        Err(_) => continue,
-                    };
-                    let body = match std::str::from_utf8(&bytes) {
-                        Ok(s) => s,
-                        Err(_) => continue,
-                    };
-
-                    for domain in body.lines().map(str::trim).filter(|l| !l.is_empty()) {
-                        let loc = Arc::new(DomainPageLocation {
-                            owner: Arc::from(owner.to_string()),
-                            project: Arc::from(project.to_string()),
-                            channel: Arc::from(channel.to_string()),
-                        });
-                        domain_locations_map
-                            .entry(domain.to_string())
-                            .or_default()
-                            .push(loc);
-                    }
-                }
+            for domain in body.lines().map(str::trim).filter(|l| !l.is_empty()) {
+                let loc = Arc::new(DomainPageLocation {
+                    owner: Arc::from(owner.to_string()),
+                    project: Arc::from(project.to_string()),
+                    channel: Arc::from(channel.to_string()),
+                });
+                domain_locations_map
+                    .entry(domain.to_string())
+                    .or_default()
+                    .push(loc);
             }
         }
 
@@ -356,12 +333,16 @@ impl<U: Upstream> PageDomainResolver for UpstreamPageDomainResolver<U> {
         data.colliding_domains = colliding_domains;
         data.domain_versions = new_domain_versions;
 
+        gauge!("page.domain.count").set(data.domain_locations.len() as u32);
+        gauge!("page.domain.collisions.count")
+            .set(data.colliding_domains.iter().map(|f| f.1).sum::<u32>());
+
         tracing::info!("Domain resolver refresh complete");
         Ok(())
     }
 }
 
-impl<U: Upstream> PageResolver for UpstreamPageDomainResolver<U> {
+impl<U: Upstream + PageListSource> PageResolver for UpstreamPageDomainResolver<U> {
     async fn resolve_url(&self, url: &Url) -> Result<Arc<dyn AssetLocation>, ResolutionError> {
         let host = match url.domain() {
             Some(host) => host,

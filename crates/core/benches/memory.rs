@@ -1,7 +1,7 @@
 use std::{path::Path, sync::Arc};
 
 use criterion::{Criterion, criterion_group, criterion_main};
-use pageshelf_core::upstream::{Upstream, mock::MockUpstream};
+use pageshelf_core::upstream::{Upstream, mock::MockUpstream, source::AssetSource};
 use rand::{Rng, distr::Alphanumeric, seq::IndexedRandom};
 use tokio::runtime::Runtime;
 

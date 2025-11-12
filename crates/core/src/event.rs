@@ -4,17 +4,17 @@
 
 use std::sync::Arc;
 
-use futures::FutureExt;
 use tokio::sync::broadcast;
 use tracing::{Level, debug, instrument, span};
 
 #[non_exhaustive]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Event {
+    // Topic-Event naming
     /// Should be called when a new page at a location has been made available to the server.
     ///
     /// Can be called either on initial discovery, or when a new version becomes available (signaling a time to update things).
-    PageAvailable {
+    PageDiscovered {
         owner: Arc<str>,
         project: Arc<str>,
         channel: Arc<str>,
@@ -22,28 +22,55 @@ pub enum Event {
     /// Should be called when a page is no longer available to the server due to deletion.
     ///
     /// It should preferably not, however, be called when it's merely rendered *inaccessible* due to problems.
-    PageDeleted {
+    PageRemoved {
         owner: Arc<str>,
         project: Arc<str>,
         channel: Arc<str>,
     },
 }
 
-/// Global event bus.
+/// Global event bus, based on Tokio tasks.
 ///
 /// This helps server components respond to each other.
+/// Requires a Tokio runtime to be set up to function properly.
 #[derive(Clone)]
 pub struct EventBus {
     sender: broadcast::Sender<Event>,
 }
 
 impl EventBus {
+    /// Creates a new [EventBus] with a specific buffer size.
+    ///
+    /// A higher buffer allows more events to be buffered.
     pub fn new(buffer: usize) -> Self {
         let (sender, _) = broadcast::channel(buffer);
         Self { sender }
     }
 
     /// The callback is called for every published event.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use pageshelf_core::event::{EventBus, Event};
+    /// # use tokio::runtime::Runtime;
+    /// # let rt = Runtime::new().unwrap();
+    /// # rt.block_on(async {
+    ///
+    /// let bus = EventBus::default();
+    ///
+    /// bus.subscribe(|event| {
+    ///     println!("Hello, world!")
+    /// });
+    ///
+    /// bus.publish(Event::PageDiscovered {
+    ///    owner: Arc::from("alice"),
+    ///    project: Arc::from("prometheus"),
+    ///    channel: Arc::from("bob"),
+    /// });
+    /// # });
+    /// ```
     #[instrument(skip(self, callback))]
     pub fn subscribe<F>(&self, callback: F)
     where
@@ -58,6 +85,30 @@ impl EventBus {
         });
     }
 
+    /// Subscribes to the event bus, calling back an asynchronous function when events are published.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use pageshelf_core::event::{EventBus, Event};
+    /// # use tokio::runtime::Runtime;
+    /// # let rt = Runtime::new().unwrap();
+    /// # rt.block_on(async {
+    ///
+    /// let bus = EventBus::default();
+    ///
+    /// bus.subscribe_async(async move |event| {
+    ///     println!("Hello, world!")
+    /// });
+    ///
+    /// bus.publish(Event::PageDiscovered {
+    ///    owner: Arc::from("alice"),
+    ///    project: Arc::from("prometheus"),
+    ///    channel: Arc::from("bob"),
+    /// });
+    /// # });
+    /// ```
     #[instrument(skip(self, callback))]
     pub fn subscribe_async<F, Fut>(&self, callback: F)
     where
@@ -104,12 +155,12 @@ mod tests {
 
     fn sample_event(kind: &str) -> Event {
         match kind {
-            "available" => Event::PageAvailable {
+            "available" => Event::PageDiscovered {
                 owner: Arc::from("alice"),
                 project: Arc::from("book"),
                 channel: Arc::from("main"),
             },
-            _ => Event::PageDeleted {
+            _ => Event::PageRemoved {
                 owner: Arc::from("bob"),
                 project: Arc::from("notes"),
                 channel: Arc::from("draft"),

@@ -1,4 +1,4 @@
-use std::{path::Path, process::Output, sync::Arc};
+use std::{path::Path, sync::Arc};
 
 use color_eyre::eyre::{self, Context};
 use lz4_flex::{compress_prepend_size, decompress_size_prepended};
@@ -33,24 +33,27 @@ pub trait KVHashCacheConnection {
     /// - `field` (`&str`) - The field within the hash to assign
     /// - `value` (`&[u8]`) - The data to assign to the field
     ///
-    /// # Returns
-    ///
-    /// - `Ok(())>` - Successfully assigned
-    /// - `Err(CacheError)` - Failed to assign
-    ///
     /// # Errors
     ///
-    /// - `CacheError::OperationFailed` - Something went wrong and the operation could not be completed.
+    /// - [`OperationError`](CacheError::OperationError) - Failed to apply the value due to an internal error.
     ///
     /// # Examples
     ///
-    /// ```ignore
-    /// use crate::...;
+    /// ```
+    /// use pageshelf_core::cache::{Cache, MockCache, KVHashCacheConnection};
+    /// use std::ops::Deref;
     ///
     /// async {
-    ///   assert!(cache.hget("MyObject", "foo").await.is_err())
-    ///   let _ = cache.hset("MyObject", "foo", data).await;
-    ///   assert_eq!(cache.hget("MyObject", "foo").await.unwrap(), data)
+    ///     let cache = MockCache::default();
+    ///     let mut conn = cache.connect().await.unwrap();
+    ///
+    ///     // Insert data
+    ///     let data = b"The quick brown fox";
+    ///     conn.hset("MyObject", "foo", data).await.unwrap();
+    ///
+    ///     // Data is now in the cache
+    ///     let value = conn.hget("MyObject", "foo").await.unwrap();
+    ///     assert_eq!(value.as_ref(), data);
     /// };
     /// ```
     #[allow(async_fn_in_trait)]
@@ -70,23 +73,33 @@ pub trait KVHashCacheConnection {
     ///
     /// # Returns
     ///
-    /// - `Result<Vec<u8>, CacheError>` - The data stored in the cache, otherwise an error.
+    /// - `Arc<[u8]>` - The data stored in the cache
     ///
     /// # Errors
     ///
-    /// - `NotFound` - Could not find the data within the cache.
-    /// - `OperationError` - Failed to apply the value due to an internal error.
+    /// - [`NotFound`](CacheError::NotFound) - Could not find the data within the cache.
+    /// - [`OperationError`](CacheError::OperationError) - Failed to get the value due to an internal error.
     ///
     /// # Examples
     ///
-    /// ```ignore
-    /// use crate::...;
+    /// ```
+    /// use pageshelf_core::cache::{Cache, CacheError, MockCache, KVHashCacheConnection};
+    /// use std::ops::Deref;
     ///
     /// async {
-    ///   let _ = cache.hset("MyObject", "foo", "bar").await;
+    ///     let cache = MockCache::default();
+    ///     let mut conn = cache.connect().await.unwrap();
     ///
-    ///   // You should now be able to get "VALUE_1" from the cache
-    ///   assert_eq!(cache.hget("MyObject", "foo").await.unwrap(), "bar")
+    ///     // There's nothing to get
+    ///     assert_eq!(conn.hget("MyObject", "foo").await, Err(CacheError::NotFound));
+    ///
+    ///     // Insert data
+    ///     let data = b"The quick brown fox";
+    ///     conn.hset("MyObject", "foo", data).await.unwrap();
+    ///
+    ///     // Now there is
+    ///     let value = conn.hget("MyObject", "foo").await.unwrap();
+    ///     assert_eq!(value.as_ref(), data);
     /// };
     /// ```
     #[allow(async_fn_in_trait)]
@@ -105,12 +118,12 @@ pub trait KVHashCacheConnection {
     ///
     /// # Returns
     ///
-    /// - `Result<(usize, Vec<u8>), CacheError>` - The field index and data stored within the field, otherwise an error.
+    /// - `(usize, Arc<[u8]>)` - The index of the returned field and data stored within the field.
     ///
     /// # Errors
     ///
-    /// - `NotFound` - Could not find the data within the cache.
-    /// - `OperationError` - Failed to apply the value due to an internal error.
+    /// - [`NotFound`](CacheError::NotFound) - Could not find the data within the cache.
+    /// - [`OperationError`](CacheError::OperationError) - Failed to get the value due to an internal error.
     ///
     /// # Examples
     ///

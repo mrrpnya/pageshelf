@@ -23,6 +23,13 @@ pub enum ServerConfigUpstreamType {
 }
 
 #[derive(Default, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub enum ServerCacheBackend {
+    #[serde(rename = "redis")]
+    #[default]
+    Redis,
+}
+
+#[derive(Default, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum ServerConfigUpstreamMethod {
     #[serde(rename = "direct")]
     #[default]
@@ -48,17 +55,10 @@ pub struct ServerConfigUpstream {
     pub poll_interval: Option<u64>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ServerConfigSecurity {
-    pub whitelist: Option<String>,
-    pub blacklist: Option<String>,
-    #[serde(default = "default_security_show_private")]
-    pub show_private: bool,
-}
-
 /// Cache configuration for the server
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ServerConfigCache {
+    pub backend: ServerCacheBackend,
     /// Should Cache be used?
     #[serde(default = "default_cache_enabled")]
     pub enabled: bool,
@@ -71,6 +71,12 @@ pub struct ServerConfigCache {
     /// How long should cached assets live in Cache?
     #[serde(default = "default_cache_ttl")]
     pub ttl: Option<u32>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ServerConfigMetrics {
+    pub enabled: bool,
+    pub port: u16,
 }
 
 /// Aggregate configuration of the server (Contains all other configs)
@@ -89,11 +95,11 @@ pub struct ServerConfig {
     pub allow_domains: bool,
 
     // Specialized
-    #[serde(default = "default_security")]
-    pub security: ServerConfigSecurity,
     pub upstream: ServerConfigUpstream,
     #[serde(default = "default_cache")]
     pub cache: ServerConfigCache,
+    #[serde(default = "default_metrics_config")]
+    pub metrics: ServerConfigMetrics,
 }
 
 impl ServerConfig {
@@ -132,20 +138,9 @@ fn default_branches_allowed() -> Vec<String> {
     vec!["pages".to_string()]
 }
 
-fn default_security() -> ServerConfigSecurity {
-    ServerConfigSecurity {
-        whitelist: None,
-        blacklist: None,
-        show_private: default_security_show_private(),
-    }
-}
-
-fn default_security_show_private() -> bool {
-    false
-}
-
 fn default_cache() -> ServerConfigCache {
     ServerConfigCache {
+        backend: ServerCacheBackend::Redis,
         enabled: default_cache_enabled(),
         address: default_cache_address(),
         port: default_cache_port(),
@@ -171,4 +166,11 @@ fn default_cache_ttl() -> Option<u32> {
 
 fn default_domains_allowed() -> bool {
     false
+}
+
+fn default_metrics_config() -> ServerConfigMetrics {
+    ServerConfigMetrics {
+        enabled: false,
+        port: 9000,
+    }
 }

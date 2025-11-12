@@ -205,7 +205,7 @@ impl<'a> CacheConnection for CacheConnectionCombinator<'a> {
         owner: &str,
         project: &str,
         channel: &str,
-    ) -> Result<std::sync::Arc<[u8]>, CacheError> {
+    ) -> Result<Arc<[u8]>, CacheError> {
         match self {
             Self::Redis(r) => r.get_page_version(owner, project, channel).await,
         }

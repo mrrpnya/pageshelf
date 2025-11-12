@@ -1,31 +1,38 @@
 use std::sync::Arc;
 
+use metrics::counter;
 use tracing::{info, warn};
 
 use crate::{
     cache::{Cache, CacheConnection, CacheError},
     event::{Event, EventBus},
-    upstream::{Upstream, UpstreamError},
+    upstream::{
+        Upstream, UpstreamError,
+        source::{
+            AssetListSource, AssetSource, PageListComponentsSource, PageListSource,
+            PageVersionSource,
+        },
+    },
 };
 
 /* -------------------------------------------------------------------------- */
 /*                               Implementation                               */
 /* -------------------------------------------------------------------------- */
 
-/// A caching wrapper around an [Upstream] provider.
+/// A caching wrapper around a source provider.
 ///
-/// `CachedUpstream` combines a [Cache] implementation with an [Upstream] provider
+/// `CachedUpstream` combines a [Cache] implementation with a provider
 /// to reduce redundant network or storage requests. When fetching assets, it first
 /// checks the cache for a matching version. If it is available,the cached asset
 /// is returned. Otherwise, it fetches from the upstream, updates the cache,
 /// and returns the new data.
-pub struct CachedUpstream<U: Upstream + 'static, C: Cache + 'static> {
+pub struct CachedSource<U: AssetSource + PageVersionSource + 'static, C: Cache + 'static> {
     cache: C,
     provider: U,
     event_bus: EventBus,
 }
 
-impl<U: Upstream + 'static, C: Cache + 'static> CachedUpstream<U, C> {
+impl<U: AssetSource + PageVersionSource + 'static, C: Cache + 'static> CachedSource<U, C> {
     /// Creates a new [CachedUpstream].
     pub fn wrap(cache: C, provider: U, event_bus: EventBus) -> Arc<Self> {
         let s = Arc::new(Self {
@@ -49,7 +56,7 @@ impl<U: Upstream + 'static, C: Cache + 'static> CachedUpstream<U, C> {
                 let cached_self = Arc::clone(&cached_self);
                 tokio::spawn(async move {
                     match event {
-                        Event::PageDeleted {
+                        Event::PageRemoved {
                             owner,
                             project,
                             channel,
@@ -63,7 +70,7 @@ impl<U: Upstream + 'static, C: Cache + 'static> CachedUpstream<U, C> {
                             };
                             let _ = conn.delete_page(&owner, &project, &channel).await;
                         }
-                        Event::PageAvailable {
+                        Event::PageDiscovered {
                             owner,
                             project,
                             channel,
@@ -76,23 +83,39 @@ impl<U: Upstream + 'static, C: Cache + 'static> CachedUpstream<U, C> {
                                 }
                             };
 
-                            let need_invalidate = match cached_self
+                            if let Ok(upstream_ver) = cached_self
                                 .provider
                                 .get_page_version(&owner, &project, &channel)
                                 .await
                             {
-                                Ok(upstream_ver) => {
-                                    match conn.get_page_version(&owner, &project, &channel).await {
-                                        Ok(cached_ver) => &*cached_ver != upstream_ver.as_bytes(),
-                                        Err(_) => true,
+                                match conn.get_page_version(&owner, &project, &channel).await {
+                                    Ok(cached_ver) => {
+                                        if &*cached_ver != upstream_ver.as_bytes() {
+                                            let _ =
+                                                conn.delete_page(&owner, &project, &channel).await;
+                                            let _ = conn
+                                                .set_page_version(
+                                                    &owner,
+                                                    &project,
+                                                    &channel,
+                                                    upstream_ver.as_bytes(),
+                                                )
+                                                .await;
+                                        }
+                                    }
+                                    Err(_) => {
+                                        let _ = conn.delete_page(&owner, &project, &channel).await;
+                                        let _ = conn
+                                            .set_page_version(
+                                                &owner,
+                                                &project,
+                                                &channel,
+                                                upstream_ver.as_bytes(),
+                                            )
+                                            .await;
                                     }
                                 }
-                                Err(_) => true,
                             };
-
-                            if need_invalidate {
-                                let _ = conn.delete_page(&owner, &project, &channel).await;
-                            }
                         }
                     }
                 });
@@ -101,14 +124,22 @@ impl<U: Upstream + 'static, C: Cache + 'static> CachedUpstream<U, C> {
     }
 }
 
-impl<U: Upstream, C: Cache + 'static> CachedUpstream<U, C> {
+/* -------------------------------------------------------------------------- */
+/*                                   Sources                                  */
+/* -------------------------------------------------------------------------- */
+
+impl<U: Upstream, C: Cache + 'static> Upstream for CachedSource<U, C> {}
+
+impl<U: PageVersionSource + AssetSource, C: Cache + 'static> CachedSource<U, C> {
     /// Gives access to the cache that is in use.
     pub fn cache(&self) -> &C {
         &self.cache
     }
 }
 
-impl<U: Upstream, C: Cache + 'static> Upstream for CachedUpstream<U, C> {
+impl<U: PageVersionSource + AssetSource + PageListComponentsSource, C: Cache + 'static>
+    PageListComponentsSource for CachedSource<U, C>
+{
     async fn list_owners(&self) -> Result<Arc<[String]>, UpstreamError> {
         self.provider.list_owners().await
     }
@@ -122,26 +153,51 @@ impl<U: Upstream, C: Cache + 'static> Upstream for CachedUpstream<U, C> {
     ) -> Result<Arc<[String]>, UpstreamError> {
         self.provider.list_channels(owner, project).await
     }
-    async fn list_assets(
+
+    async fn has_page(
         &self,
         owner: &str,
         project: &str,
         channel: &str,
-    ) -> Result<Arc<[String]>, UpstreamError> {
-        self.provider.list_assets(owner, project, channel).await
+    ) -> Result<bool, UpstreamError> {
+        match self.list_channels(owner, project).await {
+            Ok(chans) => Ok(chans.iter().any(|c| c == channel)),
+            Err(UpstreamError::NotImplemented) => Ok(false),
+            Err(e) => Err(e),
+        }
     }
+}
+
+impl<U: AssetSource + PageVersionSource, C: Cache + 'static> PageVersionSource
+    for CachedSource<U, C>
+{
+    async fn get_page_version(
+        &self,
+        owner: &str,
+        project: &str,
+        channel: &str,
+    ) -> Result<String, UpstreamError> {
+        self.provider
+            .get_page_version(owner, project, channel)
+            .await
+    }
+}
+
+impl<U: AssetSource + PageVersionSource, C: Cache + 'static> AssetSource for CachedSource<U, C> {
     async fn get_asset_bytes(
         &self,
         owner: &str,
         project: &str,
         channel: &str,
         path: &std::path::Path,
-    ) -> Result<Arc<[u8]>, super::UpstreamError> {
+    ) -> Result<Arc<[u8]>, UpstreamError> {
         info!("{owner}:{project}:{channel}");
+
         let mut conn = match self.cache.connect().await {
             Ok(c) => c,
             Err(e) => {
                 warn!("Failed to connect to cache: {e}");
+                counter!("asset.cache.error").increment(1);
                 return self
                     .provider
                     .get_asset_bytes(owner, project, channel, path)
@@ -152,10 +208,13 @@ impl<U: Upstream, C: Cache + 'static> Upstream for CachedUpstream<U, C> {
         match conn.get_asset(owner, project, channel, path).await {
             Ok(data) => {
                 tracing::debug!("Cache hit: {owner}:{project}:{channel}:{path:?}");
+                counter!("asset.cache.hit").increment(1);
+
                 return Ok(data);
             }
             Err(CacheError::NotFound) => {
-                tracing::debug!("Cache miss: {owner}:{project}:{channel}:{path:?}")
+                tracing::debug!("Cache miss: {owner}:{project}:{channel}:{path:?}");
+                counter!("asset.cache.miss").increment(1);
             }
             Err(_) => {
                 return Err(UpstreamError::ProviderError);
@@ -170,8 +229,13 @@ impl<U: Upstream, C: Cache + 'static> Upstream for CachedUpstream<U, C> {
             Ok(data) => {
                 tracing::debug!("Upstream hit: {owner}:{project}:{channel}:{path:?}");
                 let _ = conn.set_asset(owner, project, channel, path, &data).await;
+                counter!("asset.cache.upstream.hit").increment(1);
 
                 Ok(data)
+            }
+            Err(UpstreamError::NotFound) => {
+                counter!("asset.cache.upstream.miss").increment(1);
+                Err(UpstreamError::NotFound)
             }
             Err(e) => Err(e),
         }
@@ -188,6 +252,7 @@ impl<U: Upstream, C: Cache + 'static> Upstream for CachedUpstream<U, C> {
             Ok(c) => c,
             Err(e) => {
                 warn!("Failed to connect to cache: {e}");
+                counter!("asset.cache.error").increment(1);
                 return self
                     .provider
                     .get_first_asset_bytes(owner, project, channel, paths)
@@ -199,10 +264,13 @@ impl<U: Upstream, C: Cache + 'static> Upstream for CachedUpstream<U, C> {
             Ok(data) => {
                 let path = paths[data.0];
                 tracing::debug!("Cache hit: {owner}:{project}:{channel}:{path:?}");
+                counter!("asset.cache.hit").increment(1);
+
                 return Ok(data);
             }
             Err(CacheError::NotFound) => {
-                tracing::debug!("Cache miss: {owner}:{project}:{channel}:{paths:?}")
+                tracing::debug!("Cache miss: {owner}:{project}:{channel}:{paths:?}");
+                counter!("asset.cache.miss").increment(1);
             }
             Err(_) => {
                 return Err(UpstreamError::ProviderError);
@@ -217,35 +285,41 @@ impl<U: Upstream, C: Cache + 'static> Upstream for CachedUpstream<U, C> {
             Ok(data) => {
                 let path = paths[data.0];
                 tracing::debug!("Upstream hit: {owner}:{project}:{channel}:{path:?}");
+                counter!("asset.cache.upstream.hit").increment(1);
                 let _ = conn.set_asset(owner, project, channel, path, &data.1).await;
                 Ok(data)
+            }
+            Err(UpstreamError::NotFound) => {
+                counter!("asset.cache.upstream.miss").increment(1);
+                Err(UpstreamError::NotFound)
             }
             Err(e) => Err(e),
         }
     }
+}
 
-    async fn get_page_version(
+impl<U: AssetSource + PageVersionSource + AssetListSource, C: Cache + 'static> AssetListSource
+    for CachedSource<U, C>
+{
+    async fn list_assets(
         &self,
         owner: &str,
         project: &str,
         channel: &str,
-    ) -> Result<String, UpstreamError> {
-        self.provider
-            .get_page_version(owner, project, channel)
-            .await
+    ) -> Result<Arc<[String]>, UpstreamError> {
+        self.provider.list_assets(owner, project, channel).await
     }
+}
 
-    async fn has_page(
+/* ---------------------------------- Pages --------------------------------- */
+
+impl<U: AssetSource + PageVersionSource + PageListSource, C: Cache + 'static> PageListSource
+    for CachedSource<U, C>
+{
+    async fn list_pages(
         &self,
-        owner: &str,
-        project: &str,
-        channel: &str,
-    ) -> Result<bool, UpstreamError> {
-        match self.list_channels(owner, project).await {
-            Ok(chans) => Ok(chans.iter().any(|c| c == channel)),
-            Err(UpstreamError::NotImplemented) => Ok(false),
-            Err(e) => Err(e),
-        }
+    ) -> Result<Arc<(Arc<[String]>, Arc<[String]>, Arc<[String]>)>, UpstreamError> {
+        self.provider.list_pages().await
     }
 }
 
@@ -280,9 +354,9 @@ mod tests {
             .await
             .unwrap();
 
-        let provider = MockUpstream::default().with_version(OWNER, PROJECT, CHANNEL, "v1");
+        let provider = MockUpstream::default().with_asset(OWNER, PROJECT, CHANNEL, &path(), DATA);
 
-        let cached_upstream = CachedUpstream::wrap(cache, provider, EventBus::default());
+        let cached_upstream = CachedSource::wrap(cache, provider, EventBus::default());
 
         let result = cached_upstream
             .get_asset_bytes(OWNER, PROJECT, CHANNEL, &path())
@@ -296,11 +370,9 @@ mod tests {
     async fn fetches_from_upstream_when_cache_is_empty() {
         let cache = MockCache::default();
 
-        let provider = MockUpstream::default()
-            .with_version(OWNER, PROJECT, CHANNEL, "v1")
-            .with_asset(OWNER, PROJECT, CHANNEL, &path(), DATA);
+        let provider = MockUpstream::default().with_asset(OWNER, PROJECT, CHANNEL, &path(), DATA);
 
-        let cached_upstream = CachedUpstream::wrap(cache, provider, EventBus::default());
+        let cached_upstream = CachedSource::wrap(cache, provider, EventBus::default());
 
         let result = cached_upstream
             .get_asset_bytes(OWNER, PROJECT, CHANNEL, &path())
@@ -321,11 +393,9 @@ mod tests {
             .await
             .unwrap();
 
-        let provider = MockUpstream::default()
-            .with_version(OWNER, PROJECT, CHANNEL, "new_version")
-            .with_asset(OWNER, PROJECT, CHANNEL, &path(), DATA);
+        let provider = MockUpstream::default().with_asset(OWNER, PROJECT, CHANNEL, &path(), DATA);
 
-        let cached_upstream = CachedUpstream::wrap(cache, provider, EventBus::default());
+        let cached_upstream = CachedSource::wrap(cache, provider, EventBus::default());
 
         let result = cached_upstream
             .get_asset_bytes(OWNER, PROJECT, CHANNEL, &path())
@@ -347,9 +417,15 @@ mod tests {
         let cache = MockCache::default();
         let _conn = cache.connect().await.unwrap();
 
-        let provider = MockUpstream::default().with_version(OWNER, PROJECT, CHANNEL, "v123");
+        let provider = MockUpstream::default().with_asset(OWNER, PROJECT, CHANNEL, &path(), DATA);
 
-        let cached_upstream = CachedUpstream::wrap(cache, provider, EventBus::default());
+        let cached_upstream = CachedSource::wrap(cache, provider, EventBus::default());
+
+        // Manually set a version in the cache for testing
+        let mut conn = cached_upstream.cache.connect().await.unwrap();
+        conn.set_page_version(OWNER, PROJECT, CHANNEL, b"v123")
+            .await
+            .unwrap();
 
         let version = cached_upstream
             .get_page_version(OWNER, PROJECT, CHANNEL)

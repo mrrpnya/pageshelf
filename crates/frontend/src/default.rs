@@ -4,6 +4,7 @@ use std::{
     time::Instant,
 };
 
+use metrics::counter;
 use mime_guess::mime::APPLICATION_OCTET_STREAM;
 use tracing::{Level, error, info, span};
 use url::Url;
@@ -77,33 +78,17 @@ impl<R: Renderer, PR: PageResolver, US: Upstream> DefaultFrontend<R, PR, US> {
             .await
         {
             Ok((index, data)) => {
+                counter!("asset.upstream.found").increment(1);
                 info!("[{}us] Found asset", begin.elapsed().as_micros());
                 respond_with_asset(assets[index], &data)
             }
             Err(UpstreamError::NotFound) => {
-                for path in assets {
-                    match self
-                        .upstream
-                        .get_asset_bytes(owner, project, channel, path)
-                        .await
-                    {
-                        Ok(data) => {
-                            info!("[{}us] Found asset", begin.elapsed().as_micros());
-                            return respond_with_asset(path, &data);
-                        }
-                        Err(UpstreamError::NotFound) => continue,
-                        Err(e) => {
-                            error!("Error getting asset: {e:?}");
-                            let error_info = FrontendErrorInfo::status(500);
-                            return self.renderer.render_error::<FR>(&error_info);
-                        }
-                    }
-                }
-
+                counter!("asset.upstream.not_found").increment(1);
                 let error_info = FrontendErrorInfo::status(404).with_summary("Asset not found");
                 self.renderer.render_error::<FR>(&error_info)
             }
             Err(e) => {
+                counter!("asset.upstream.error").increment(1);
                 error!("Error getting asset: {e:?}");
                 let error_info = FrontendErrorInfo::status(500);
                 self.renderer.render_error::<FR>(&error_info)

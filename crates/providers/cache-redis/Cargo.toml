@@ -15,7 +15,7 @@ serde = "1"
 color-eyre = { version = "0.6", default-features = false }
 tokio = { version = "1", features = ["sync"] }
 config = "0.15"
-redis = {version = "0.32", features = ["aio", "tokio-comp"] }
+redis = {version = "0.32", features = ["aio", "tokio-comp", "cache-aio"] }
 
 [dev-dependencies]
 pageshelf-test-utils = { path = "../../test-utils" }

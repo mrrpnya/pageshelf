@@ -16,6 +16,9 @@ actix-web = { version = "4.11.0", default-features = false, features = [
 ], optional = true}
 tracing = { version = "0.1", features = [], default-features = false }
 url = { version = "2.5.7" }
+actix-web-metrics = "0.4"
+#tikv-jemallocator = { version = "0.6", features = ["profiling", "unprefixed_malloc_on_supported_platforms"] }
+#jemalloc_pprof = { version = "0.8", features = ["flamegraph"] }
 
 [dev-dependencies]
 pageshelf-test-utils = { path = "../test-utils" }

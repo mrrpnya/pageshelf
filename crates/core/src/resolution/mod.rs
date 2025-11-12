@@ -6,15 +6,16 @@ use std::{path::Path, sync::Arc};
 
 use url::Url;
 mod directory;
+mod regex;
 mod subdomain;
 use crate::{
     domain::UpstreamPageDomainResolver,
     event::EventBus,
-    upstream::{AssetLocation, Upstream},
+    upstream::{AssetLocation, Upstream, source::PageListSource},
 };
 pub use directory::DirectoryPageResolver;
+pub use regex::{RegexPageFilter, RegexPageFilterRules};
 pub use subdomain::SubdomainPageResolver;
-
 /* -------------------------------------------------------------------------- */
 /*                                   Errors                                   */
 /* -------------------------------------------------------------------------- */
@@ -37,7 +38,7 @@ pub enum ResolutionError {
 /// Creates a page resolver setup with reasonable defaults and a domain resolver.
 ///
 /// Additionally refreshes said domain resolver off the bat, hence the `async`.
-pub async fn default_page_resolver<U: Upstream + 'static>(
+pub async fn default_page_resolver<U: Upstream + PageListSource + 'static>(
     upstream: Arc<U>,
     subdomain_domains: Vec<String>,
     event_bus: EventBus,

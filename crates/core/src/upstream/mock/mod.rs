@@ -10,8 +10,17 @@ use std::{
 
 use crate::{
     ext::Normalizable,
-    upstream::{Upstream, UpstreamError},
+    upstream::{
+        Upstream, UpstreamError,
+        source::{
+            AssetListSource, AssetSource, PageListComponentsSource, PageListSource,
+            PageVersionSource,
+        },
+    },
 };
+
+mod versioned;
+pub use versioned::VersionedMockUpstream;
 
 /* -------------------------------------------------------------------------- */
 /*                         MockUpstream implementation                        */
@@ -32,7 +41,6 @@ struct ProjectData {
 #[derive(Default, Debug, PartialEq, Eq)]
 struct ChannelData {
     assets: HashSet<String>,
-    version: String,
 }
 
 /// A fake [Upstream] that stores assets in memory.
@@ -49,7 +57,7 @@ pub struct MockUpstream {
 impl MockUpstream {
     /// Registers a given asset.
     ///
-    /// This will override existing assets.
+    /// This will override any existing asset at the specified location.
     pub fn with_asset(
         mut self,
         owner_name: &str,
@@ -99,24 +107,87 @@ impl MockUpstream {
 
         self
     }
+}
 
-    /// Sets the version of a given page.
-    pub fn with_version(
-        mut self,
+impl Upstream for MockUpstream {}
+
+impl PageVersionSource for MockUpstream {
+    async fn get_page_version(
+        &self,
         owner: &str,
         project: &str,
         channel: &str,
-        version: &str,
-    ) -> Self {
-        self.channels
-            .entry((owner.to_string(), project.to_string(), channel.to_string()))
-            .or_default()
-            .version = version.to_string();
-        self
+    ) -> Result<String, UpstreamError> {
+        if self.channels.contains_key(&(
+            owner.to_string(),
+            project.to_string(),
+            channel.to_string(),
+        )) {
+            Ok("v0".to_string())
+        } else {
+            Err(UpstreamError::NotFound)
+        }
     }
 }
 
-impl Upstream for MockUpstream {
+impl PageListComponentsSource for MockUpstream {
+    async fn list_owners(&self) -> Result<Arc<[String]>, UpstreamError> {
+        Ok(self.owners.keys().map(|f| f.to_string()).collect())
+    }
+
+    async fn list_projects(&self, owner: &str) -> Result<Arc<[String]>, UpstreamError> {
+        if let Some(data) = self.owners.get(owner) {
+            Ok(data.projects.iter().map(|f| f.to_string()).collect())
+        } else {
+            Err(UpstreamError::NotFound)
+        }
+    }
+
+    async fn list_channels(
+        &self,
+        owner: &str,
+        project: &str,
+    ) -> Result<Arc<[String]>, UpstreamError> {
+        if let Some(project_data) = self.projects.get(&(owner.to_string(), project.to_string())) {
+            let channels = project_data.channels.iter().cloned().collect(); // Convert HashSet to Vec for iterator
+            Ok(channels)
+        } else {
+            Err(UpstreamError::NotFound)
+        }
+    }
+}
+
+impl PageListSource for MockUpstream {
+    async fn list_pages(
+        &self,
+    ) -> Result<Arc<(Arc<[String]>, Arc<[String]>, Arc<[String]>)>, UpstreamError> {
+        let owners = self.list_owners().await?;
+
+        let mut all_projects = Vec::new();
+        let mut all_channels = Vec::new();
+        let mut matched_owners = Vec::new();
+
+        for owner in owners.iter() {
+            let projects = self.list_projects(owner).await?;
+            for project in projects.iter() {
+                let channels = self.list_channels(owner, project).await?;
+                for channel in channels.iter() {
+                    matched_owners.push(owner.clone());
+                    all_projects.push(project.clone());
+                    all_channels.push(channel.clone());
+                }
+            }
+        }
+
+        Ok(Arc::new((
+            Arc::from(matched_owners.into_boxed_slice()),
+            Arc::from(all_projects.into_boxed_slice()),
+            Arc::from(all_channels.into_boxed_slice()),
+        )))
+    }
+}
+
+impl AssetSource for MockUpstream {
     #[allow(async_fn_in_trait)]
     async fn get_asset_bytes(
         &self,
@@ -147,48 +218,9 @@ impl Upstream for MockUpstream {
             None => Err(UpstreamError::NotFound),
         }
     }
+}
 
-    async fn get_page_version(
-        &self,
-        owner: &str,
-        project: &str,
-        channel: &str,
-    ) -> Result<String, UpstreamError> {
-        if let Some(channel_data) =
-            self.channels
-                .get(&(owner.to_string(), project.to_string(), channel.to_string()))
-        {
-            Ok(channel_data.version.clone())
-        } else {
-            Err(UpstreamError::NotFound)
-        }
-    }
-
-    async fn list_owners(&self) -> Result<Arc<[String]>, UpstreamError> {
-        Ok(self.owners.keys().map(|f| f.to_string()).collect())
-    }
-
-    async fn list_projects(&self, owner: &str) -> Result<Arc<[String]>, UpstreamError> {
-        if let Some(data) = self.owners.get(owner) {
-            Ok(data.projects.iter().map(|f| f.to_string()).collect())
-        } else {
-            Err(UpstreamError::NotFound)
-        }
-    }
-
-    async fn list_channels(
-        &self,
-        owner: &str,
-        project: &str,
-    ) -> Result<Arc<[String]>, UpstreamError> {
-        if let Some(project_data) = self.projects.get(&(owner.to_string(), project.to_string())) {
-            let channels = project_data.channels.iter().cloned().collect(); // Convert HashSet to Vec for iterator
-            Ok(channels)
-        } else {
-            Err(UpstreamError::NotFound)
-        }
-    }
-
+impl AssetListSource for MockUpstream {
     async fn list_assets(
         &self,
         owner: &str,

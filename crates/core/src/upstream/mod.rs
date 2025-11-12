@@ -6,8 +6,12 @@ mod location;
 pub mod mock;
 pub use location::{AssetLocation, PageLocation};
 use std::{fmt::Display, path::Path, sync::Arc};
-mod cached;
-pub use cached::CachedUpstream;
+pub mod managers;
+
+use crate::upstream::source::{
+    AssetListSource, AssetSource, PageListComponentsSource, PageListSource, PageVersionSource,
+};
+pub mod source;
 
 /* -------------------------------------------------------------------------- */
 /*                                   Errors                                   */
@@ -33,6 +37,7 @@ pub enum UpstreamError {
     ///
     /// Indicates that the upstream does not support the requested functionality.
     /// For optional features, implementations should handle this gracefully.
+    // TODO: Consider removing this? Stuff is already moved to smaller traits...
     NotImplemented,
     /// The requested resource were not available in the [Upstream] provider.
     ///
@@ -64,148 +69,4 @@ impl std::error::Error for UpstreamError {}
 /// The [`Upstream`] trait abstracts over any provider that can supply
 /// project metadata and binary assets. Implementations may represent
 /// remote APIs, on-disk caches, or mock test providers.
-pub trait Upstream: Send + Sync {
-    /// List all project owners available.
-    ///
-    /// # Errors
-    ///
-    /// - `ProviderError` - Something happened in the upstream that caused a failure.
-    /// - `NotImplemented` - The upstream is not capable of performing this.
-    fn list_owners(&self) -> impl Future<Output = Result<Arc<[String]>, UpstreamError>> + Send {
-        async move { Err(UpstreamError::NotImplemented) }
-    }
-
-    /// List all projects available to a specific owner.
-    ///
-    /// # Errors
-    ///
-    /// - `NotFound` - The owner wasn't available.
-    /// - `ProviderError` - Something happened in the upstream that caused a failure.
-    /// - `NotImplemented` - The upstream is not capable of performing this.
-    #[allow(unused_variables)]
-    fn list_projects(
-        &self,
-        owner: &str,
-    ) -> impl Future<Output = Result<Arc<[String]>, UpstreamError>> + Send {
-        async move { Err(UpstreamError::NotImplemented) }
-    }
-
-    /// List all channels available in a specific project.
-    ///
-    /// # Errors
-    ///
-    /// - `NotFound` - The project wasn't available.
-    /// - `ProviderError` - Something happened in the upstream that caused a failure.
-    /// - `NotImplemented` - The upstream is not capable of performing this.
-    #[allow(unused_variables)]
-    fn list_channels(
-        &self,
-        owner: &str,
-        project: &str,
-    ) -> impl Future<Output = Result<Arc<[String]>, UpstreamError>> + Send {
-        async move { Err(UpstreamError::NotImplemented) }
-    }
-
-    /// List all assets contained within a page.
-    ///
-    /// # Errors
-    ///
-    /// - `NotFound` - The page wasn't available.
-    /// - `ProviderError` - Something happened in the upstream that caused a failure.
-    /// - `NotImplemented` - The upstream is not capable of performing this.
-    #[allow(unused_variables)]
-    fn list_assets(
-        &self,
-        owner: &str,
-        project: &str,
-        channel: &str,
-    ) -> impl Future<Output = Result<Arc<[String]>, UpstreamError>> + Send {
-        async move { Err(UpstreamError::NotImplemented) }
-    }
-
-    /// Returns all bytes contained in an asset from a page.
-    ///
-    /// The bytes are formatted as plain data, and will be sourced from the latest available version.
-    ///
-    /// # Errors
-    ///
-    /// - `NotFound` - The page or asset was not available.
-    /// - `ProviderError` - Something happened in the upstream that caused a failure.
-    #[allow(unused_variables)]
-    fn get_asset_bytes(
-        &self,
-        owner: &str,
-        project: &str,
-        channel: &str,
-        path: &Path,
-    ) -> impl Future<Output = Result<Arc<[u8]>, UpstreamError>> + Send;
-
-    /// Returns all bytes contained from the first given asset that can be found in a page.
-    ///
-    /// The bytes are formatted as plain data, and will be sourced from the latest available version.
-    ///
-    /// # Errors
-    ///
-    /// - `NotFound` - The page or asset was not available.
-    /// - `ProviderError` - Something happened in the upstream that caused a failure.
-    fn get_first_asset_bytes(
-        &self,
-        owner: &str,
-        project: &str,
-        channel: &str,
-        paths: &[&Path],
-    ) -> impl Future<Output = Result<(usize, Arc<[u8]>), UpstreamError>> + Send {
-        async move {
-            let mut idx = 0;
-            for path in paths {
-                match self.get_asset_bytes(owner, project, channel, path).await {
-                    Ok(v) => return Ok((idx, v)),
-                    Err(UpstreamError::NotFound) => {
-                        idx += 1;
-                    }
-                    Err(e) => {
-                        return Err(e);
-                    }
-                }
-            }
-
-            Err(UpstreamError::NotFound)
-        }
-    }
-
-    /// Returns the current version or revision of a given page.
-    ///
-    /// This can be used to perform cache invalidation.
-    ///
-    /// # Errors
-    ///
-    /// - `NotFound` - The page or asset was not available.
-    /// - `ProviderError` - Something happened in the upstream that caused a failure.
-    #[allow(unused_variables)]
-    fn get_page_version(
-        &self,
-        owner: &str,
-        project: &str,
-        channel: &str,
-    ) -> impl Future<Output = Result<String, UpstreamError>> + Send;
-
-    /// Returns if a given page is available.
-    ///
-    /// # Errors
-    ///
-    /// - `ProviderError` - Something happened in the upstream that caused a failure.
-    fn has_page(
-        &self,
-        owner: &str,
-        project: &str,
-        channel: &str,
-    ) -> impl Future<Output = Result<bool, UpstreamError>> + Send {
-        async move {
-            match self.list_channels(owner, project).await {
-                Ok(chans) => Ok(chans.iter().any(|c| c == channel)),
-                Err(UpstreamError::NotImplemented) => Ok(false),
-                Err(e) => Err(e),
-            }
-        }
-    }
-}
+pub trait Upstream: Send + Sync + AssetSource + PageVersionSource {}

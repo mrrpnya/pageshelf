@@ -10,9 +10,12 @@ use color_eyre::{
     eyre::{self, Context},
 };
 use config::{Config, ConfigError};
-use redis::AsyncCommands;
+use redis::{AsyncCommands, AsyncConnectionConfig, caching::CacheConfig};
 use redis::{Client, RedisError, Script, aio::MultiplexedConnection};
-use std::sync::{Arc, LazyLock};
+use std::{
+    sync::{Arc, LazyLock},
+    time::Duration,
+};
 use tracing::{Level, error, info, span};
 
 use pageshelf_core::cache::{Cache, CacheError, KVHashCacheConnection};
@@ -30,7 +33,7 @@ pub struct RedisCache {
 impl RedisCache {
     /// Sets a [RedisCache] up to connect to a specific Redis instance
     pub fn new(host: &str, port: u16, ttl: Option<u32>) -> Result<Self, RedisError> {
-        let address = format!("redis://{}:{}", host, port);
+        let address = format!("redis://{}:{}/?protocol=resp3", host, port);
         match redis::Client::open(address.clone()) {
             Ok(v) => Ok(Self {
                 client: Arc::new(v),
@@ -106,7 +109,14 @@ impl RedisCache {
 impl Cache for RedisCache {
     type Connection<'a> = RedisCacheConnection;
     async fn connect<'a>(&'a self) -> Result<Self::Connection<'a>, crate::CacheError> {
-        let conn = self.client.get_multiplexed_async_connection().await;
+        let config = CacheConfig::new().set_default_client_ttl(Duration::from_secs(120));
+
+        let config = AsyncConnectionConfig::new().set_cache_config(config);
+
+        let conn = self
+            .client
+            .get_multiplexed_async_connection_with_config(&config)
+            .await;
 
         let conn = match conn {
             Ok(v) => v,

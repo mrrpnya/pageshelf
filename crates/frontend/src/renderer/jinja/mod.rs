@@ -17,7 +17,7 @@ use crate::{
         FrontendErrorInfo, Renderer,
         jinja::templates::{
             STATIC_ASSET_DIR, TEMPLATE_ERROR, TEMPLATE_INDEX, TemplateErrorContext,
-            TemplatePageContext, TemplateServerContext,
+            TemplatePageContext, TemplateServerContext, env_from_builtin,
         },
     },
     response::{FrontendResponse, FrontendResponseBuilder},
@@ -55,7 +55,7 @@ pub struct JinjaRenderer {
 
 impl JinjaRenderer {
     pub fn new(
-        env: Environment<'static>,
+        env: Option<Environment<'static>>,
         name: String,
         about: String,
         domain: Option<String>,
@@ -72,12 +72,14 @@ impl JinjaRenderer {
         info!("{} static Jinja assets registered", static_assets.len());
 
         Self {
-            env,
+            env: env.unwrap_or(env_from_builtin().unwrap()),
             tp_serv_ctx: TemplateServerContext {
                 name,
                 about,
                 domain,
-                icon_url,
+                icon_url: Some(
+                    icon_url.unwrap_or("/_jinja_static/pageshelf_logo.webp".to_string()),
+                ),
                 default_branch,
                 version: crate_version!(),
             },
@@ -139,7 +141,7 @@ impl Default for JinjaRenderer {
         let env = templates::env_from_builtin()
             .expect("Failed to initialize the built-in Jinja environment");
         Self::new(
-            env,
+            Some(env),
             "Pageshelf".to_string(),
             "A free and open-source Pages server".to_string(),
             Some("localhost".to_string()),

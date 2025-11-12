@@ -152,7 +152,7 @@ impl Cli {
             let span = span!(Level::INFO, "integration");
             let _span_guard = span.enter();
 
-            let app = PageshelfApp::from_server_config(sv_cfg);
+            let app = PageshelfApp::from_server_config(sv_cfg, cfg);
 
             // Application-level checks
             app.run_checks().await;

@@ -28,7 +28,7 @@ impl Cli {
         let host_override = args.host.as_deref();
         let port_override = args.port;
 
-        let app = PageshelfApp::from_server_config(sv_cfg);
+        let app = PageshelfApp::from_server_config(sv_cfg, cfg);
 
         app.run(false, host_override, port_override).await?;
 

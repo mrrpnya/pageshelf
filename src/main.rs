@@ -14,6 +14,13 @@ use tracing::{Level, instrument};
 
 use crate::cmd::Cli;
 
+//#[cfg(not(target_env = "msvc"))]
+//use tikv_jemallocator::Jemalloc;
+
+//#[cfg(not(target_env = "msvc"))]
+//#[global_allocator]
+//static GLOBAL: Jemalloc = Jemalloc;
+
 fn print_banner(lines: &[String]) {
     // Compute the maximum content width (not including padding)
     let max_content_width = lines.iter().map(|l| l.chars().count()).max().unwrap_or(0);

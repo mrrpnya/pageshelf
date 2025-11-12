@@ -11,6 +11,7 @@ mod routes;
 use crate::WebServer;
 use actix_web::web::{self, ServiceConfig};
 use actix_web::{App, HttpServer, middleware};
+use actix_web_metrics::ActixWebMetricsBuilder;
 use color_eyre::{
     Section,
     eyre::{self, Context},
@@ -21,7 +22,7 @@ use std::net::TcpListener;
 use std::sync::Arc;
 
 // TODO: Rate, etc limiting?
-// TODO: Allow disabling JS execution on pages globally?
+// TODO: Allow disabling JS execution on pages entirely?
 
 /// An Actix-web backed server implementation.
 ///
@@ -47,10 +48,13 @@ impl<F: Frontend + Send + Sync + 'static> ActixWebServer<F> {
     /// super-server). Errors are returned as `eyre::Report`.
     pub async fn run_with_listener(&self, listener: TcpListener) -> Result<(), eyre::Report> {
         let frontend = self.frontend.clone();
+        let metrics = ActixWebMetricsBuilder::new().build();
         let server = HttpServer::new(move || {
             App::new()
+                .wrap(metrics.clone())
                 .wrap(middleware::Compress::default())
                 .wrap(middleware::NormalizePath::trim())
+                //   .route("/debug/pprof/allocs", get().to(pprof_dump))
                 .wrap(
                     middleware::DefaultHeaders::new()
                         .add(("X-Content-Type-Options", "nosniff"))
@@ -59,10 +63,10 @@ impl<F: Frontend + Send + Sync + 'static> ActixWebServer<F> {
                 )
                 .wrap(
                     middleware::DefaultHeaders::new()
-                        .add((
-                            "Content-Security-Policy",
-                            "default-src 'self'; script-src 'self' style-src 'self' 'unsafe-inline'",
-                        ))
+                        //         .add((
+                        //            "Content-Security-Policy",
+                        //           "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'",
+                        //      ))
                         .add(("Referrer-Policy", "same-origin")),
                 ) // TODO: Error page
                 .configure(|cfg| {
@@ -108,3 +112,12 @@ impl<F: Frontend + Send + Sync + 'static> ActixWebServer<F> {
             })
     }
 }
+
+/*
+async fn pprof_dump() -> HttpResponse {
+               let mut prof_ctl = jemalloc_pprof::PROF_CTL.as_ref().unwrap().lock().await;
+
+    let pprof = prof_ctl
+        .dump_pprof().unwrap();
+        HttpResponseBuilder::new(StatusCode::OK).body(pprof)
+}*/

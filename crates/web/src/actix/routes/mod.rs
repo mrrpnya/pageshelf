@@ -24,5 +24,5 @@ pub struct RoutingState<F: Frontend> {
 pub fn register_routes_to_config<F: Frontend + 'static>(
     config: &mut ServiceConfig,
 ) -> &mut ServiceConfig {
-    config.route("/{tail:.*}", web::get().to(server::main_route::<F>))
+    config.service(web::resource("/{tail:.*}").get(server::main_route::<F>))
 }

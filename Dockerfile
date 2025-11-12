@@ -1,20 +1,26 @@
-# Build stage
-FROM rust:latest AS builder
+FROM docker.io/blackdex/rust-musl:x86_64-musl AS chef
+USER root
+RUN cargo install cargo-chef
+WORKDIR /app
 
-WORKDIR /usr/src/pageshelf
-
+FROM chef AS planner
 COPY . .
-RUN cargo install --path . --locked --root /usr/local --profile release
+RUN cargo chef prepare --recipe-path recipe.json
 
-# Runtime stage
-FROM debian:bookworm-slim AS runtime
+FROM chef AS builder 
+COPY --from=planner /app/recipe.json recipe.json
+# Build dependencies - this is the caching Docker layer!
+RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path recipe.json
+# Build application
+COPY . .
+RUN cargo build --release --bin pageshelf --target x86_64-unknown-linux-musl
+RUN ls
 
-# Install minimal runtime dependencies
-RUN apt-get update && apt-get install -y \
-    libssl-dev \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=builder /usr/local/bin/pageshelf /usr/local/bin/pageshelf
-
-CMD ["pageshelf"]
+# Runtime Stage
+FROM alpine:latest AS runtime
+RUN apk add --no-cache ca-certificates
+RUN addgroup -S myuser && adduser -S myuser -G myuser
+USER myuser
+WORKDIR /
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/pageshelf .
+CMD ["./pageshelf"]
